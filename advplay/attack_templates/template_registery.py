@@ -23,7 +23,7 @@ class TemplateBuilder():
 
     def save_template(self, filename, template):
         template_json = json.dumps(template, indent=4)
-        filename = paths.PROMPT_INJECTION_TEMPLATES / f"{filename}.json"
+        filename = paths.OPENAI_TEMPLATES / f"{filename}.json"
 
         if filename.exists():
             while True:

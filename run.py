@@ -21,8 +21,9 @@ def main():
 
     save_template_parser = subparsers.add_parser('save_template', help='Save attack configuration templates')
     save_template_subparsers = save_template_parser.add_subparsers(dest='attack_type', help='types of attacks')
-
     add_parsers(save_template_subparsers)
+
+
 
     perform_action(parser.parse_args())
 
