@@ -1,7 +1,8 @@
 from dotenv import load_dotenv
 load_dotenv()
 
-from advplay.attack_templates.save_template import TEMPLATE_BUILDERS
+from advplay.attack_templates.template_registery import TEMPLATE_BUILDERS
+from advplay.attack_templates import template_builders
 from advplay.main import perform_action
 
 import argparse
