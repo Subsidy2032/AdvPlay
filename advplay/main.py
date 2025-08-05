@@ -1,4 +1,4 @@
-from advplay.attack_templates.template_registery import define_template
+from advplay.attack_templates.template_registry import registry
 from advplay.variables import *
 
 def perform_action(args):
@@ -11,4 +11,4 @@ def perform_action(args):
             if hasattr(args, "filename") and args.filename:
                 kwargs["filename"] = args.filename
 
-            define_template(args.platform, **kwargs)
+            registry.define_template(args.platform, **kwargs)

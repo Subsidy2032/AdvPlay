@@ -1,8 +1,8 @@
 from dotenv import load_dotenv
 load_dotenv()
 
-from advplay.attack_templates.template_registery import TEMPLATE_BUILDERS
-from advplay.attack_templates import template_builders
+from advplay.attack_templates.template_registry.registry import TEMPLATE_BUILDERS
+from advplay.attack_templates.template_builders import openai_template_builder
 from advplay.main import perform_action
 from advplay.variables import *
 
@@ -13,7 +13,7 @@ def add_save_template_parsers(parser):
     llm_parser.add_argument('-p', '--platform', choices=TEMPLATE_BUILDERS.keys(), required=True,
                             help='The platform of the LLM')
     llm_parser.add_argument('-m', '--model', required=True, help='The name of the model')
-    llm_parser.add_argument('-i', '--instructions', required=True, help='Custom instructions for the model')
+    llm_parser.add_argument('-i', '--instructions', required=False, help='Custom instructions for the model')
     llm_parser.add_argument('-f', '--filename', required=False, help='Configuration file name')
 
 def main():

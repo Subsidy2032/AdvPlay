@@ -1,18 +1,6 @@
-import advplay.paths as paths
-
 import json
 import os
-from openai import OpenAI
-
-TEMPLATE_BUILDERS = {}
-
-
-def register_template_builder(template_type: str) -> dict:
-    def decorator(func):
-        TEMPLATE_BUILDERS[template_type] = func
-        return func
-    return decorator
-
+import advplay.paths as paths
 
 class TemplateBuilder:
     def __init__(self, **kwargs):
@@ -30,22 +18,11 @@ class TemplateBuilder:
                 override = input("Configuration file already exists, are you sure you want to replace it? (Y/N) ")
                 if override.lower() == 'n':
                     return
-
                 elif override.lower() == 'y':
                     break
-
                 else:
                     print("Invalid option, please choose from the provided options.\n")
 
         os.makedirs(os.path.dirname(filename), exist_ok=True)
         with open(filename, "w") as f:
             f.write(template_json)
-
-
-def define_template(template_type: str, **kwargs):
-    builder_cls = TEMPLATE_BUILDERS.get(template_type)
-    if builder_cls is None:
-        raise ValueError(f"Unsupported template type: {template_type}")
-
-    builder = builder_cls(**kwargs)
-    builder.build()
