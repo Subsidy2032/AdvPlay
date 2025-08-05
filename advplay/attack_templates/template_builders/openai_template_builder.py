@@ -1,6 +1,7 @@
 from advplay.attack_templates.template_registery import *
+from advplay.variables import *
 
-@register_template_builder("openai")
+@register_template_builder(available_platforms.OPENAI)
 class OpenAITemplateBuilder(TemplateBuilder):
     def build(self):
         model = self.kwargs.get("model")
@@ -20,6 +21,7 @@ class OpenAITemplateBuilder(TemplateBuilder):
             raise TypeError(f"An OpenAI model with the name {model} does not exist.")
 
         template = {
+            "platform": available_platforms.OPENAI,
             "model": model,
             "instructions": instructions
         }

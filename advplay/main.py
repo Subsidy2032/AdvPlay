@@ -1,8 +1,9 @@
 from advplay.attack_templates.template_registery import define_template
+from advplay.variables import *
 
 def perform_action(args):
-    if args.command == 'save_template':
-        if args.attack_type == 'llm':
+    if args.command == parser_names.SAVE_TEMPLATE:
+        if args.attack_type == parser_names.LLM:
             kwargs = {
                 "model": args.model,
                 "instructions": args.instructions,

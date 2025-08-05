@@ -21,13 +21,13 @@ class TestTemplateBuilders(unittest.TestCase):
         filename = 'new_custom_instructions'
         template_registery.define_template('openai', model=model, instructions=instructions, filename=filename)
 
-        file_path = OPENAI_TEMPLATES / f"{filename}.json"
+        file_path = LLM_TEMPLATES / f"{filename}.json"
         self.assertTrue(file_path.exists(), f"{file_path} was not created")
         with open(file_path, 'r') as f:
             json_file = json.load(f)
 
         self.assertEqual(expected_json, json_file)
-        os.remove(OPENAI_TEMPLATES / f"{filename}.json")
+        os.remove(LLM_TEMPLATES / f"{filename}.json")
 
 if __name__ == '__main__':
     unittest.main()

@@ -7,23 +7,23 @@ from openai import OpenAI
 TEMPLATE_BUILDERS = {}
 
 
-def register_template_builder(template_type):
+def register_template_builder(template_type: str) -> dict:
     def decorator(func):
         TEMPLATE_BUILDERS[template_type] = func
         return func
     return decorator
 
 
-class TemplateBuilder():
+class TemplateBuilder:
     def __init__(self, **kwargs):
         self.kwargs = kwargs
 
     def build(self):
         raise NotImplementedError("Subclasses must implement the build method.")
 
-    def save_template(self, filename, template):
+    def save_template(self, filename: str, template: dict):
         template_json = json.dumps(template, indent=4)
-        filename = paths.OPENAI_TEMPLATES / f"{filename}.json"
+        filename = paths.LLM_TEMPLATES / f"{filename}.json"
 
         if filename.exists():
             while True:
@@ -42,10 +42,10 @@ class TemplateBuilder():
             f.write(template_json)
 
 
-def define_template(template_type, **kwargs):
+def define_template(template_type: str, **kwargs):
     builder_cls = TEMPLATE_BUILDERS.get(template_type)
     if builder_cls is None:
         raise ValueError(f"Unsupported template type: {template_type}")
 
     builder = builder_cls(**kwargs)
-    return builder.build()
+    builder.build()
