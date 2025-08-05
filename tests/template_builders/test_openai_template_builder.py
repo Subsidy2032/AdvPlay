@@ -1,14 +1,14 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 import json
 import os
 import pytest
-from dotenv import load_dotenv
 
 from advplay.attack_templates.template_registry import registry
 from advplay.attack_templates.template_builders.openai_template_builder import OpenAITemplateBuilder
 from advplay.paths import LLM_TEMPLATES
 from advplay.variables import available_platforms
-
-load_dotenv()
 
 @pytest.fixture
 def openai_template_data():

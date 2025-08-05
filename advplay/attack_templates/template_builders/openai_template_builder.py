@@ -1,7 +1,8 @@
+from openai import OpenAI
+
 from advplay.attack_templates.template_registry.base import TemplateBuilder
 from advplay.attack_templates.template_registry.registry import register_template_builder
 from advplay.variables import available_platforms
-from openai import OpenAI
 
 @register_template_builder(available_platforms.OPENAI)
 class OpenAITemplateBuilder(TemplateBuilder):

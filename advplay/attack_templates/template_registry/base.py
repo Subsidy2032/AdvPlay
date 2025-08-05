@@ -1,5 +1,6 @@
 import json
 import os
+
 import advplay.paths as paths
 
 class TemplateBuilder:

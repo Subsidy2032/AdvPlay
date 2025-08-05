@@ -1,12 +1,12 @@
 from dotenv import load_dotenv
 load_dotenv()
 
+import argparse
+
 from advplay.attack_templates.template_registry.registry import TEMPLATE_BUILDERS
 from advplay.attack_templates.template_builders import openai_template_builder
 from advplay.main import perform_action
 from advplay.variables import *
-
-import argparse
 
 def add_save_template_parsers(parser):
     llm_parser = parser.add_parser(parser_names.LLM, help='Perform attacks on LLM')
