@@ -18,7 +18,8 @@ class OpenAITemplateBuilder(TemplateBuilder):
             model_names = []
 
         if model not in model_names:
-            raise TypeError(f"An OpenAI model with the name {model} does not exist.")
+            raise TypeError(f"An OpenAI model with the name {model} does not exist. "
+                            f"Some popular OpenAI models are gpt-4o and gpt-4o-mini.")
 
         template = {
             "platform": available_platforms.OPENAI,

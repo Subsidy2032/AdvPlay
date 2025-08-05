@@ -8,7 +8,7 @@ from advplay.variables import *
 
 import argparse
 
-def add_parsers(parser):
+def add_save_template_parsers(parser):
     llm_parser = parser.add_parser(parser_names.LLM, help='Perform attacks on LLM')
     llm_parser.add_argument('-p', '--platform', choices=TEMPLATE_BUILDERS.keys(), required=True,
                             help='The platform of the LLM')
@@ -22,7 +22,7 @@ def main():
 
     save_template_parser = subparsers.add_parser(parser_names.SAVE_TEMPLATE, help='Save attack configuration templates')
     save_template_subparsers = save_template_parser.add_subparsers(dest=parser_names.ATTACK_TYPE, help='types of attacks')
-    add_parsers(save_template_subparsers)
+    add_save_template_parsers(save_template_subparsers)
 
     perform_action(parser.parse_args())
 
