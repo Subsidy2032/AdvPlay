@@ -1,11 +1,9 @@
 from openai import OpenAI
 
-from advplay.attack_templates.template_registry.base import TemplateBuilder
-from advplay.attack_templates.template_registry.registry import register_template_builder
+from advplay.attack_templates.template_builders.template_builder_base import TemplateBuilderBase
 from advplay.variables import available_platforms
 
-@register_template_builder(available_platforms.OPENAI)
-class OpenAITemplateBuilder(TemplateBuilder):
+class OpenAITemplateBuilder(TemplateBuilderBase, template_type=available_platforms.OPENAI):
     def build(self):
         model = self.kwargs.get("model")
         instructions = self.kwargs.get("instructions")

@@ -1,5 +1,5 @@
-from advplay.attack_templates.template_registry import registry
-from advplay.variables import *
+from advplay.attack_templates.template_registry.registry import define_template
+from advplay.variables import parser_names
 
 def perform_action(args):
     if args.command == parser_names.SAVE_TEMPLATE:
@@ -11,4 +11,4 @@ def perform_action(args):
             if hasattr(args, "filename") and args.filename:
                 kwargs["filename"] = args.filename
 
-            registry.define_template(args.platform, **kwargs)
+            define_template(args.platform, **kwargs)

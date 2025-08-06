@@ -1,9 +1,15 @@
 import json
 import os
 
-import advplay.paths as paths
+from advplay import paths as paths
 
-class TemplateBuilder:
+class TemplateBuilderBase:
+    registry = {}
+
+    def __init_subclass__(cls, template_type: str, **kwargs):
+        super().__init_subclass__(**kwargs)
+        TemplateBuilderBase.registry[template_type] = cls
+
     def __init__(self, **kwargs):
         self.kwargs = kwargs
 

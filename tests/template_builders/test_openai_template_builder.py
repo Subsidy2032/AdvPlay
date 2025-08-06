@@ -5,8 +5,7 @@ import json
 import os
 import pytest
 
-from advplay.attack_templates.template_registry import registry
-from advplay.attack_templates.template_builders.openai_template_builder import OpenAITemplateBuilder
+from advplay.attack_templates.template_registry.registry import define_template
 from advplay.paths import LLM_TEMPLATES
 from advplay.variables import available_platforms
 
@@ -39,7 +38,7 @@ def test_template_building_with_file_name(openai_template_data, file_path):
         "instructions": openai_template_data["instructions"]
     }
 
-    registry.define_template(
+    define_template(
         openai_template_data["platform"],
         model=openai_template_data["model"],
         instructions=openai_template_data["instructions"],
@@ -55,7 +54,7 @@ def test_template_building_with_file_name(openai_template_data, file_path):
 
 def test_missing_model(openai_template_data):
     with pytest.raises(TypeError, match="does not exist"):
-        registry.define_template(
+        define_template(
             openai_template_data["platform"],
             model="non-existent-model",
             instructions=openai_template_data["instructions"],
@@ -69,7 +68,7 @@ def test_missing_instructions(openai_template_data, file_path):
         "instructions": None
     }
 
-    registry.define_template(
+    define_template(
         openai_template_data["platform"],
         model=openai_template_data["model"],
         filename=openai_template_data["filename"]
@@ -85,7 +84,7 @@ def test_default_filename_used(openai_template_data):
     if default_file.exists():
         os.remove(default_file)
 
-    registry.define_template(
+    define_template(
         openai_template_data["platform"],
         model=openai_template_data["model"],
         instructions=openai_template_data["instructions"]

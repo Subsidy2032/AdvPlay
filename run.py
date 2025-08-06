@@ -3,20 +3,22 @@ load_dotenv()
 
 import argparse
 
-from advplay.attack_templates.template_registry.registry import TEMPLATE_BUILDERS
-from advplay.attack_templates.template_builders import openai_template_builder
+from advplay.attack_templates.template_builders.template_builder_base import TemplateBuilderBase
 from advplay.main import perform_action
-from advplay.variables import *
+from advplay.variables import parser_names
+from advplay.utils.load_template_builders import import_all_template_classes
 
 def add_save_template_parsers(parser):
     llm_parser = parser.add_parser(parser_names.LLM, help='Perform attacks on LLM')
-    llm_parser.add_argument('-p', '--platform', choices=TEMPLATE_BUILDERS.keys(), required=True,
+    llm_parser.add_argument('-p', '--platform', choices=TemplateBuilderBase.registry.keys(), required=True,
                             help='The platform of the LLM')
     llm_parser.add_argument('-m', '--model', required=True, help='The name of the model')
     llm_parser.add_argument('-i', '--instructions', required=False, help='Custom instructions for the model')
     llm_parser.add_argument('-f', '--filename', required=False, help='Configuration file name')
 
 def main():
+    import_all_template_classes()
+
     parser = argparse.ArgumentParser(description="practice machine learning attacks from the command line")
     subparsers = parser.add_subparsers(dest=parser_names.COMMAND, help='Type of action to make')
 
