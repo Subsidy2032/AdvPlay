@@ -1,3 +1,5 @@
+import sys
+
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -10,16 +12,23 @@ from advplay.utils.load_template_builders import import_all_template_classes
 
 def add_save_template_parsers(parser):
     llm_parser = parser.add_parser(parser_names.LLM, help='Perform attacks on LLM')
-    llm_parser.add_argument('-p', '--platform', choices=TemplateBuilderBase.registry.keys(), required=True,
+
+    group = llm_parser.add_mutually_exclusive_group(required=True)
+    group.add_argument('-l', '--list', action='store_true', help='List available LLM templates')
+    llm_parser.add_argument('-t', '--template', required=('-p' in sys.argv or '--template' in sys.argv),
+                       help='Template name')
+
+    group.add_argument('-p', '--platform', choices=TemplateBuilderBase.registry.keys(),
                             help='The platform of the LLM')
-    llm_parser.add_argument('-m', '--model', required=True, help='The name of the model')
+    llm_parser.add_argument('-m', '--model', required=('-p' in sys.argv or '--platform' in sys.argv),
+                            help='The name of the model')
     llm_parser.add_argument('-i', '--instructions', required=False, help='Custom instructions for the model')
-    llm_parser.add_argument('-f', '--filename', required=False, help='Configuration file name')
+    llm_parser.add_argument('-f', '--filename', required=False, help='Configuration file name (without extension)')
 
 def main():
     import_all_template_classes()
 
-    parser = argparse.ArgumentParser(description="practice machine learning attacks from the command line")
+    parser = argparse.ArgumentParser(description="Practice machine learning attacks from the command line")
     subparsers = parser.add_subparsers(dest=parser_names.COMMAND, help='Type of action to make')
 
     save_template_parser = subparsers.add_parser(parser_names.SAVE_TEMPLATE, help='Save attack configuration templates')
