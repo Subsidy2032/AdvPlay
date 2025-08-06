@@ -10,7 +10,8 @@ class TemplateBuilderBase:
         super().__init_subclass__(**kwargs)
         TemplateBuilderBase.registry[template_type] = cls
 
-    def __init__(self, **kwargs):
+    def __init__(self, attack_type, **kwargs):
+        self.attack_type = attack_type
         self.kwargs = kwargs
 
     def build(self):
@@ -18,7 +19,7 @@ class TemplateBuilderBase:
 
     def save_template(self, filename: str, template: dict):
         template_json = json.dumps(template, indent=4)
-        filename = paths.LLM_TEMPLATES / f"{filename}.json"
+        filename = paths.TEMPLATES / self.attack_type / f"{filename}.json"
 
         if filename.exists():
             while True:

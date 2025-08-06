@@ -1,9 +1,13 @@
-class parser_names():
+class commands:
     COMMAND: str = 'command'
+
     SAVE_TEMPLATE: str = 'save_template'
-    LLM: str = 'llm'
+    ATTACK: str = 'attack'
 
     ATTACK_TYPE: str = 'attack_type'
 
 class available_platforms():
     OPENAI: str = 'openai'
+
+class available_attacks():
+    PROMPT_INJECTION: str = 'prompt_injection'
