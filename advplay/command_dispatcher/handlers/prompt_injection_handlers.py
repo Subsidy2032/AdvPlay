@@ -33,4 +33,7 @@ def handle_attack_prompt_injection(args):
     if getattr(args, "filename", None):
         kwargs["filename"] = args.filename
 
+    if getattr(args, "session_id", None):
+        kwargs["session_id"] = args.session_id
+
     attack_runner(args.attack_type, args.configuration, **kwargs)

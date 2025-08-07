@@ -26,10 +26,14 @@ def add_save_template_parsers(save_template_parser):
     llm_parser.add_argument('-f', '--filename', required=False, help='Configuration file name (without extension)')
 
 def add_attack_parsers(attack_parser):
-    prompt_injection_parser = attack_parser.add_parser(available_attacks.PROMPT_INJECTION, help='Perform prompt injection attacks')
+    prompt_injection_parser = attack_parser.add_parser(available_attacks.PROMPT_INJECTION,
+                                                       help='Perform prompt injection attacks')
 
-    prompt_injection_parser.add_argument('-c', '--configuration', required=True, help='Configuration to use for the attack')
-    prompt_injection_parser.add_argument('-f', '--filename', required=False, help='The file name to save attack results to')
+    prompt_injection_parser.add_argument('-c', '--configuration', required=True,
+                                         help='Configuration to use for the attack')
+    prompt_injection_parser.add_argument('-s', '--session_id', required=False, help='Define the session ID')
+    prompt_injection_parser.add_argument('-f', '--filename', required=False,
+                                         help='The file name to save attack results to')
 
 def main():
     load_required_classes()
