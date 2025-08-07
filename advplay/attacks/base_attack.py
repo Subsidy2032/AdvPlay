@@ -1,8 +1,3 @@
-import json
-import os
-
-from advplay import paths as paths
-
 class BaseAttack:
     registry = {}
 

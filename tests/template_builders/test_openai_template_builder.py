@@ -10,7 +10,7 @@ from advplay.paths import TEMPLATES
 from advplay.variables import available_platforms, available_attacks
 
 @pytest.fixture
-def openai_template_data():
+def openai_template_data() -> dict:
     return {
         "platform": available_platforms.OPENAI,
         "attack": available_attacks.PROMPT_INJECTION,
@@ -20,7 +20,7 @@ def openai_template_data():
     }
 
 @pytest.fixture
-def file_path(openai_template_data):
+def file_path(openai_template_data: dict) -> str:
     return TEMPLATES / openai_template_data["attack"] / f"{openai_template_data['filename']}.json"
 
 @pytest.fixture(autouse=True)

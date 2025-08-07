@@ -3,7 +3,7 @@ import json
 
 from advplay.paths import TEMPLATES
 
-def list_template_names(template_type):
+def list_template_names(template_type: str):
     files = [
         os.path.splitext(filename)[0]
         for filename in os.listdir(TEMPLATES / template_type)
@@ -14,7 +14,7 @@ def list_template_names(template_type):
     for file in files:
         print(f" - {file}")
 
-def list_template_contents(template_type, template_name):
+def list_template_contents(template_type: str, template_name: str):
     file_path = os.path.join(TEMPLATES / template_type, f"{template_name}.json")
 
     if not os.path.isfile(file_path):

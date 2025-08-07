@@ -3,7 +3,7 @@ import json
 from advplay.attacks.base_attack import BaseAttack
 from advplay.paths import TEMPLATES
 
-def attack_runner(attack_type, template_name: str, **kwargs):
+def attack_runner(attack_type: str, template_name: str, **kwargs):
     attack_cls = BaseAttack.registry.get(attack_type)
     if attack_cls is None:
         raise ValueError(f"Unsupported attack type: {attack_type}")

@@ -5,7 +5,7 @@ from advplay.variables import available_attacks, available_platforms
 from advplay.attacks.prompt_injection.openai_prompt_injection_attack import OpenAIPromptInjectionAttack
 
 class PromptInjectionAttack(BaseAttack, attack_type=available_attacks.PROMPT_INJECTION):
-    def __init__(self, template, **kwargs):
+    def __init__(self, template: dict, **kwargs):
         super().__init__(template, **kwargs)
 
         self.platform = template.get('platform')

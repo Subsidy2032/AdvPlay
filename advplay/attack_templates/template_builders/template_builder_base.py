@@ -10,7 +10,7 @@ class TemplateBuilderBase:
         super().__init_subclass__(**kwargs)
         TemplateBuilderBase.registry[template_type] = cls
 
-    def __init__(self, attack_type, **kwargs):
+    def __init__(self, attack_type: str, **kwargs):
         self.attack_type = attack_type
         self.kwargs = kwargs
 

@@ -1,7 +1,7 @@
 from openai import OpenAI
 
 class OpenAIPromptInjectionAttack():
-    def __init__(self, model, instructions, filename):
+    def __init__(self, model: str, instructions: str, filename: str):
         self.model = model
         self.instructions = instructions
         self.filename = filename

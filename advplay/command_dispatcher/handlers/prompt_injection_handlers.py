@@ -1,5 +1,3 @@
-# advplay/command_dispatcher/handlers/prompt_injection_handlers.py
-
 from advplay.attack_templates.template_registry.registry import define_template
 from advplay.attacks.attack_runner import attack_runner
 from advplay.utils.list_templates import list_template_names, list_template_contents
