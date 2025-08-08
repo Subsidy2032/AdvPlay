@@ -1,0 +1,1 @@
+The techniques described in this folder is not a learning material. Only overview of the techniques is provided, and it should only be used as a refresher. Consider using other external materials to learn about Adversarial AI in a greater depth.
