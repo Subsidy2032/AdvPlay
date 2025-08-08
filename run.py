@@ -31,6 +31,8 @@ def add_attack_parsers(attack_parser):
 
     prompt_injection_parser.add_argument('-c', '--configuration', required=True,
                                          help='Configuration to use for the attack')
+    prompt_injection_parser.add_argument('-p', '--prompt', required=False,
+                                         help='Provide a prompt or a file with multiple prompts.')
     prompt_injection_parser.add_argument('-s', '--session_id', required=False, help='Define the session ID')
     prompt_injection_parser.add_argument('-f', '--filename', required=False,
                                          help='The file name to save attack results to')

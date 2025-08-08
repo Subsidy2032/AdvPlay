@@ -1,8 +1,9 @@
+from pathlib import Path
+
 from advplay.attack_templates.template_registry.registry import define_template
 from advplay.attacks.attack_runner import attack_runner
 from advplay.utils.list_templates import list_template_names, list_template_contents
 from advplay.variables import commands, available_attacks
-
 from advplay.command_dispatcher.handler_registry import register_handler
 
 @register_handler(commands.SAVE_TEMPLATE, available_attacks.PROMPT_INJECTION)
@@ -15,10 +16,16 @@ def handle_save_template_prompt_injection(args):
         return
 
     if args.platform:
+        instructions = args.instructions
+        if instructions and Path(instructions).exists():
+            with open(instructions, 'r', encoding='utf-8') as instructions_file:
+                instructions = instructions_file.read()
+
         kwargs = {
             "model": args.model,
-            "instructions": args.instructions,
+            "instructions": instructions,
         }
+
         if getattr(args, "filename", None):
             kwargs["filename"] = args.filename
 
@@ -30,10 +37,23 @@ def handle_attack_prompt_injection(args):
         return
 
     kwargs = {}
-    if getattr(args, "filename", None):
-        kwargs["filename"] = args.filename
 
     if getattr(args, "session_id", None):
         kwargs["session_id"] = args.session_id
+
+    if getattr(args, "prompt", None):
+
+        prompt = args.prompt
+        if Path(prompt).exists():
+            with open(prompt, 'r') as prompts_file:
+                prompts = [prompt.strip() for prompt in prompts_file]
+                kwargs["prompt_list"] = prompts
+
+        else:
+            kwargs["prompt_list"] = [prompt]
+
+    if getattr(args, "filename", None):
+        kwargs["filename"] = args.filename
+
 
     attack_runner(args.attack_type, args.configuration, **kwargs)

@@ -7,9 +7,10 @@ from datetime import datetime
 import json
 
 class OpenAIPromptInjectionAttack():
-    def __init__(self, model: str, instructions: str, session_id: str, log_file_path: str):
+    def __init__(self, model: str, instructions: str, prompt_list: list, session_id: str, log_file_path: str):
         self.model = model
         self.instructions = instructions
+        self.prompt_list = prompt_list
         self.session_id = session_id
         self.log_file_path = log_file_path
 
@@ -37,6 +38,21 @@ class OpenAIPromptInjectionAttack():
         )
 
         session_id = self.session_id
+
+        if self.prompt_list and (len(self.prompt_list) > 0):
+            for prompt in self.prompt_list:
+                response = conversation.invoke(
+                    {"input": prompt},
+                    config={"configurable": {"session_id": session_id}}
+                )
+
+                print(f"Trying prompt: {prompt}")
+                print(f"Response: {response.content}\n")
+
+            self.log_chat_history(session_histories, self.log_file_path)
+            print(f"Chat history saved to {self.log_file_path}. Exiting...")
+            return
+
         print("Start trying different prompts. Type 'clear' to clear conversation history, and 'exit' to exit")
 
         while True:
@@ -57,7 +73,7 @@ class OpenAIPromptInjectionAttack():
                 config={"configurable": {"session_id": session_id}}
             )
 
-            print(f"AI: {response.content}")
+            print(f"Response: {response.content}")
 
     def log_chat_history(self, history_obj, log_file_path):
         session_id, chat_history = next(iter(history_obj.items()))
@@ -92,5 +108,7 @@ class OpenAIPromptInjectionAttack():
             "conversation": conversation
         }
 
-        with open(log_file_path, 'w', encoding='utf-8') as f:
+
+        with open(log_file_path, 'a', encoding='utf-8') as f:
             json.dump(log_entry, f, ensure_ascii=False, indent=2)
+            f.write('\n\n')
