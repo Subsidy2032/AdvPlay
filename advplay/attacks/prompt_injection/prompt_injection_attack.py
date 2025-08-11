@@ -1,4 +1,5 @@
 from datetime import datetime
+from pathlib import Path
 
 from advplay.attacks.base_attack import BaseAttack
 from advplay.variables import available_attacks, available_platforms
@@ -20,6 +21,11 @@ class PromptInjectionAttack(BaseAttack, attack_type=available_attacks.PROMPT_INJ
         }
 
     def execute(self):
+        if self.prompt_list and Path(self.prompt_list[0]).exists():
+            with open(self.prompt_list[0], 'r') as prompts_file:
+                prompts = [prompt.strip() for prompt in prompts_file]
+                self.prompt_list = prompts
+
         platform_cls = self.platforms_cls.get(self.platform)
 
         if platform_cls is None:

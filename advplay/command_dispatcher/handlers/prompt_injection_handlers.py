@@ -37,15 +37,7 @@ def handle_attack_prompt_injection(args):
         kwargs["session_id"] = args.session_id
 
     if getattr(args, "prompt", None):
-
-        prompt = args.prompt
-        if Path(prompt).exists():
-            with open(prompt, 'r') as prompts_file:
-                prompts = [prompt.strip() for prompt in prompts_file]
-                kwargs["prompt_list"] = prompts
-
-        else:
-            kwargs["prompt_list"] = [prompt]
+        kwargs["prompt_list"] = [args.prompt]
 
     if getattr(args, "filename", None):
         kwargs["filename"] = args.filename
