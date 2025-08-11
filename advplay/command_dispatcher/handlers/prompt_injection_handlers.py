@@ -16,14 +16,9 @@ def handle_save_template_prompt_injection(args):
         return
 
     if args.platform:
-        instructions = args.instructions
-        if instructions and Path(instructions).exists():
-            with open(instructions, 'r', encoding='utf-8') as instructions_file:
-                instructions = instructions_file.read()
-
         kwargs = {
             "model": args.model,
-            "instructions": instructions,
+            "instructions": args.instructions,
         }
 
         if getattr(args, "filename", None):

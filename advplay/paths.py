@@ -1,12 +1,13 @@
 from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+ADVPLAY = PROJECT_ROOT / 'advplay'
 
-HANDLERS = PROJECT_ROOT / 'command_dispatcher'
+HANDLERS = ADVPLAY / 'command_dispatcher'
 
-ATTACK_TEMPLATES = PROJECT_ROOT / 'attack_templates'
+ATTACK_TEMPLATES = ADVPLAY / 'attack_templates'
 TEMPLATE_BUILDERS = ATTACK_TEMPLATES / 'template_builders'
 TEMPLATES = ATTACK_TEMPLATES / 'templates'
 
-ATTACKS = PROJECT_ROOT / 'attacks'
+ATTACKS = ADVPLAY / 'attacks'
 ATTACK_LOGS = ATTACKS / 'logs'

@@ -15,7 +15,7 @@ def load_required_classes():
             for filename in filenames:
                 if filename.endswith(".py") and not filename.startswith("__"):
                     full_path = Path(dirpath) / filename
-                    rel_path = full_path.relative_to(PROJECT_ROOT.parent)
+                    rel_path = full_path.relative_to(PROJECT_ROOT)
                     module_parts = rel_path.with_suffix("").parts
                     module_name = ".".join(module_parts)
 

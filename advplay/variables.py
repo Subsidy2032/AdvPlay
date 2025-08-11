@@ -11,3 +11,6 @@ class available_platforms():
 
 class available_attacks():
     PROMPT_INJECTION: str = 'prompt_injection'
+
+class default_template_file_names():
+    CUSTOM_INSTRUCTIONS: str = 'custom_instructions'

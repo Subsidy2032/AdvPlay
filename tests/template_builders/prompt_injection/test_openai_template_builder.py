@@ -1,13 +1,11 @@
-from dotenv import load_dotenv
-load_dotenv()
-
 import json
 import os
 import pytest
 
+from advplay import paths
 from advplay.attack_templates.template_registry.registry import define_template
 from advplay.paths import TEMPLATES
-from advplay.variables import available_platforms, available_attacks
+from advplay.variables import available_platforms, available_attacks, default_template_file_names
 
 @pytest.fixture
 def openai_template_data() -> dict:
@@ -54,8 +52,40 @@ def test_template_building_with_file_name(openai_template_data, file_path):
 
     assert data == expected_json
 
+def test_instructions_from_file(openai_template_data, file_path):
+    instruction_file = paths.PROJECT_ROOT / "temp_instructions.txt"
+    print(instruction_file)
+
+    with open(instruction_file, "w") as f:
+        f.write(openai_template_data["instructions"])
+
+    try:
+        define_template(
+            openai_template_data["platform"],
+            openai_template_data["attack"],
+            model=openai_template_data["model"],
+            instructions=str(instruction_file),
+            filename=openai_template_data["filename"]
+        )
+
+        assert file_path.exists(), f"{file_path} was not created"
+
+        with open(file_path, "r") as f:
+            data = json.load(f)
+
+        expected_json = {
+            "platform": openai_template_data["platform"],
+            "model": openai_template_data["model"],
+            "instructions": openai_template_data["instructions"]
+        }
+
+        assert data == expected_json
+    finally:
+        if os.path.exists(instruction_file):
+            os.remove(instruction_file)
+
 def test_missing_model(openai_template_data):
-    with pytest.raises(TypeError, match="does not exist"):
+    with pytest.raises(NameError, match="does not exist"):
         define_template(
             openai_template_data["platform"],
             openai_template_data["attack"],
@@ -84,7 +114,7 @@ def test_missing_instructions(openai_template_data, file_path):
     assert data == expected_json
 
 def test_default_filename_used(openai_template_data):
-    default_file = TEMPLATES / openai_template_data["attack"] / "custom_instructions.json"
+    default_file = TEMPLATES / openai_template_data["attack"] / f"{default_template_file_names.CUSTOM_INSTRUCTIONS}.json"
     if default_file.exists():
         os.remove(default_file)
 
