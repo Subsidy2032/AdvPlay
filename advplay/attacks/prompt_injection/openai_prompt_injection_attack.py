@@ -6,6 +6,8 @@ from langchain.schema import HumanMessage, AIMessage
 from datetime import datetime
 import json
 
+from advplay.utils.append_log_entry import append_log_entry
+
 class OpenAIPromptInjectionAttack():
     def __init__(self, model: str, instructions: str, prompt_list: list, session_id: str, log_file_path: str):
         self.model = model
@@ -108,7 +110,4 @@ class OpenAIPromptInjectionAttack():
             "conversation": conversation
         }
 
-
-        with open(log_file_path, 'a', encoding='utf-8') as f:
-            json.dump(log_entry, f, ensure_ascii=False, indent=2)
-            f.write('\n\n')
+        append_log_entry(log_file_path, log_entry)
