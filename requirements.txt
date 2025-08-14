@@ -3,3 +3,6 @@ openai
 pytest
 langchain
 langchain-openai
+scikit-learn
+numpy
+pandas

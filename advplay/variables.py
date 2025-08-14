@@ -12,5 +12,8 @@ class available_platforms():
 class available_attacks():
     PROMPT_INJECTION: str = 'prompt_injection'
 
+class available_training_algorithms():
+    LOGISTIC_REGRESSION = 'logistic_regression'
+
 class default_template_file_names():
     CUSTOM_INSTRUCTIONS: str = 'custom_instructions'

@@ -11,3 +11,9 @@ TEMPLATES = ATTACK_TEMPLATES / 'templates'
 
 ATTACKS = ADVPLAY / 'attacks'
 ATTACK_LOGS = ATTACKS / 'logs'
+
+MODEL_OPS = ADVPLAY / 'model_ops'
+
+RESOURCES = ADVPLAY / 'resources'
+MODELS = RESOURCES / 'models'
+DATASETS = RESOURCES / 'datasets'
