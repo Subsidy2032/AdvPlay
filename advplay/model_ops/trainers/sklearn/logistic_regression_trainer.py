@@ -10,8 +10,8 @@ from advplay import paths
 
 class LogisticRegressionTrainer(BaseTrainer, framework=available_frameworks.SKLEARN,
                                 training_algorithm=available_training_algorithms.LOGISTIC_REGRESSION):
-    def __init__(self, model_name: str, config, dataset, label_column: str, test_portion: float, seed):
-        super().__init__(model_name, config, dataset, label_column, test_portion, seed)
+    def __init__(self, model_name: str, dataset, label_column: str, test_portion: float, config: dict, seed: int):
+        super().__init__(model_name, dataset, label_column, test_portion, config, seed)
 
     def train(self):
         X = self.dataset.loc[:, self.dataset.columns != self.label_column]

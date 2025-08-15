@@ -18,12 +18,12 @@ class BaseTrainer:
         super().__init_subclass__()
         BaseTrainer.registry[key] = cls
 
-    def __init__(self, model_name, config, dataset, label_column: str, test_portion: float, seed: int = None):
+    def __init__(self, model_name, dataset, label_column: str, test_portion: float, config: dict = None, seed: int = None):
         self.model_name = model_name
-        self.config = config
         self.dataset = dataset
         self.label_column = label_column
         self.test_portion = test_portion
+        self.config = config
         self.seed = seed
 
         if not isinstance(dataset, pd.DataFrame):

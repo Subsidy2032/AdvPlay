@@ -66,32 +66,24 @@ def test_registry_unique_algorithm(framework):
 def test_init_type_checks(dataset, model_name, config, label_column):
     cls = base_trainer.BaseTrainer
     with pytest.raises(TypeError):
-        cls(model_name, config, "not a dataframe", label_column, 0.2, seed=1)
+        cls(model_name, "not a dataframe", label_column, 0.2, seed=1, config=config)
 
 def test_init_label_column_missing(dataset, model_name, config):
     cls = base_trainer.BaseTrainer
     with pytest.raises(ValueError):
-        cls(model_name, config, dataset, "nonexistent_column", 0.2, seed=1)
+        cls(model_name, dataset, "nonexistent_column", 0.2, seed=1, config=config)
 
 def test_init_empty_dataset(model_name, config, label_column):
     cls = base_trainer.BaseTrainer
     empty_df = pd.DataFrame(columns=[label_column])
     with pytest.raises(ValueError):
-        cls(model_name, config, empty_df, label_column, 0.2, seed=1)
+        cls(model_name, empty_df, label_column, 0.2, seed=1, config=config)
 
 def test_init_invalid_test_portion(dataset, model_name, config, label_column):
     cls = base_trainer.BaseTrainer
     for invalid in [-0.1, 0, 1, 2]:
         with pytest.raises(ValueError):
-            cls(model_name, config, dataset, label_column, invalid, seed=1)
-
-# ------------------- Trainer Functionality -------------------
-
-def test_train_method_called(trainer, monkeypatch):
-    called = {}
-    monkeypatch.setattr(trainer, "train", lambda: called.update({'yes': True}))
-    trainer.train()
-    assert 'yes' in called, "train() method should be called"
+            cls(model_name, dataset, label_column, invalid, seed=1, config=config)
 
 # ------------------- Integration Tests -------------------
 
@@ -100,11 +92,11 @@ def test_build_cls_returns_correct_instance(dataset, model_name, config, label_c
         framework=framework,
         training_algorithm=training_algorithm,
         model_name=model_name,
-        config=config,
         dataset=dataset,
         label_column=label_column,
         test_portion=0.2,
-        seed=42
+        seed=42,
+        config=config
     )
     assert isinstance(trainer, base_trainer.BaseTrainer)
 
@@ -113,34 +105,33 @@ def test_train_flow(dataset, model_name, config, label_column, framework, traini
         framework=framework,
         training_algorithm=training_algorithm,
         model_name=model_name,
-        config=config,
         dataset=dataset,
         label_column=label_column,
         test_portion=0.2,
-        seed=42
+        seed=42,
+        config=config
     )
     trainer.train()
 
 # ------------------- Random Seed Reproducibility -------------------
 
 def test_seed_reproducibility(dataset, model_name, config, label_column, framework, training_algorithm):
-    t1 = registry.build_trainer_cls(framework, training_algorithm, model_name, config, dataset, label_column, 0.2, seed=42)
-    t2 = registry.build_trainer_cls(framework, training_algorithm, model_name, config, dataset, label_column, 0.2, seed=42)
+    t1 = registry.build_trainer_cls(framework, training_algorithm, model_name, dataset, label_column, 0.2, seed=42, config=config)
+    t2 = registry.build_trainer_cls(framework, training_algorithm, model_name, dataset, label_column, 0.2, seed=42, config=config)
     assert t1.seed == t2.seed
 
+# ------------------- Save Model Tests -------------------
 
 def test_save_model_creates_file(dataset, model_name, config, label_column, tmp_path, framework):
-    trainer = LogisticRegressionTrainer(model_name, config, dataset, label_column, test_portion=0.2, seed=42)
+    trainer = LogisticRegressionTrainer(model_name, dataset, label_column, test_portion=0.2, seed=42, config=config)
     model, _, _ = trainer.train()
 
     original_models_path = paths.MODELS
     paths.MODELS = tmp_path
 
     try:
-        # Include framework in path manually
         file_path = paths.MODELS / framework / f"{model_name}.joblib"
-        trainer.save_model(model)  # assume save_model updated to use framework
-
+        trainer.save_model(model)
         assert file_path.exists(), "Model file should be created"
 
         loaded_model = joblib.load(file_path)
@@ -154,7 +145,7 @@ def test_save_model_creates_file(dataset, model_name, config, label_column, tmp_
 
 
 def test_save_model_creates_directory(dataset, model_name, config, label_column, tmp_path, framework):
-    trainer = LogisticRegressionTrainer(model_name, config, dataset, label_column, test_portion=0.2, seed=42)
+    trainer = LogisticRegressionTrainer(model_name, dataset, label_column, test_portion=0.2, seed=42, config=config)
     model, _, _ = trainer.train()
 
     nested_dir = tmp_path / "nested_models"
@@ -162,13 +153,13 @@ def test_save_model_creates_directory(dataset, model_name, config, label_column,
     paths.MODELS = nested_dir
 
     try:
-        # Directory should include framework
         framework_dir = nested_dir / framework
         file_path = framework_dir / f"{model_name}.joblib"
-        trainer.save_model(model)  # assume save_model updated to use framework
+        trainer.save_model(model)
 
         assert framework_dir.is_dir(), "save_model should create the framework subdirectory"
         assert file_path.is_file(), "Model file should exist in the created framework directory"
     finally:
         paths.MODELS = original_models_path
+
 
