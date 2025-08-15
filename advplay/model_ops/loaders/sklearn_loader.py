@@ -3,7 +3,6 @@ import joblib
 
 from advplay.model_ops.loaders.base_loader import BaseLoader
 from advplay.variables import available_frameworks
-from advplay.model_ops.trainers.base_trainer import BaseTrainer
 
 class SklearnLoader(BaseLoader, framework=available_frameworks.SKLEARN):
     def __init__(self, model_path: str):

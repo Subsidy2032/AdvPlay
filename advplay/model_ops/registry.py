@@ -2,6 +2,7 @@ from pathlib import Path
 
 from advplay.model_ops.trainers.base_trainer import BaseTrainer
 from advplay.model_ops.loaders.base_loader import BaseLoader
+from advplay.model_ops.evaluators.base_evaluator import BaseEvaluator
 from advplay.utils import load_files
 from advplay import paths
 
@@ -45,3 +46,14 @@ def load_model(framework: str, model_path: str):
     loader = loader_cls(model_path)
     print(f"Loading model: {model_path}")
     return loader.load()
+
+def evaluate_model_accuracy(framework: str, model, X, y):
+    evaluator_cls = BaseEvaluator.registry.get(framework)
+
+    if evaluator_cls is None:
+        raise ValueError(f"Unsupported framework: {framework}")
+
+    evaluator = evaluator_cls(model)
+    print(f"Evaluating model accuracy")
+    accuracy = evaluator.accuracy(X, y)
+    return accuracy
