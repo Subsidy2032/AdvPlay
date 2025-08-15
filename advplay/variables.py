@@ -9,6 +9,9 @@ class commands:
 class available_platforms():
     OPENAI: str = 'openai'
 
+class available_frameworks():
+    SKLEARN: str = 'sklearn'
+
 class available_attacks():
     PROMPT_INJECTION: str = 'prompt_injection'
 

@@ -2,25 +2,23 @@ import json
 
 from advplay.attacks.base_attack import BaseAttack
 from advplay.paths import TEMPLATES
+from advplay.utils import load_files
 
 def attack_runner(attack_type: str, template_name: str, **kwargs):
     attack_cls = BaseAttack.registry.get(attack_type)
     if attack_cls is None:
         raise ValueError(f"Unsupported attack type: {attack_type}")
 
-    template_path = TEMPLATES / attack_type / f"{template_name}.json"
+    default_path = TEMPLATES / attack_type
+    if isinstance(template_name, str):
+        template = load_files.load_json(default_path, template_name)
 
-    if not template_path.exists():
-        raise FileNotFoundError(f"Template file not found: {template_path}")
+    else:
+        template = template_name
 
-    with open(template_path, 'r') as json_file:
-        try:
-            template_json = json.load(json_file)
-
-        except Exception as e:
-            print(f"Error loading template: {e}")
-            return
+    if not isinstance(template, dict):
+        raise TypeError(f"template must be a JSON object (dict), got {type(template).__name__}")
 
     print(f"Running attack '{attack_type}' with template '{template_name}'")
-    attack = attack_cls(template_json, **kwargs)
+    attack = attack_cls(template, **kwargs)
     attack.execute()

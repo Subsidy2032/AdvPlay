@@ -5,15 +5,17 @@ import random
 class BaseTrainer:
     registry = {}
 
-    def __init_subclass__(cls, training_algorithm: str):
-        if training_algorithm in BaseTrainer.registry.keys():
-            raise ValueError(f"Two subclass are using the same training algorithm: {training_algorithm}")
+    def __init_subclass__(cls, framework: str, training_algorithm: str):
+        key = (framework, training_algorithm)
+        if key in BaseTrainer.registry:
+            raise ValueError(f"Subclass already registered for {framework} + {training_algorithm}")
 
         super().__init_subclass__()
-        BaseTrainer.registry[training_algorithm] = cls
+        BaseTrainer.registry[key] = cls
 
-    def __init__(self, model_name, dataset, label_column: str, test_portion: float, seed: int = None):
+    def __init__(self, model_name, config, dataset, label_column: str, test_portion: float, seed: int = None):
         self.model_name = model_name
+        self.config = config
         self.dataset = dataset
         self.label_column = label_column
         self.test_portion = test_portion

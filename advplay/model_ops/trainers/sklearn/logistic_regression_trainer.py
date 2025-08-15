@@ -3,11 +3,12 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, classification_report
 
 from advplay.model_ops.trainers.base_trainer import BaseTrainer
-from advplay.variables import available_training_algorithms
+from advplay.variables import available_training_algorithms, available_frameworks
 
-class OpenAITemplateBuilder(BaseTrainer, training_algorithm=available_training_algorithms.LOGISTIC_REGRESSION):
-    def __init__(self, model_name: str, dataset, label_column: str, test_portion: float, seed):
-        super().__init__(model_name, dataset, label_column, test_portion, seed)
+class OpenAITemplateBuilder(BaseTrainer, framework=available_frameworks.SKLEARN,
+                            training_algorithm=available_training_algorithms.LOGISTIC_REGRESSION):
+    def __init__(self, model_name: str, config, dataset, label_column: str, test_portion: float, seed):
+        super().__init__(model_name, config, dataset, label_column, test_portion, seed)
 
     def train(self):
         X = self.dataset.loc[:, self.dataset.columns != self.label_column]

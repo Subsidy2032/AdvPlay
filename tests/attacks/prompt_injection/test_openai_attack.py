@@ -46,7 +46,7 @@ def test_attack_runner_missing_template(tmp_path):
     attack_dir = tmp_path / available_attacks.PROMPT_INJECTION
     attack_dir.mkdir(parents=True)
     with patch("advplay.attacks.attack_runner.TEMPLATES", tmp_path):
-        with pytest.raises(FileNotFoundError, match="Template file not found"):
+        with pytest.raises(FileNotFoundError, match="file not found"):
             attack_runner(available_attacks.PROMPT_INJECTION, "missing_template")
 
 
@@ -56,9 +56,8 @@ def test_attack_runner_invalid_json(tmp_path):
     bad_file = attack_dir / "bad_template.json"
     bad_file.write_text("{invalid json")
     with patch("advplay.attacks.attack_runner.TEMPLATES", tmp_path):
-        # Should print error and return without raising
-        result = attack_runner(available_attacks.PROMPT_INJECTION, "bad_template")
-        assert result is None
+        with pytest.raises(ValueError, match="not a valid json"):
+            attack_runner(available_attacks.PROMPT_INJECTION, "bad_template")
 
 
 def test_prompt_injection_attack_init_and_execute(tmp_path):

@@ -1,18 +1,24 @@
 from advplay.model_ops.trainers.base_trainer import BaseTrainer
+from advplay.utils import load_files
+from advplay import paths
 
-def build_cls(training_algorithm: str, model_name: str, dataset, label_column:str, test_portion: float, seed: int):
-    trainer_cls = BaseTrainer.registry.get(training_algorithm)
+def build_trainer_cls(framework: str, training_algorithm: str, model_name: str, config, dataset, label_column:str, test_portion: float, seed: int):
+    default_path = paths.TRAINING_CONFIGURATIONS / framework
+    if isinstance(config, str):
+        config = load_files.load_json(default_path, config)
+
+    if not isinstance(config, dict):
+        raise TypeError(f"Config must be a JSON object (dict), got {type(config).__name__}")
+
+    key = (framework, training_algorithm)
+    trainer_cls = BaseTrainer.registry.get(key)
     if trainer_cls is None:
-        raise ValueError(f"Unsupported training algorithm: {training_algorithm}")
+        raise ValueError(f"Unsupported framework + algorithm: {key}")
 
-    trainer = trainer_cls(model_name, dataset, label_column, test_portion, seed)
+    trainer = trainer_cls(model_name, config, dataset, label_column, test_portion, seed)
     return trainer
 
-def train(training_algorithm: str, model_name: str, dataset, label_column: str, test_portion: float, seed: int = None):
-    trainer = build_cls(training_algorithm, model_name, dataset, label_column, test_portion, seed)
+def train(framework: str, training_algorithm: str, model_name: str, config, dataset, label_column: str, test_portion: float, seed: int = None):
+    trainer = build_trainer_cls(framework, training_algorithm, model_name, dataset, label_column, test_portion, seed)
     print(f"Training the model {model_name} using the {training_algorithm} training algorithm")
     trainer.train()
-
-def predict(training_algorithm: str, model_name: str, dataset, label_column: str, test_portion: float, seed: int = None):
-    trainer = build_cls(training_algorithm, model_name, dataset, label_column, test_portion, seed)
-    trainer.predict()
