@@ -1,6 +1,11 @@
 import numpy as np
 import pandas as pd
 import random
+import os
+import joblib
+
+from advplay.variables import available_frameworks
+from advplay import paths
 
 class BaseTrainer:
     registry = {}
@@ -35,3 +40,15 @@ class BaseTrainer:
 
     def train(self):
         raise NotImplementedError("Subclasses must implement the train method.")
+
+    def save_model(self, model):
+        raise NotImplementedError("Subclasses must implement the save_model method")
+
+    def save_sklearn_model(self, model):
+        file_path = paths.MODELS / available_frameworks.SKLEARN / f"{self.model_name}.joblib"
+        os.makedirs(file_path.parent, exist_ok=True)
+
+        joblib.dump(model, file_path)
+
+        print(f"Model saved to {file_path}")
+        return file_path

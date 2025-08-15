@@ -1,11 +1,15 @@
 import pytest
 import pandas as pd
 import numpy as np
+import tempfile
+import joblib
+import os
 
 from advplay.model_ops.trainers import base_trainer
 from advplay.model_ops import registry
 from advplay import paths
 from advplay.variables import available_frameworks, available_training_algorithms
+from advplay.model_ops.trainers.sklearn.logistic_regression_trainer import LogisticRegressionTrainer
 
 DATASETS = paths.DATASETS
 SYNTHETIC_CSV = DATASETS / "synthetic_data.csv"
@@ -123,3 +127,48 @@ def test_seed_reproducibility(dataset, model_name, config, label_column, framewo
     t1 = registry.build_trainer_cls(framework, training_algorithm, model_name, config, dataset, label_column, 0.2, seed=42)
     t2 = registry.build_trainer_cls(framework, training_algorithm, model_name, config, dataset, label_column, 0.2, seed=42)
     assert t1.seed == t2.seed
+
+
+def test_save_model_creates_file(dataset, model_name, config, label_column, tmp_path, framework):
+    trainer = LogisticRegressionTrainer(model_name, config, dataset, label_column, test_portion=0.2, seed=42)
+    model, _, _ = trainer.train()
+
+    original_models_path = paths.MODELS
+    paths.MODELS = tmp_path
+
+    try:
+        # Include framework in path manually
+        file_path = paths.MODELS / framework / f"{model_name}.joblib"
+        trainer.save_model(model)  # assume save_model updated to use framework
+
+        assert file_path.exists(), "Model file should be created"
+
+        loaded_model = joblib.load(file_path)
+        assert loaded_model.__class__ == model.__class__, "Loaded model should match saved model type"
+
+        X_test = dataset.drop(columns=[label_column])
+        assert (loaded_model.predict(X_test) == model.predict(X_test)).all(), "Predictions should match after loading"
+
+    finally:
+        paths.MODELS = original_models_path
+
+
+def test_save_model_creates_directory(dataset, model_name, config, label_column, tmp_path, framework):
+    trainer = LogisticRegressionTrainer(model_name, config, dataset, label_column, test_portion=0.2, seed=42)
+    model, _, _ = trainer.train()
+
+    nested_dir = tmp_path / "nested_models"
+    original_models_path = paths.MODELS
+    paths.MODELS = nested_dir
+
+    try:
+        # Directory should include framework
+        framework_dir = nested_dir / framework
+        file_path = framework_dir / f"{model_name}.joblib"
+        trainer.save_model(model)  # assume save_model updated to use framework
+
+        assert framework_dir.is_dir(), "save_model should create the framework subdirectory"
+        assert file_path.is_file(), "Model file should exist in the created framework directory"
+    finally:
+        paths.MODELS = original_models_path
+
