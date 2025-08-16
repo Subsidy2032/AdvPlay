@@ -1,10 +1,26 @@
 from pathlib import Path
 
+from advplay.model_ops.dataset_loaders.base_dataset_loader import BaseDatasetLoader
 from advplay.model_ops.trainers.base_trainer import BaseTrainer
 from advplay.model_ops.loaders.base_loader import BaseLoader
 from advplay.model_ops.evaluators.base_evaluator import BaseEvaluator
 from advplay.utils import load_files
 from advplay import paths
+
+def load_dataset(source_type, path, label_column):
+    if not Path(path).is_file():
+        path = paths.DATASETS / f"{path}.csv"
+        if not Path(path).is_file():
+            raise FileNotFoundError(f"File {path} does not exist")
+
+    loader_cls = BaseDatasetLoader.registry.get(source_type)
+
+    if loader_cls is None:
+        raise ValueError(f"Unsupported source type: {source_type}")
+
+    loader = loader_cls(path, label_column)
+    dataset = loader.load()
+    return dataset
 
 def build_trainer_cls(framework: str, training_algorithm: str, X_train, y_train,
                       config: dict = None, seed: int = None):
