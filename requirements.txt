@@ -6,3 +6,4 @@ langchain-openai
 scikit-learn
 numpy
 pandas
+joblib

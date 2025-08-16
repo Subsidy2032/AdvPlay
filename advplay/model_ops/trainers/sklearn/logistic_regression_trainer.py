@@ -10,18 +10,11 @@ from advplay import paths
 
 class LogisticRegressionTrainer(BaseTrainer, framework=available_frameworks.SKLEARN,
                                 training_algorithm=available_training_algorithms.LOGISTIC_REGRESSION):
-    def __init__(self, model_name: str, dataset, label_column: str, test_portion: float, config: dict, seed: int):
-        super().__init__(model_name, dataset, label_column, test_portion, config, seed)
+    def __init__(self, X_train, y_train, config: dict = None, seed: int = None):
+        super().__init__(X_train, y_train, config, seed)
 
     def train(self):
-        X = self.dataset.loc[:, self.dataset.columns != self.label_column]
-        y = self.dataset[self.label_column].to_numpy().ravel()
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=self.test_portion, random_state=self.seed)
-
         model = LogisticRegression(random_state=self.seed)
-        model.fit(X_train, y_train)
+        model.fit(self.X_train, self.y_train)
 
-        return model, X_test, y_test
-
-    def save_model(self, model):
-        self.save_sklearn_model(model)
+        return model
