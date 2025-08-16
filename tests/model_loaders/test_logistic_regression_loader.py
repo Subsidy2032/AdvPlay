@@ -3,7 +3,7 @@ import joblib
 import tempfile
 import os
 from advplay.model_ops import registry
-from advplay.model_ops.loaders.sklearn_loader import SklearnLoader
+from advplay.model_ops.model_loaders.sklearn_model_loader import SklearnModelLoader
 from advplay.variables import available_frameworks
 from advplay import paths
 from sklearn.linear_model import LogisticRegression
@@ -11,7 +11,7 @@ import numpy as np
 
 def test_load_model_success(tmp_path):
     # Arrange: make sure framework is registered
-    assert available_frameworks.SKLEARN in registry.BaseLoader.registry, "SklearnLoader should be registered"
+    assert available_frameworks.SKLEARN in registry.BaseModelLoader.registry, "SklearnLoader should be registered"
 
     model = LogisticRegression()
     X = np.random.rand(5, 3)

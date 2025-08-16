@@ -2,7 +2,7 @@ from pathlib import Path
 
 from advplay.model_ops.dataset_loaders.base_dataset_loader import BaseDatasetLoader
 from advplay.model_ops.trainers.base_trainer import BaseTrainer
-from advplay.model_ops.loaders.base_loader import BaseLoader
+from advplay.model_ops.model_loaders.base_model_loader import BaseModelLoader
 from advplay.model_ops.evaluators.base_evaluator import BaseEvaluator
 from advplay.utils import load_files
 from advplay import paths
@@ -51,7 +51,7 @@ def load_model(framework: str, model_path: str):
         if not model_path.is_file():
             raise FileNotFoundError(f"model path not found: {model_path}")
 
-    loader_cls = BaseLoader.registry.get(framework)
+    loader_cls = BaseModelLoader.registry.get(framework)
 
     if loader_cls is None:
         raise ValueError(f"Unsupported framework: {framework}")

@@ -1,10 +1,10 @@
 import os
 import joblib
 
-from advplay.model_ops.loaders.base_loader import BaseLoader
+from advplay.model_ops.model_loaders.base_model_loader import BaseModelLoader
 from advplay.variables import available_frameworks
 
-class SklearnLoader(BaseLoader, framework=available_frameworks.SKLEARN):
+class SklearnModelLoader(BaseModelLoader, framework=available_frameworks.SKLEARN):
     def __init__(self, model_path: str):
         super().__init__(model_path)
 
