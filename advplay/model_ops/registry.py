@@ -22,8 +22,7 @@ def load_dataset(source_type, path, label_column):
     dataset = loader.load()
     return dataset
 
-def build_trainer_cls(framework: str, training_algorithm: str, X_train, y_train,
-                      config: dict = None, seed: int = None):
+def build_trainer_cls(framework: str, training_algorithm: str, X_train, y_train, config: dict = None):
     default_path = paths.TRAINING_CONFIGURATIONS / framework
     if isinstance(config, str):
         config = load_files.load_json(default_path, config)
@@ -36,12 +35,11 @@ def build_trainer_cls(framework: str, training_algorithm: str, X_train, y_train,
     if trainer_cls is None:
         raise ValueError(f"Unsupported framework + algorithm: {key}")
 
-    trainer = trainer_cls(X_train, y_train, config, seed)
+    trainer = trainer_cls(X_train, y_train, config)
     return trainer
 
-def train(framework: str, training_algorithm: str, X_train, y_train,
-          config: dict, seed: int = None):
-    trainer = build_trainer_cls(framework, training_algorithm, X_train, y_train, config, seed)
+def train(framework: str, training_algorithm: str, X_train, y_train, config: dict):
+    trainer = build_trainer_cls(framework, training_algorithm, X_train, y_train, config)
     print(f"Training a model using the {training_algorithm} training algorithm")
     return trainer.train()
 

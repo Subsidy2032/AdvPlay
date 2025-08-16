@@ -45,7 +45,7 @@ def trainer_cls(framework, training_algorithm):
 @pytest.fixture
 def trainer(trainer_cls, train_split, config):
     X, y = train_split
-    return trainer_cls(X, y, config=config, seed=42)
+    return trainer_cls(X, y, config=config)
 
 # ------------------- Registry Tests -------------------
 
@@ -66,27 +66,27 @@ def test_init_type_checks(config):
     cls = base_trainer.BaseTrainer
     y = pd.Series([0, 1])
     with pytest.raises(TypeError):
-        cls("not a dataframe", y, seed=1, config=config)
+        cls("not a dataframe", y, config=config)
 
 def test_init_y_type_checks(config):
     cls = base_trainer.BaseTrainer
     X = pd.DataFrame({"a": [1, 2]})
     with pytest.raises(TypeError):
-        cls(X, "not array-like", seed=1, config=config)
+        cls(X, "not array-like", config=config)
 
 def test_init_alignment_error(config):
     cls = base_trainer.BaseTrainer
     X = pd.DataFrame({"a": [1, 2, 3]})
     y = pd.Series([1, 0])  # length mismatch
     with pytest.raises(ValueError):
-        cls(X, y, seed=1, config=config)
+        cls(X, y, config=config)
 
 def test_init_empty_X(config):
     cls = base_trainer.BaseTrainer
     X = pd.DataFrame(columns=["a"])
     y = pd.Series([], dtype=int)
     with pytest.raises(ValueError):
-        cls(X, y, seed=1, config=config)
+        cls(X, y, config=config)
 
 # ------------------- Integration Tests -------------------
 
@@ -97,7 +97,6 @@ def test_build_cls_returns_correct_instance(train_split, config, framework, trai
         training_algorithm=training_algorithm,
         X_train=X,
         y_train=y,
-        seed=42,
         config=config
     )
     assert isinstance(trainer, base_trainer.BaseTrainer)
@@ -109,25 +108,16 @@ def test_train_flow(train_split, config, framework, training_algorithm):
         training_algorithm=training_algorithm,
         X_train=X,
         y_train=y,
-        seed=42,
         config=config
     )
     model = trainer.train()
     assert model is not None
 
-# ------------------- Random Seed Reproducibility -------------------
-
-def test_seed_reproducibility(train_split, config, framework, training_algorithm):
-    X, y = train_split
-    t1 = registry.build_trainer_cls(framework, training_algorithm, X, y, seed=42, config=config)
-    t2 = registry.build_trainer_cls(framework, training_algorithm, X, y, seed=42, config=config)
-    assert t1.seed == t2.seed
-
 # ------------------- Utils Save Model Tests -------------------
 
 def test_utils_save_model_creates_file(train_split, tmp_path, framework):
     X, y = train_split
-    trainer = LogisticRegressionTrainer(X, y, seed=42, config={})
+    trainer = LogisticRegressionTrainer(X, y, config={})
     model = trainer.train()
 
     original_models_path = paths.MODELS
@@ -145,7 +135,7 @@ def test_utils_save_model_creates_file(train_split, tmp_path, framework):
 
 def test_utils_save_model_creates_directory(train_split, tmp_path, framework):
     X, y = train_split
-    trainer = LogisticRegressionTrainer(X, y, seed=42, config={})
+    trainer = LogisticRegressionTrainer(X, y, config={})
     model = trainer.train()
 
     original_models_path = paths.MODELS

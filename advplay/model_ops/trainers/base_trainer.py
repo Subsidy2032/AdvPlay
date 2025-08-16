@@ -18,11 +18,10 @@ class BaseTrainer:
         super().__init_subclass__()
         BaseTrainer.registry[key] = cls
 
-    def __init__(self, X_train, y_train, config: dict = None, seed: int = None):
+    def __init__(self, X_train, y_train, config: dict = None):
         self.X_train = X_train
         self.y_train = y_train
         self.config = config
-        self.seed = seed
 
         if not isinstance(X_train, pd.DataFrame):
             raise TypeError(f"Expected X_train to be a Pandas DataFrame, got {type(X_train)}")
@@ -34,11 +33,6 @@ class BaseTrainer:
             raise ValueError("Train set is empty")
         if config is not None and not isinstance(config, dict):
             raise TypeError(f"Expected config to be a dict, got {type(config)}")
-        if seed is not None and not isinstance(seed, int):
-            raise TypeError(f"Expected seed to be int or None, got {type(seed)}")
-
-        np.random.seed(seed)
-        random.seed(seed)
 
     def train(self):
         raise NotImplementedError("Subclasses must implement the train method.")

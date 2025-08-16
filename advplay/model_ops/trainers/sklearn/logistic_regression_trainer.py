@@ -10,11 +10,11 @@ from advplay import paths
 
 class LogisticRegressionTrainer(BaseTrainer, framework=available_frameworks.SKLEARN,
                                 training_algorithm=available_training_algorithms.LOGISTIC_REGRESSION):
-    def __init__(self, X_train, y_train, config: dict = None, seed: int = None):
-        super().__init__(X_train, y_train, config, seed)
+    def __init__(self, X_train, y_train, config: dict = None):
+        super().__init__(X_train, y_train, config)
 
     def train(self):
-        model = LogisticRegression(random_state=self.seed)
+        model = LogisticRegression()
         model.fit(self.X_train, self.y_train)
 
         return model
