@@ -1,9 +1,12 @@
 import numpy as np
 import pandas as pd
+import os
 from sklearn.model_selection import train_test_split
 
 from advplay.model_ops import registry
 from advplay.utils import save_model
+from advplay import paths
+from advplay.utils.append_log_entry import append_log_entry
 
 class LabelFlippingPoisoningAttack():
     def __init__(self, training_framework, training_algorithm, training_config, test_portion, min_portion_to_poison,
@@ -29,6 +32,22 @@ class LabelFlippingPoisoningAttack():
 
         self.validate_inputs()
 
+        self.log_data = {
+            "training_framework": training_framework,
+            "training_algorithm": training_algorithm,
+            "training_config": training_config,
+            "test_portion": test_portion,
+            "min_portion_to_poison": min_portion_to_poison,
+            "max_portion_to_poison": max_portion_to_poison,
+            "source_class": source_class,
+            "target_class": target_class,
+            "override": override,
+            "seed": seed,
+            "step": step,
+            "model_name": model_name,
+            "poisoning_results": []
+        }
+
     def execute(self):
         try:
             X = self.training_data.drop(columns=[self.label_column])
@@ -52,11 +71,13 @@ class LabelFlippingPoisoningAttack():
             base_model = registry.train(self.training_framework, self.training_algorithm, X_train, y_train)
             base_accuracy = registry.evaluate_model_accuracy(self.training_framework, base_model, X_test, y_test)
             print(f"Base model accuracy is: {base_accuracy}")
+            self.log_data["base_accuracy"] = base_accuracy
         except Exception as e:
             raise RuntimeError(f"Failed to train or evaluate base model: {e}")
 
         rng = np.random.default_rng(self.seed)
         poisoned_models_dict = {}
+        poisoned_datasets_dict = {}
 
         num_steps = int((self.max_portion_to_poison - self.min_portion_to_poison) / self.step) + 1
         if num_steps <= 0:
@@ -88,49 +109,64 @@ class LabelFlippingPoisoningAttack():
 
             if self.override:
                 X_train_poisoned = X_train.copy()
-                y_poisoned = y_train.copy()
-                y_poisoned.loc[indices_to_flip] = poisoned_labels
+                y_train_poisoned = y_train.copy()
+                y_train_poisoned.loc[indices_to_flip] = poisoned_labels
 
             else:
                 X_train_poisoned = pd.concat([X_train, X_train.loc[indices_to_flip]])
-                y_poisoned = pd.concat([y_train, poisoned_labels])
+                y_train_poisoned = pd.concat([y_train, poisoned_labels])
 
-            y_poisoned = y_poisoned.astype(int)
+            y_train_poisoned = y_train_poisoned.astype(int)
 
             try:
-                poisoned_models_dict[portion_to_poison] = registry.train(
-                    self.training_framework, self.training_algorithm, X_train_poisoned, y_poisoned
-                )
+                model = registry.train(self.training_framework, self.training_algorithm, X_train_poisoned, y_train_poisoned)
             except Exception as e:
                 raise RuntimeError(f"Failed to train poisoned model at {portion_to_poison * 100:.1f}%: {e}")
 
-            if not poisoned_models_dict:
-                raise RuntimeError("No poisoned models were generated; check your configuration")
+            poisoned_models_dict[portion_to_poison] = model
+            poisoned_datasets_dict[portion_to_poison] = pd.concat([X_train_poisoned, y_train_poisoned])
+
+        if not poisoned_models_dict:
+            raise RuntimeError("No poisoned models were generated; check your configuration")
 
         min_accuracy = 1.1
         most_effective_portion = None
 
-        for key, value in poisoned_models_dict.items():
+        for portion_to_poison, model in poisoned_models_dict.items():
             try:
-                accuracy = registry.evaluate_model_accuracy(self.training_framework, value, X_test, y_test)
-                print(f"The accuracy for the model with {int(n_samples * key)} samples poisoned ({key * 100:.1f}%) is {accuracy}")
+                accuracy = registry.evaluate_model_accuracy(self.training_framework, model, X_test, y_test)
+                n_to_poison = int(n_samples * portion_to_poison)
+                print(f"The accuracy for the model with {n_to_poison} samples poisoned ({portion_to_poison * 100:.1f}%) is {accuracy}")
+
+                self.log_data["poisoning_results"].append({
+                    "portion_to_poison": portion_to_poison,
+                    "n_samples_poisoned": n_to_poison,
+                    "accuracy": accuracy
+                })
 
                 if accuracy < min_accuracy:
                     min_accuracy = accuracy
-                    most_effective_portion = key
+                    most_effective_portion = portion_to_poison
             except Exception as e:
-                raise RuntimeError(f"Failed to evaluate poisoned model at {key * 100:.1f}%: {e}")
+                raise RuntimeError(f"Failed to evaluate poisoned model at {portion_to_poison * 100:.1f}%: {e}")
 
         print(f"The attack was most effective when poisoning {most_effective_portion * 100:.1f}% of the training dataset")
+        self.log_data["most_effective_portion"] = most_effective_portion
+        self.log_data["most_effective_accuracy"] = min_accuracy
 
         try:
             print(f"Saving base model")
             save_model.save_model(self.training_framework, base_model, self.model_name)
 
-            print(f"Saving poisoned model")
+            print(f"Saving poisoned model and poisoned dataset")
             save_model.save_model(self.training_framework, poisoned_models_dict[most_effective_portion], f"{self.model_name}_poisoned")
+            dataset_path = paths.DATASETS / 'poisoned_datasets' / f"{self.model_name}_dataset.csv"
+            os.makedirs(dataset_path.parent, exist_ok=True)
+            poisoned_datasets_dict[most_effective_portion].to_csv(dataset_path)
         except Exception as e:
-            raise RuntimeError(f"Failed to save model(s): {e}")
+            raise RuntimeError(f"Failed to save model(s) and dataset: {e}")
+
+        append_log_entry(self.log_file_path, self.log_data)
 
     def poison(self, labels_to_poison, labels, rng):
         if self.target_class is not None:
