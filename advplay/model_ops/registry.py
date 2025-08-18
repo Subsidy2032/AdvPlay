@@ -27,7 +27,7 @@ def build_trainer_cls(framework: str, training_algorithm: str, X_train, y_train,
     if isinstance(config, str):
         config = load_files.load_json(default_path, config)
 
-    if not isinstance(config, dict):
+    if config is not None and not isinstance(config, dict):
         raise TypeError(f"Config must be a JSON object (dict), got {type(config).__name__}")
 
     key = (framework, training_algorithm)
