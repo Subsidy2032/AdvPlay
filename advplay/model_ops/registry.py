@@ -38,7 +38,7 @@ def build_trainer_cls(framework: str, training_algorithm: str, X_train, y_train,
     trainer = trainer_cls(X_train, y_train, config)
     return trainer
 
-def train(framework: str, training_algorithm: str, X_train, y_train, config: dict):
+def train(framework: str, training_algorithm: str, X_train, y_train, config: dict = None):
     trainer = build_trainer_cls(framework, training_algorithm, X_train, y_train, config)
     print(f"Training a model using the {training_algorithm} training algorithm")
     return trainer.train()

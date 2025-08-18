@@ -14,9 +14,14 @@ class available_frameworks():
 
 class available_attacks():
     PROMPT_INJECTION: str = 'prompt_injection'
+    POISONING: str = 'poisoning'
+
+class poisoning_techniques():
+    LABEL_FLIPPING: str = 'label_flipping'
 
 class available_training_algorithms():
     LOGISTIC_REGRESSION = 'logistic_regression'
 
 class default_template_file_names():
     CUSTOM_INSTRUCTIONS: str = 'custom_instructions'
+    LABEL_FLIPPING: str = 'label_flipping'
