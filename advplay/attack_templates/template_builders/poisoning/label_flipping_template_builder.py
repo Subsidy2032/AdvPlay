@@ -7,15 +7,15 @@ from advplay.variables import poisoning_techniques, default_template_file_names
 class LabelFlippingTemplateBuilder(TemplateBuilderBase, template_type=poisoning_techniques.LABEL_FLIPPING):
     def __init__(self, attack_type: str, **kwargs):
         super().__init__(attack_type, **kwargs)
-        self.training_framework = self.kwargs.get("training_framework")
-        self.training_algorithm = self.kwargs.get("training_algorithm")
-        self.training_config = self.kwargs.get("training_config")
+        self.training_framework = self.kwargs.get("framework")
+        self.training_algorithm = self.kwargs.get("algorithm")
+        self.training_config = self.kwargs.get("config")
         self.test_portion = self.kwargs.get("test_portion")
         self.min_portion_to_poison = self.kwargs.get("min_portion_to_poison")
         self.max_portion_to_poison = self.kwargs.get("max_portion_to_poison")
-        self.source_class = self.kwargs.get("source_class")
-        self.target_class = self.kwargs.get("target_class")
-        self.trigger_pattern = self.kwargs.get("trigger_pattern")
+        self.source_class = self.kwargs.get("source")
+        self.target_class = self.kwargs.get("target")
+        self.trigger_pattern = self.kwargs.get("trigger")
         self.override = self.kwargs.get("override")
         self.filename = self.kwargs.get("filename", default_template_file_names.LABEL_FLIPPING)
 
@@ -27,6 +27,7 @@ class LabelFlippingTemplateBuilder(TemplateBuilderBase, template_type=poisoning_
                 self.training_config = config_file.read()
 
         template = {
+            "technique": poisoning_techniques.LABEL_FLIPPING,
             "poisoning_method": poisoning_techniques.LABEL_FLIPPING,
             "training_framework": self.training_framework,
             "training_algorithm": self.training_algorithm,

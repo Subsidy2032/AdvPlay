@@ -11,7 +11,7 @@ from advplay.utils.append_log_entry import append_log_entry
 class LabelFlippingPoisoningAttack():
     def __init__(self, training_framework, training_algorithm, training_config, test_portion, min_portion_to_poison,
                  max_portion_to_poison, source_class, target_class, trigger_pattern, override,
-                 training_data, poisoning_data, seed, label_column, step, model_name, log_file_path):
+                 dataset, poisoning_data, seed, label_column, step, model_name, log_file_path):
         self.training_framework = training_framework
         self.training_algorithm = training_algorithm
         self.training_config = training_config
@@ -22,7 +22,7 @@ class LabelFlippingPoisoningAttack():
         self.target_class = target_class
         self.trigger_pattern = trigger_pattern
         self.override = override
-        self.training_data = training_data
+        self.dataset = dataset
         self.poisoning_data = poisoning_data
         self.seed = seed
         self.label_column = label_column
@@ -50,8 +50,8 @@ class LabelFlippingPoisoningAttack():
 
     def execute(self):
         try:
-            X = self.training_data.drop(columns=[self.label_column])
-            y = pd.Series(self.training_data[self.label_column].values.astype(int))
+            X = self.dataset.drop(columns=[self.label_column])
+            y = pd.Series(self.dataset[self.label_column].values.astype(int))
         except Exception as e:
             raise RuntimeError(f"Failed to split features and labels: {e}")
 
@@ -172,17 +172,18 @@ class LabelFlippingPoisoningAttack():
         if self.target_class is not None:
             return pd.Series([self.target_class] * len(labels_to_poison), index=labels_to_poison.index)
 
-        for i in range(len(labels_to_poison)):
-            labels_without_source = labels[labels != labels_to_poison[i]]
-            labels_to_poison.at[i] = rng.choice(labels_without_source)
+        poisoned = labels_to_poison.copy()
+        for idx in poisoned.index:
+            labels_without_source = labels[labels != poisoned.loc[idx]]
+            poisoned.loc[idx] = rng.choice(labels_without_source)
 
-        return labels_to_poison
+        return poisoned
 
     def validate_inputs(self):
-        if self.training_data is None or not isinstance(self.training_data, pd.DataFrame):
+        if self.dataset is None or not isinstance(self.dataset, pd.DataFrame):
             raise TypeError("training_data must be a pandas DataFrame")
 
-        if self.label_column not in self.training_data.columns:
+        if self.label_column not in self.dataset.columns:
             raise ValueError(f"label_column '{self.label_column}' not found in training_data")
 
         if not (0 < self.test_portion < 1):

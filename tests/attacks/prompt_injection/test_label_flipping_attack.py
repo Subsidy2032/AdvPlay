@@ -8,7 +8,7 @@ from advplay.attacks.attack_runner import attack_runner
 from advplay.variables import available_attacks, poisoning_techniques
 
 @pytest.fixture
-def sample_training_data():
+def sample_dataset():
     return pd.DataFrame({
         'feature1': np.arange(10),
         'feature2': np.arange(10, 20),
@@ -40,11 +40,11 @@ def make_template(**overrides):
     template.update(overrides)
     return template
 
-def test_attack_runs_without_errors(tmp_path, sample_training_data):
+def test_attack_runs_without_errors(tmp_path, sample_dataset):
     attack_runner(
         attack_type=available_attacks.POISONING,
         template_name=make_template(),
-        training_data=sample_training_data,
+        dataset=sample_dataset,
         poisoning_data=None,
         seed=42,
         label_column='label',
@@ -53,12 +53,12 @@ def test_attack_runs_without_errors(tmp_path, sample_training_data):
         filename=str(tmp_path / "test_attack")
     )
 
-def test_invalid_attack_type(tmp_path, sample_training_data):
+def test_invalid_attack_type(tmp_path, sample_dataset):
     with pytest.raises(ValueError, match="Unsupported attack type"):
         attack_runner(
             attack_type="INVALID_ATTACK",
             template_name=make_template(),
-            training_data=sample_training_data,
+            dataset=sample_dataset,
             label_column='label'
         )
 
@@ -67,7 +67,7 @@ def test_single_class_error(tmp_path, single_class_data):
         attack_runner(
             attack_type=available_attacks.POISONING,
             template_name=make_template(),
-            training_data=single_class_data,
+            dataset=single_class_data,
             label_column='label',
             seed=42
         )
@@ -80,24 +80,24 @@ def test_invalid_template_type(tmp_path):
                 template_name="ignored"
             )
 
-def test_override_false_appends_data(tmp_path, sample_training_data):
+def test_override_false_appends_data(tmp_path, sample_dataset):
     template = make_template(override=False)
     attack_runner(
         attack_type=available_attacks.POISONING,
         template_name=template,
-        training_data=sample_training_data,
+        dataset=sample_dataset,
         poisoning_data=None,
         seed=42,
         label_column='label'
     )
 
-def test_max_less_than_min_error(tmp_path, sample_training_data):
+def test_max_less_than_min_error(tmp_path, sample_dataset):
     template = make_template(min_portion_to_poison=0.2, max_portion_to_poison=0.1)
     with pytest.raises(ValueError):
         attack_runner(
             attack_type=available_attacks.POISONING,
             template_name=template,
-            training_data=sample_training_data,
+            dataset=sample_dataset,
             poisoning_data=None,
             label_column='label',
             seed=42

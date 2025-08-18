@@ -4,11 +4,16 @@ import json
 from advplay.paths import TEMPLATES
 
 def list_template_names(template_type: str):
-    files = [
-        os.path.splitext(filename)[0]
-        for filename in os.listdir(TEMPLATES / template_type)
-        if filename.endswith(".json") and os.path.isfile(os.path.join(TEMPLATES / template_type, filename))
-    ]
+    directory = TEMPLATES / template_type
+
+    if directory.exists() and directory.is_dir():
+        files = [
+            filename.stem
+            for filename in directory.iterdir()
+            if filename.suffix == ".json" and filename.is_file()
+        ]
+    else:
+        files = []
 
     print("Available templates:")
     for file in files:

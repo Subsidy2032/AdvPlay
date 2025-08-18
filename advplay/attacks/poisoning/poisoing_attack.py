@@ -1,5 +1,6 @@
 from datetime import datetime
 from pathlib import Path
+import pandas as pd
 
 from advplay.attacks.base_attack import BaseAttack
 from advplay.variables import available_attacks, poisoning_techniques
@@ -21,7 +22,7 @@ class PromptInjectionAttack(BaseAttack, attack_type=available_attacks.POISONING)
         self.trigger_pattern = template.get('trigger_pattern')
         self.override = template.get("override")
 
-        self.training_data = kwargs.get('training_data')
+        self.dataset = pd.read_csv(kwargs.get('dataset'))
         self.poisoning_data = kwargs.get('poisoning_data')
         self.seed = kwargs.get('seed')
         self.label_column = kwargs.get('label_column')
@@ -42,9 +43,10 @@ class PromptInjectionAttack(BaseAttack, attack_type=available_attacks.POISONING)
         log_file_path = ATTACK_LOGS / available_attacks.POISONING / f"{self.filename}.log"
         log_file_path.parent.mkdir(parents=True, exist_ok=True)
 
+
         executor = poisoning_method_cls(self.training_framework, self.training_algorithm, self.training_config,
                                         self.test_portion, self.min_portion_to_poison, self.max_portion_to_poison,
                                         self.source_class, self.target_class, self.trigger_pattern, self.override,
-                                        self.training_data, self.poisoning_data, self.seed, self.label_column,
+                                        self.dataset, self.poisoning_data, self.seed, self.label_column,
                                         self.step, self.model_name, log_file_path)
         executor.execute()
