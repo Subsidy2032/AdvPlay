@@ -27,7 +27,6 @@ class LabelFlippingTemplateBuilder(TemplateBuilderBase, template_type=poisoning_
                 self.training_config = config_file.read()
 
         template = {
-            "technique": poisoning_techniques.LABEL_FLIPPING,
             "poisoning_method": poisoning_techniques.LABEL_FLIPPING,
             "training_framework": self.training_framework,
             "training_algorithm": self.training_algorithm,

@@ -1,104 +1,119 @@
 import json
 import pytest
+
 from advplay.attack_templates.template_registry import registry
-from advplay.variables import poisoning_techniques
+from advplay.variables import poisoning_techniques, available_attacks
+from advplay import paths
 
-
-def test_define_template_valid(tmp_path, monkeypatch):
-    # Redirect output path
+@pytest.fixture(autouse=True)
+def fake_templates_dir(tmp_path, monkeypatch):
     monkeypatch.setattr("advplay.paths.TEMPLATES", tmp_path)
+    return tmp_path
 
-    attack_type = "valid_attack"
-    filename = "valid_file"
+@pytest.fixture
+def fake_training_config_file(tmp_path):
+    config_file = tmp_path / "fake_training_config.json"
+    fake_config = {
+        "learning_rate": 0.01,
+        "batch_size": 32,
+        "epochs": 5
+    }
+    config_file.write_text(json.dumps(fake_config))
+    return str(config_file)
 
+@pytest.fixture
+def label_flipping_template_data(fake_training_config_file, tmp_path):
+    return {
+        "attack": available_attacks.POISONING,
+        "poisoning_method": poisoning_techniques.LABEL_FLIPPING,
+        "framework": "sklearn",
+        "algorithm": "logistic_regression",
+        "config": fake_training_config_file,
+        "source": 0,
+        "target": 1,
+        "min_portion_to_poison": 0.3,
+        "max_portion_to_poison": 0.6,
+        "test_portion": 0.2,
+        "trigger": None,
+        "override": True,
+        "filename": "test_template"
+    }
+
+@pytest.fixture
+def expected_json(label_flipping_template_data):
+    with open(label_flipping_template_data["config"], 'r', encoding='utf-8') as config_file:
+        training_config = config_file.read()
+
+    return {
+        "poisoning_method": label_flipping_template_data["poisoning_method"],
+        "training_framework": label_flipping_template_data["framework"],
+        "training_algorithm": label_flipping_template_data["algorithm"],
+        "training_config": training_config,
+        "source_class": label_flipping_template_data["source"],
+        "target_class": label_flipping_template_data["target"],
+        "min_portion_to_poison": label_flipping_template_data["min_portion_to_poison"],
+        "max_portion_to_poison": label_flipping_template_data["max_portion_to_poison"],
+        "test_portion": label_flipping_template_data["test_portion"],
+        "trigger_pattern": label_flipping_template_data["trigger"],
+        "override": label_flipping_template_data["override"]
+}
+
+@pytest.fixture
+def file_path(label_flipping_template_data: dict, fake_templates_dir) -> str:
+    return paths.TEMPLATES / label_flipping_template_data["attack"] / f"{label_flipping_template_data['filename']}.json"
+
+def test_define_template_valid(label_flipping_template_data, file_path, expected_json):
     registry.define_template(
-        template_type=poisoning_techniques.LABEL_FLIPPING,
-        attack_type=attack_type,
-        training_framework="sklearn",
-        training_algorithm="logistic_regression",
-        training_config=None,
-        source_class=0,
-        target_class=1,
-        min_portion_to_poison=0.1,
-        max_portion_to_poison=0.3,
-        test_portion=0.2,
-        trigger_pattern=None,
-        override=True,
-        filename=filename,
+        template_type=label_flipping_template_data["poisoning_method"],
+        attack_type=label_flipping_template_data["attack"],
+        framework=label_flipping_template_data["framework"],
+        algorithm=label_flipping_template_data["algorithm"],
+        config=label_flipping_template_data["config"],
+        source=label_flipping_template_data["source"],
+        target=label_flipping_template_data["target"],
+        min_portion_to_poison=label_flipping_template_data["min_portion_to_poison"],
+        max_portion_to_poison=label_flipping_template_data["max_portion_to_poison"],
+        test_portion=label_flipping_template_data["test_portion"],
+        trigger=label_flipping_template_data["trigger"],
+        override=label_flipping_template_data["override"],
+        filename=label_flipping_template_data["filename"],
     )
 
-    out_file = tmp_path / attack_type / f"{filename}.json"
-    assert out_file.exists()
+    assert file_path.exists(), f"{file_path} was not created"
 
-    with open(out_file) as f:
+    with open(file_path) as f:
         data = json.load(f)
 
-    assert data["poisoning_method"] == poisoning_techniques.LABEL_FLIPPING
-    assert data["training_framework"] == "sklearn"
-    assert data["training_algorithm"] == "logistic_regression"
-    assert data["source_class"] == 0
-    assert data["target_class"] == 1
+    assert  data == expected_json
 
 
 @pytest.mark.parametrize("bad_kwargs,expected_error", [
     ({"min_portion_to_poison": 1.2}, ValueError),
     ({"max_portion_to_poison": -0.5}, ValueError),
     ({"min_portion_to_poison": 0.8, "max_portion_to_poison": 0.1}, ValueError),
-    ({"source_class": 0, "target_class": 0}, ValueError),
+    ({"source": 0, "target": 0}, ValueError),
     ({"override": "yes"}, TypeError),
     ({"filename": ""}, ValueError),
 ])
-def test_define_template_invalid(tmp_path, monkeypatch, bad_kwargs, expected_error):
-    monkeypatch.setattr("advplay.paths.TEMPLATES", tmp_path)
-
-    kwargs = {
-        "template_type": poisoning_techniques.LABEL_FLIPPING,
-        "attack_type": "bad_attack",
-        "training_framework": "sklearn",
-        "training_algorithm": "logistic_regression",
-        "source_class": 0,
-        "target_class": 1,
-        "min_portion_to_poison": 0.1,
-        "max_portion_to_poison": 0.2,
-        "override": True,
-        "filename": "bad",
-    }
+def test_define_template_invalid(label_flipping_template_data, bad_kwargs, expected_error):
+    kwargs = label_flipping_template_data.copy()
     kwargs.update(bad_kwargs)
 
+    define_kwargs = {
+        "template_type": kwargs["poisoning_method"],
+        "attack_type": kwargs["attack"],
+        "framework": kwargs["framework"],
+        "algorithm": kwargs["algorithm"],
+        "config": kwargs["config"],
+        "source": kwargs["source"],
+        "target": kwargs["target"],
+        "min_portion_to_poison": kwargs["min_portion_to_poison"],
+        "max_portion_to_poison": kwargs["max_portion_to_poison"],
+        "test_portion": kwargs["test_portion"],
+        "trigger": kwargs["trigger"],
+        "override": kwargs["override"],
+        "filename": kwargs["filename"],
+    }
+
     with pytest.raises(expected_error):
-        registry.define_template(**kwargs)
-
-
-def test_define_template_with_training_config_file(tmp_path, monkeypatch):
-    monkeypatch.setattr("advplay.paths.TEMPLATES", tmp_path)
-
-    # fake config file
-    config_path = tmp_path / "config.txt"
-    config_path.write_text("param=42")
-
-    attack_type = "config_attack"
-    filename = "config_template"
-
-    registry.define_template(
-        template_type=poisoning_techniques.LABEL_FLIPPING,
-        attack_type=attack_type,
-        training_framework="sklearn",
-        training_algorithm="logistic_regression",
-        training_config=str(config_path),
-        source_class=1,
-        target_class=2,
-        min_portion_to_poison=0.1,
-        max_portion_to_poison=0.2,
-        test_portion=0.25,
-        trigger_pattern=None,
-        override=True,
-        filename=filename,
-    )
-
-    out_file = tmp_path / attack_type / f"{filename}.json"
-    assert out_file.exists()
-
-    with open(out_file) as f:
-        data = json.load(f)
-
-    assert "param=42" in data["training_config"]
+        registry.define_template(**define_kwargs)
