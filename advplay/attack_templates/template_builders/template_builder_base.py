@@ -1,7 +1,7 @@
 import json
 import os
 
-from advplay import paths as paths
+from advplay import paths
 
 class TemplateBuilderBase:
     registry = {}
