@@ -2,6 +2,12 @@
 
 AdvPlay is a framework for running adversarial AI attacks with tunable parameters and reproducible results. Designed for red team assessments, it helps security professionals evaluate model robustness against attacks.
 
+## Disclaimer
+
+This tool is intended strictly for research, security testing, and red team assessments. Using it against systems, APIs, or models without explicit permission is illegal and unethical.  
+
+By using this software, you accept full responsibility for your actions. The developers take **no liability** for misuse, damage, or chaos caused by experiments conducted with this tool.  
+
 ## Getting Started
 
 Tested on Python 3.11.13. Follow these steps to get AdvPlay running:
