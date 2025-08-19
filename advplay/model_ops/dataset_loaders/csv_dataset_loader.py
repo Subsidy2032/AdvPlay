@@ -4,8 +4,8 @@ import os
 from advplay.model_ops.dataset_loaders.base_dataset_loader import BaseDatasetLoader
 
 class CSVDatasetLoader(BaseDatasetLoader, source_type="csv"):
-    def __init__(self, path: str, label_column: str):
-        super().__init__(path, label_column)
+    def __init__(self, path: str):
+        super().__init__(path)
 
     def load(self) -> pd.DataFrame:
         if not os.path.exists(self.path):

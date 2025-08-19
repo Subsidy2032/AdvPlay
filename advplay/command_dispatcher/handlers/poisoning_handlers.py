@@ -1,10 +1,13 @@
 from pathlib import Path
+import pandas as pd
+import os
 
 from advplay.attack_templates.template_registry.registry import define_template
 from advplay.utils.list_templates import list_template_names, list_template_contents
 from advplay.variables import commands, available_attacks
 from advplay.attacks.attack_runner import attack_runner
 from advplay.command_dispatcher.handler_registry import register_handler
+from advplay.model_ops.dataset_loaders.base_dataset_loader import BaseDatasetLoader
 
 @register_handler(commands.SAVE_TEMPLATE, available_attacks.POISONING)
 def handle_save_template_poisoning(args):
@@ -46,12 +49,18 @@ def handle_attack_poisoning(args):
     if not args.configuration or not args.dataset or not args.label_column:
         return
 
+    ext = os.path.splitext(args.dataset)[1][1:]
+    loader_cls = BaseDatasetLoader.registry.get(ext)
+
+    if loader_cls is None:
+        raise ValueError(f"Unsupported extension: {ext}")
+
+    dataset = loader_cls(args.dataset).load()
     kwargs = {
-        "dataset": args.dataset,
+        "dataset": dataset,
         "label_column": args.label_column,
     }
 
-    # optional arguments: add only if present
     if getattr(args, "seed", None):
         kwargs["seed"] = args.seed
     if getattr(args, "step", None):

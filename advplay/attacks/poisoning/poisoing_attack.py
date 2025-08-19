@@ -7,7 +7,7 @@ from advplay.variables import available_attacks, poisoning_techniques
 from advplay.attacks.poisoning.label_flipping_poisoning_attack import LabelFlippingPoisoningAttack
 from advplay.paths import ATTACK_LOGS
 
-class PromptInjectionAttack(BaseAttack, attack_type=available_attacks.POISONING):
+class PoisoningAttack(BaseAttack, attack_type=available_attacks.POISONING):
     def __init__(self, template: dict, **kwargs):
         super().__init__(template, **kwargs)
         self.poisoning_method = template.get('poisoning_method')
@@ -22,12 +22,12 @@ class PromptInjectionAttack(BaseAttack, attack_type=available_attacks.POISONING)
         self.trigger_pattern = template.get('trigger_pattern')
         self.override = template.get("override")
 
-        self.dataset = pd.read_csv(kwargs.get('dataset'))
+        self.dataset = kwargs.get('dataset')
         self.poisoning_data = kwargs.get('poisoning_data')
         self.seed = kwargs.get('seed')
         self.label_column = kwargs.get('label_column')
         self.step = kwargs.get('step', ((self.max_portion_to_poison - self.min_portion_to_poison) / 5))
-        self.model_name = kwargs.get('model_name', datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
+        self.model_name = kwargs.get('model_name', datetime.now().strftime(f"{self.poisoning_method}_{self.training_algorithm}_model"))
         self.filename = kwargs.get('filename', datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
 
         self.poisoning_techniques_cls = {
