@@ -75,3 +75,7 @@ Use `-h` for available commands and options:
 AdvPlay is in active development. Contributions, bug reports, and feedback are encouraged.  
 
 See `CONTRIBUTE.md` for instructions on adding new attacks.
+
+## License
+
+Distributed under the MIT license. See LICENSE for more information.
