@@ -8,6 +8,7 @@ from advplay.variables import commands, available_attacks
 from advplay.attacks.attack_runner import attack_runner
 from advplay.command_dispatcher.handler_registry import register_handler
 from advplay.model_ops.dataset_loaders.base_dataset_loader import BaseDatasetLoader
+from advplay import paths
 
 @register_handler(commands.SAVE_TEMPLATE, available_attacks.POISONING)
 def handle_save_template_poisoning(args):
@@ -49,13 +50,19 @@ def handle_attack_poisoning(args):
     if not args.configuration or not args.dataset or not args.label_column:
         return
 
-    ext = os.path.splitext(args.dataset)[1][1:]
+    dataset_path = args.dataset
+    if not Path(dataset_path).is_file():
+        dataset_path = paths.DATASETS / args.dataset
+        if not Path(dataset_path).is_file():
+            print(f"Dataset not found: {dataset_path}")
+
+    ext = os.path.splitext(dataset_path)[1][1:]
     loader_cls = BaseDatasetLoader.registry.get(ext)
 
     if loader_cls is None:
         raise ValueError(f"Unsupported extension: {ext}")
 
-    dataset = loader_cls(args.dataset).load()
+    dataset = loader_cls(dataset_path).load()
     kwargs = {
         "dataset": dataset,
         "label_column": args.label_column,
