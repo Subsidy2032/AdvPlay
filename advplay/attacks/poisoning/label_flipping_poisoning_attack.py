@@ -124,7 +124,8 @@ class LabelFlippingPoisoningAttack():
                 raise RuntimeError(f"Failed to train poisoned model at {portion_to_poison * 100:.1f}%: {e}")
 
             poisoned_models_dict[portion_to_poison] = model
-            poisoned_datasets_dict[portion_to_poison] = pd.concat([X_train_poisoned, y_train_poisoned])
+            poisoned_datasets_dict[portion_to_poison] = X_train_poisoned.copy()
+            poisoned_datasets_dict[portion_to_poison][self.label_column] = y_train_poisoned
 
         if not poisoned_models_dict:
             raise RuntimeError("No poisoned models were generated; check your configuration")

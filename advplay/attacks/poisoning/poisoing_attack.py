@@ -5,7 +5,7 @@ import pandas as pd
 from advplay.attacks.base_attack import BaseAttack
 from advplay.variables import available_attacks, poisoning_techniques
 from advplay.attacks.poisoning.label_flipping_poisoning_attack import LabelFlippingPoisoningAttack
-from advplay.paths import ATTACK_LOGS
+from advplay import paths
 
 class PoisoningAttack(BaseAttack, attack_type=available_attacks.POISONING):
     def __init__(self, template: dict, **kwargs):
@@ -40,7 +40,7 @@ class PoisoningAttack(BaseAttack, attack_type=available_attacks.POISONING):
         if poisoning_method_cls is None:
             raise ValueError(f"Unsupported poisoning method: {self.poisoning_method}")
 
-        log_file_path = ATTACK_LOGS / available_attacks.POISONING / f"{self.filename}.log"
+        log_file_path = paths.ATTACK_LOGS / available_attacks.POISONING / f"{self.filename}.log"
         log_file_path.parent.mkdir(parents=True, exist_ok=True)
 
 
