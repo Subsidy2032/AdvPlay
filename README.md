@@ -55,7 +55,7 @@ Available templates:
 $ python3 run.py attack prompt_injection -c banana -p prompts -f results
 ```
 
-logs are saved to `advplay/attacks/logs...`
+Logs are saved to `advplay/attacks/logs...`
 
 ### Help Menu
 
