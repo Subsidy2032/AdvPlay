@@ -30,8 +30,6 @@ class LabelFlippingPoisoningAttack():
         self.model_name = model_name
         self.log_file_path = log_file_path
 
-        self.validate_inputs()
-
         self.log_data = {
             "training_framework": training_framework,
             "training_algorithm": training_algorithm,
@@ -70,7 +68,7 @@ class LabelFlippingPoisoningAttack():
         try:
             base_model = registry.train(self.training_framework, self.training_algorithm, X_train, y_train)
             base_accuracy = registry.evaluate_model_accuracy(self.training_framework, base_model, X_test, y_test)
-            print(f"Base model accuracy is: {base_accuracy}")
+            print(f"Base model accuracy is: {base_accuracy}\n")
             self.log_data["base_accuracy"] = base_accuracy
         except Exception as e:
             raise RuntimeError(f"Failed to train or evaluate base model: {e}")
@@ -79,7 +77,10 @@ class LabelFlippingPoisoningAttack():
         poisoned_models_dict = {}
         poisoned_datasets_dict = {}
 
-        num_steps = int((self.max_portion_to_poison - self.min_portion_to_poison) / self.step) + 1
+        num_steps = 1
+
+        if self.step > 0:
+            num_steps = int((self.max_portion_to_poison - self.min_portion_to_poison) / self.step) + 1
         if num_steps <= 0:
             raise ValueError("Number of poisoning steps must be positive; check min/max_portion and step values")
 
@@ -144,7 +145,7 @@ class LabelFlippingPoisoningAttack():
             try:
                 accuracy = registry.evaluate_model_accuracy(self.training_framework, model, X_test, y_test)
                 n_to_poison = int(n_samples * portion_to_poison)
-                print(f"The accuracy for the model with {n_to_poison} samples poisoned ({portion_to_poison * 100:.1f}%) is {accuracy}")
+                print(f"The accuracy for the model with {n_to_poison} samples poisoned ({portion_to_poison * 100:.1f}%) is {accuracy}\n")
 
                 self.log_data["poisoning_results"].append({
                     "portion_to_poison": portion_to_poison,
@@ -158,15 +159,15 @@ class LabelFlippingPoisoningAttack():
             except Exception as e:
                 raise RuntimeError(f"Failed to evaluate poisoned model at {portion_to_poison * 100:.1f}%: {e}")
 
-        print(f"The attack was most effective when poisoning {most_effective_portion * 100:.1f}% of the training dataset")
+        print(f"The attack was most effective when poisoning {most_effective_portion * 100:.1f}% of the training dataset\n")
         self.log_data["most_effective_portion"] = most_effective_portion
         self.log_data["most_effective_accuracy"] = min_accuracy
 
         try:
-            print(f"Saving base model")
+            print(f"Saving base model\n")
             save_model.save_model(self.training_framework, base_model, self.model_name)
 
-            print(f"Saving poisoned model and poisoned dataset")
+            print(f"Saving poisoned model and poisoned dataset\n")
             save_model.save_model(self.training_framework, poisoned_models_dict[most_effective_portion], f"{self.model_name}_poisoned")
             dataset_path = paths.DATASETS / 'poisoned_datasets' / f"{self.model_name}_dataset.csv"
             os.makedirs(dataset_path.parent, exist_ok=True)
@@ -186,28 +187,3 @@ class LabelFlippingPoisoningAttack():
             poisoned.loc[idx] = rng.choice(labels_without_source)
 
         return poisoned
-
-    def validate_inputs(self):
-        if self.dataset is None or not isinstance(self.dataset, pd.DataFrame):
-            raise TypeError("training_data must be a pandas DataFrame")
-
-        if self.label_column not in self.dataset.columns:
-            raise ValueError(f"label_column '{self.label_column}' not found in training_data")
-
-        if not (0 < self.test_portion < 1):
-            raise ValueError("test_portion must be between 0 and 1")
-
-        if not (0 <= self.min_portion_to_poison <= 1):
-            raise ValueError("min_portion_to_poison must be between 0 and 1")
-
-        if not (0 <= self.max_portion_to_poison <= 1):
-            raise ValueError("max_portion_to_poison must be between 0 and 1")
-
-        if self.min_portion_to_poison > self.max_portion_to_poison:
-            raise ValueError("min_portion_to_poison cannot be greater than max_portion_to_poison")
-
-        if self.step <= 0:
-            raise ValueError("step must be a positive number")
-
-        if self.seed is not None and not isinstance(self.seed, (int, np.integer)):
-            raise TypeError("seed must be an integer or None")

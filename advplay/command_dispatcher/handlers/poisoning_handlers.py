@@ -7,7 +7,7 @@ from advplay.utils.list_templates import list_template_names, list_template_cont
 from advplay.variables import commands, available_attacks
 from advplay.attacks.attack_runner import attack_runner
 from advplay.command_dispatcher.handler_registry import register_handler
-from advplay.model_ops.dataset_loaders.base_dataset_loader import BaseDatasetLoader
+from advplay.model_ops.registry import load_dataset
 from advplay import paths
 
 @register_handler(commands.SAVE_TEMPLATE, available_attacks.POISONING)
@@ -27,7 +27,6 @@ def handle_save_template_poisoning(args):
             "min_portion_to_poison": float(args.min_portion_to_poison),
         }
 
-        # optional ones: only pass if user actually set them
         if args.config:
             kwargs["config"] = args.config
         if args.max_portion_to_poison:
@@ -57,21 +56,17 @@ def handle_attack_poisoning(args):
             print(f"Dataset not found: {dataset_path}")
 
     ext = os.path.splitext(dataset_path)[1][1:]
-    loader_cls = BaseDatasetLoader.registry.get(ext)
+    dataset = load_dataset(ext, dataset_path)
 
-    if loader_cls is None:
-        raise ValueError(f"Unsupported extension: {ext}")
-
-    dataset = loader_cls(dataset_path).load()
     kwargs = {
         "dataset": dataset,
         "label_column": args.label_column,
     }
 
     if getattr(args, "seed", None):
-        kwargs["seed"] = args.seed
+        kwargs["seed"] = int(args.seed)
     if getattr(args, "step", None):
-        kwargs["step"] = args.step
+        kwargs["step"] = float(args.step)
     if getattr(args, "model_name", None):
         kwargs["model_name"] = args.model_name
     if getattr(args, "filename", None):
