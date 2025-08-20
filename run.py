@@ -19,7 +19,7 @@ def add_save_template_pi_parser(save_template_parser):
     prompt_injection_parser.add_argument('-t', '--template', required=False,
                        help='Template name')
 
-    group.add_argument('-p', '--platform', choices=TemplateBuilderBase.registry.keys(),
+    group.add_argument('-p', '--platform', choices=TemplateBuilderBase.registry[available_attacks.PROMPT_INJECTION].keys(),
                             help='The platform of the LLM')
     prompt_injection_parser.add_argument('-m', '--model', required=('-p' in sys.argv or '--platform' in sys.argv),
                             help='The name of the model')
@@ -34,7 +34,7 @@ def add_save_template_poisoning_parser(save_template_parser):
     poisoning_parser.add_argument('-t', '--template', required=False,
                                          help='Template name')
 
-    group.add_argument('--technique', choices=TemplateBuilderBase.registry.keys(), help='The poisoning attack type')
+    group.add_argument('--technique', choices=TemplateBuilderBase.registry[available_attacks.POISONING].keys(), help='The poisoning attack type')
     poisoning_parser.add_argument('-f', '--framework', choices=[k[0] for k in BaseTrainer.registry.keys()],
                                   help='Framework for training the model')
     poisoning_parser.add_argument('-a', '--algorithm', choices=[k[1] for k in BaseTrainer.registry.keys()],

@@ -2,9 +2,9 @@ from openai import OpenAI
 from pathlib import Path
 
 from advplay.attack_templates.template_builders.template_builder_base import TemplateBuilderBase
-from advplay.variables import available_platforms, default_template_file_names
+from advplay.variables import available_platforms, default_template_file_names, available_attacks
 
-class OpenAITemplateBuilder(TemplateBuilderBase, template_type=available_platforms.OPENAI):
+class OpenAITemplateBuilder(TemplateBuilderBase, attack_type=available_attacks.PROMPT_INJECTION, template_type=available_platforms.OPENAI):
     def __init__(self, attack_type: str, **kwargs):
         super().__init__(attack_type, **kwargs)
         self.model = self.kwargs.get("model")
