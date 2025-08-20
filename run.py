@@ -40,11 +40,11 @@ def add_save_template_poisoning_parser(save_template_parser):
     poisoning_parser.add_argument('-a', '--algorithm', choices=[k[1] for k in BaseTrainer.registry.keys()],
                                   required=('-f' in sys.argv or '--framework' in sys.argv), help='The training algorithm')
     poisoning_parser.add_argument('-c', '--config', required=False, help='Path to a training configuration file')
-    poisoning_parser.add_argument('-tp', '--test_portion', required=('-f' in sys.argv or '--framework' in sys.argv),
+    poisoning_parser.add_argument('-tp', '--test-portion', required=('-f' in sys.argv or '--framework' in sys.argv),
                                   help='Portion of the dataset to be used for testing')
-    poisoning_parser.add_argument('-min_poison', '--min_portion_to_poison', required=('-f' in sys.argv or '--framework' in sys.argv),
+    poisoning_parser.add_argument('-min-poison', '--min-portion-to-poison', required=('-f' in sys.argv or '--framework' in sys.argv),
                                   help='Minimum portion from the dataset to poison')
-    poisoning_parser.add_argument('-max_poison', '--max_portion_to_poison', required=False,
+    poisoning_parser.add_argument('-max-poison', '--max-portion-to-poison', required=False,
                                   help='Maximum portion from the dataset to poison')
     poisoning_parser.add_argument('-s', '--source', required=False, help='Source class to poison')
     poisoning_parser.add_argument('--target', required=False, help='Target class')
@@ -61,7 +61,7 @@ def add_attack_pi_parser(attack_parser):
                                          help='Configuration to use for the attack')
     prompt_injection_parser.add_argument('-p', '--prompt', required=False,
                                          help='Provide a prompt or a file with multiple prompts.')
-    prompt_injection_parser.add_argument('-s', '--session_id', required=False, help='Define the session ID')
+    prompt_injection_parser.add_argument('-s', '--session-id', required=False, help='Define the session ID')
     prompt_injection_parser.add_argument('-f', '--filename', required=False,
                                          help='The file name to save attack results to')
 
@@ -72,9 +72,9 @@ def add_attack_poison_parser(attack_parser):
     poisoning_parser.add_argument('-c', '--configuration', required=True, help='Configuration to use for the attack')
     poisoning_parser.add_argument('-d', '--dataset', required=True, help='Dataset to poison')
     poisoning_parser.add_argument('--seed', required=False, help='Seed for reproduction')
-    poisoning_parser.add_argument('-l', '--label_column', required=True, help='The name of the label column')
+    poisoning_parser.add_argument('-l', '--label-column', required=True, help='The name of the label column')
     poisoning_parser.add_argument('--step', required=False, help='Incrementing steps to take for poisoning portions')
-    poisoning_parser.add_argument('-m', '--model_name', required=False, help='The name of the model for saving')
+    poisoning_parser.add_argument('-m', '--model-name', required=False, help='The name of the model for saving')
     poisoning_parser.add_argument('-f', '--filename', required=False, help='The file name to save the attack results to')
 
 def main():
