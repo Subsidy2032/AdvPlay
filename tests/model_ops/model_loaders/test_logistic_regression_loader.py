@@ -10,7 +10,6 @@ from sklearn.linear_model import LogisticRegression
 import numpy as np
 
 def test_load_model_success(tmp_path):
-    # Arrange: make sure framework is registered
     assert available_frameworks.SKLEARN in registry.BaseModelLoader.registry, "SklearnLoader should be registered"
 
     model = LogisticRegression()
@@ -21,10 +20,8 @@ def test_load_model_success(tmp_path):
     model_path = tmp_path / "test_model.joblib"
     joblib.dump(model, model_path)
 
-    # Act
     loaded_model = registry.load_model(framework=available_frameworks.SKLEARN, model_path=str(model_path))
 
-    # Assert
     assert isinstance(loaded_model, LogisticRegression)
     assert np.array_equal(model.predict(X), loaded_model.predict(X))
 

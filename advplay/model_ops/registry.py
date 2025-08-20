@@ -7,7 +7,7 @@ from advplay.model_ops.evaluators.base_evaluator import BaseEvaluator
 from advplay.utils import load_files
 from advplay import paths
 
-def load_dataset(source_type, path, label_column):
+def load_dataset(source_type, path):
     if not Path(path).is_file():
         path = paths.DATASETS / f"{path}.csv"
         if not Path(path).is_file():
@@ -18,7 +18,7 @@ def load_dataset(source_type, path, label_column):
     if loader_cls is None:
         raise ValueError(f"Unsupported source type: {source_type}")
 
-    loader = loader_cls(path, label_column)
+    loader = loader_cls(path)
     dataset = loader.load()
     return dataset
 

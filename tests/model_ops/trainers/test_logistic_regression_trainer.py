@@ -17,11 +17,13 @@ SYNTHETIC_CSV = DATASETS / "synthetic_data.csv"
 # ------------------- Fixtures -------------------
 
 @pytest.fixture
-def dataset():
-    return pd.read_csv(SYNTHETIC_CSV)
+def train_test():
+    dataset = pd.DataFrame({
+        'feature1': np.arange(10),
+        'feature2': np.arange(10, 20),
+        'label': [0, 1] * 5
+    })
 
-@pytest.fixture
-def train_split(dataset):
     X = dataset.iloc[:, :-1]
     y = dataset.iloc[:, -1]
     return X, y
@@ -43,8 +45,8 @@ def trainer_cls(framework, training_algorithm):
     return base_trainer.BaseTrainer.registry.get((framework, training_algorithm))
 
 @pytest.fixture
-def trainer(trainer_cls, train_split, config):
-    X, y = train_split
+def trainer(trainer_cls, train_test, config):
+    X, y = train_test
     return trainer_cls(X, y, config=config)
 
 # ------------------- Registry Tests -------------------
@@ -90,8 +92,8 @@ def test_init_empty_X(config):
 
 # ------------------- Integration Tests -------------------
 
-def test_build_cls_returns_correct_instance(train_split, config, framework, training_algorithm):
-    X, y = train_split
+def test_build_cls_returns_correct_instance(train_test, config, framework, training_algorithm):
+    X, y = train_test
     trainer = registry.build_trainer_cls(
         framework=framework,
         training_algorithm=training_algorithm,
@@ -101,8 +103,8 @@ def test_build_cls_returns_correct_instance(train_split, config, framework, trai
     )
     assert isinstance(trainer, base_trainer.BaseTrainer)
 
-def test_train_flow(train_split, config, framework, training_algorithm):
-    X, y = train_split
+def test_train_flow(train_test, config, framework, training_algorithm):
+    X, y = train_test
     trainer = registry.build_trainer_cls(
         framework=framework,
         training_algorithm=training_algorithm,
@@ -115,8 +117,8 @@ def test_train_flow(train_split, config, framework, training_algorithm):
 
 # ------------------- Utils Save Model Tests -------------------
 
-def test_utils_save_model_creates_file(train_split, tmp_path, framework):
-    X, y = train_split
+def test_utils_save_model_creates_file(train_test, tmp_path, framework):
+    X, y = train_test
     trainer = LogisticRegressionTrainer(X, y, config={})
     model = trainer.train()
 
@@ -133,8 +135,8 @@ def test_utils_save_model_creates_file(train_split, tmp_path, framework):
     finally:
         paths.MODELS = original_models_path
 
-def test_utils_save_model_creates_directory(train_split, tmp_path, framework):
-    X, y = train_split
+def test_utils_save_model_creates_directory(train_test, tmp_path, framework):
+    X, y = train_test
     trainer = LogisticRegressionTrainer(X, y, config={})
     model = trainer.train()
 

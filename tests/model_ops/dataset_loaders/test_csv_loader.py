@@ -19,33 +19,24 @@ def temp_csv(tmp_path):
     data.to_csv(file_path, index=False)
     return file_path
 
+@pytest.fixture
+def source(temp_csv):
+    return os.path.splitext(temp_csv)[1][1:]
+
 # --- Tests ---
 def test_csv_loader_loads(temp_csv):
-    loader = CSVDatasetLoader(temp_csv, label_column="label")
+    loader = CSVDatasetLoader(temp_csv)
     df = loader.load()
     assert isinstance(df, pd.DataFrame)
     assert "label" in df.columns
     assert len(df) == 3
 
-def test_csv_loader_split_dataset(temp_csv):
-    loader = CSVDatasetLoader(temp_csv, label_column="label")
-    X, y = loader.split_dataset()
-    assert isinstance(X, pd.DataFrame)
-    assert isinstance(y, pd.Series)
-    assert list(X.columns) == ["feature1", "feature2"]
-    assert y.tolist() == [0, 1, 0]
-
-def test_registry_load_dataset(temp_csv):
-    # Using registry loader function
-    df = load_dataset("csv", temp_csv, label_column="label")
+def test_registry_load_dataset(source, temp_csv):
+    df = load_dataset(source, temp_csv)
     assert isinstance(df, pd.DataFrame)
-    assert list(df.columns) == ["feature1", "feature2", "label"]
+    assert "label" in df.columns
+    assert len(df) == 3
 
-def test_file_not_found(tmp_path):
+def test_file_not_found(source, tmp_path):
     with pytest.raises(FileNotFoundError):
-        CSVDatasetLoader(tmp_path / "nonexistent.csv", label_column="label").load()
-
-def test_invalid_label_column(temp_csv):
-    loader = CSVDatasetLoader(temp_csv, label_column="nonexistent")
-    with pytest.raises(ValueError):
-        loader.split_dataset()
+        load_dataset(source, tmp_path / "nonexistent.csv")
