@@ -86,8 +86,15 @@ class LabelFlippingPoisoningAttack():
         for portion_to_poison in np.linspace(self.min_portion_to_poison, self.max_portion_to_poison, num_steps):
             n_to_poison = int(n_samples * portion_to_poison)
 
-            source_mask = y_train == self.source_class if self.source_class is not None else pd.Series(True,
-                                                                                                       index=y_train.index)
+            if self.source_class is not None:
+                source_mask = y_train == self.source_class
+
+            elif self.target_class is not None:
+                source_mask = y_train != self.target_class
+
+            else:
+                source_mask = pd.Series(True, index=y_train.index)
+
             X_source = X_train[source_mask]
             y_source = y_train[source_mask]
 
