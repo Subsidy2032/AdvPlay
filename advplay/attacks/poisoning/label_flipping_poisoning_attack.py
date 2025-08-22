@@ -53,11 +53,8 @@ class LabelFlippingPoisoningAttack():
         except Exception as e:
             raise RuntimeError(f"Failed to split features and labels: {e}")
 
-        try:
-            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=self.test_portion,
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=self.test_portion,
                                                                 random_state=self.seed)
-        except Exception as e:
-            raise RuntimeError(f"Train/test split failed: {e}")
 
         n_samples = len(y_train)
         labels = y.unique()
@@ -65,13 +62,7 @@ class LabelFlippingPoisoningAttack():
         if len(labels) <= 1:
             raise ValueError("Only one class is present; poisoning requires at least two distinct classes")
 
-        try:
-            base_model = registry.train(self.training_framework, self.training_algorithm, X_train, y_train)
-            base_accuracy = registry.evaluate_model_accuracy(self.training_framework, base_model, X_test, y_test)
-            print(f"Base model accuracy is: {base_accuracy}\n")
-            self.log_data["base_accuracy"] = base_accuracy
-        except Exception as e:
-            raise RuntimeError(f"Failed to train or evaluate base model: {e}")
+        base_model = registry.train(self.training_framework, self.training_algorithm, X_train, y_train)
 
         rng = np.random.default_rng(self.seed)
         poisoned_models_dict = {}
@@ -138,26 +129,7 @@ class LabelFlippingPoisoningAttack():
         if not poisoned_models_dict:
             raise RuntimeError("No poisoned models were generated; check your configuration")
 
-        min_accuracy = 1.1
-        most_effective_portion = None
-
-        for portion_to_poison, model in poisoned_models_dict.items():
-            try:
-                accuracy = registry.evaluate_model_accuracy(self.training_framework, model, X_test, y_test)
-                n_to_poison = int(n_samples * portion_to_poison)
-                print(f"The accuracy for the model with {n_to_poison} samples poisoned ({portion_to_poison * 100:.1f}%) is {accuracy}\n")
-
-                self.log_data["poisoning_results"].append({
-                    "portion_to_poison": portion_to_poison,
-                    "n_samples_poisoned": n_to_poison,
-                    "accuracy": accuracy
-                })
-
-                if accuracy < min_accuracy:
-                    min_accuracy = accuracy
-                    most_effective_portion = portion_to_poison
-            except Exception as e:
-                raise RuntimeError(f"Failed to evaluate poisoned model at {portion_to_poison * 100:.1f}%: {e}")
+        most_effective_portion, min_accuracy = self.evaluate(n_samples, X_test, y_test, base_model, poisoned_models_dict)
 
         print(f"The attack was most effective when poisoning {most_effective_portion * 100:.1f}% of the training dataset\n")
         self.log_data["most_effective_portion"] = most_effective_portion
@@ -187,3 +159,53 @@ class LabelFlippingPoisoningAttack():
             poisoned.loc[idx] = rng.choice(labels_without_source)
 
         return poisoned
+
+    def evaluate(self, n_samples, X_test, y_test, base_model, poisoned_models: dict):
+        min_accuracy = 1.1
+        most_effective_portion = None
+
+        if self.source_class is not None:
+            source_mask = y_test == self.source_class
+            X_test = X_test.loc[source_mask]
+            y_test = y_test.loc[source_mask]
+
+        if self.target_class is not None:
+            non_target_mask = y_test != self.target_class
+            X_test = X_test.loc[non_target_mask]
+            y_test = y_test.loc[non_target_mask]
+
+        print("\n")
+        base_model_accuracy = registry.evaluate_model_accuracy(self.training_framework, base_model, X_test, y_test)
+        self.log_data["base_accuracy"] = base_model_accuracy
+        print(f"Base model accuracy on sample from the source class "
+              f"{self.source_class if self.source_class is not None else 'all classes'} is: {base_model_accuracy}\n")
+
+        for portion_to_poison, model in poisoned_models.items():
+            try:
+                predictions = model.predict(X_test)
+                accuracy = registry.evaluate_model_accuracy(self.training_framework, model, X_test, y_test)
+                n_to_poison = int(n_samples * portion_to_poison)
+                print(f"The accuracy for the model on samples from the source class "
+                      f"{self.source_class if self.source_class is not None else 'all classes'} with {n_to_poison} "
+                      f"samples poisoned ({portion_to_poison * 100:.1f}%) is {accuracy}")
+
+                print(f"Attack success rate: {base_model_accuracy - accuracy}")
+
+                if self.target_class is not None:
+                    num_target = sum(pred == self.target_class for pred in predictions)
+                    print(f"Portion of samples not from the target class {self.target_class} classified as "
+                          f"{self.target_class}: {num_target / len(y_test)}\n")
+
+                self.log_data["poisoning_results"].append({
+                    "portion_to_poison": portion_to_poison,
+                    "n_samples_poisoned": n_to_poison,
+                    "accuracy": accuracy
+                })
+
+                if accuracy < min_accuracy:
+                    min_accuracy = accuracy
+                    most_effective_portion = portion_to_poison
+            except Exception as e:
+                raise RuntimeError(f"Failed to evaluate poisoned model at {portion_to_poison * 100:.1f}%: {e}")
+
+        return most_effective_portion, min_accuracy
