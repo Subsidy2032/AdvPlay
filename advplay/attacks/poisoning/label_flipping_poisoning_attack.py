@@ -56,6 +56,11 @@ class LabelFlippingPoisoningAttack():
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=self.test_portion,
                                                                 random_state=self.seed)
 
+        X_train = X_train.reset_index(drop=True)
+        y_train = y_train.reset_index(drop=True)
+        X_test = X_test.reset_index(drop=True)
+        y_test = y_test.reset_index(drop=True)
+
         n_samples = len(y_train)
         labels = y.unique()
 
@@ -92,7 +97,7 @@ class LabelFlippingPoisoningAttack():
 
             if len(X_source) < n_to_poison:
                 raise ValueError(f"Not enough samples to poison {portion_to_poison * 100:.1f}% of the dataset\n"
-                                 f"Available samples with source class (all classes if not set): {len(X_source)}"
+                                 f"Available samples with source class (all classes if not set): {len(X_source)}\n"
                                  f"Number of samples to poison: {n_to_poison}")
 
 
