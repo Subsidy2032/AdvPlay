@@ -9,7 +9,6 @@ class TemplateBuilderBase:
     def __init_subclass__(cls, attack_type: str, template_type: str, **kwargs):
         super().__init_subclass__(**kwargs)
         TemplateBuilderBase.registry.setdefault(attack_type, {})[template_type] = cls
-        # TemplateBuilderBase.registry[template_type] = cls
 
     def __init__(self, attack_type: str, **kwargs):
         self.attack_type = attack_type

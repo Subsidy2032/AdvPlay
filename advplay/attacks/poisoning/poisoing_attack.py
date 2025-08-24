@@ -2,16 +2,15 @@ from datetime import datetime
 from pathlib import Path
 import pandas as pd
 import numpy as np
+from abc import ABC, abstractmethod
 
 from advplay.attacks.base_attack import BaseAttack
 from advplay.variables import available_attacks, poisoning_techniques
-from advplay.attacks.poisoning.label_flipping_poisoning_attack import LabelFlippingPoisoningAttack
 from advplay import paths
 
-class PoisoningAttack(BaseAttack, attack_type=available_attacks.POISONING):
+class PoisoningAttack(BaseAttack, ABC, attack_type=available_attacks.POISONING, attack_subtype=None):
     def __init__(self, template: dict, **kwargs):
         super().__init__(template, **kwargs)
-        self.poisoning_method = template.get('poisoning_method')
         self.training_framework = template.get('training_framework')
         self.training_algorithm = template.get("training_algorithm")
         self.training_config = template.get("training_config")
@@ -21,8 +20,9 @@ class PoisoningAttack(BaseAttack, attack_type=available_attacks.POISONING):
         self.source_class = template.get('source_class')
         self.target_class = template.get('target_class')
         self.trigger_pattern = template.get('trigger_pattern')
-        self.override = template.get("override")
+        self.override = template.get('override')
 
+        self.poisoning_method = kwargs.get('poisoning_method')
         self.dataset = kwargs.get('dataset')
         self.poisoning_data = kwargs.get('poisoning_data')
         self.seed = kwargs.get('seed')
@@ -33,26 +33,11 @@ class PoisoningAttack(BaseAttack, attack_type=available_attacks.POISONING):
 
         self.validate_inputs()
 
-        self.poisoning_techniques_cls = {
-            poisoning_techniques.LABEL_FLIPPING: LabelFlippingPoisoningAttack
-        }
+        self.log_file_path = paths.ATTACK_LOGS / available_attacks.POISONING / f"{self.filename}.log"
+        self.log_file_path.parent.mkdir(parents=True, exist_ok=True)
 
     def execute(self):
-        poisoning_method_cls = self.poisoning_techniques_cls.get(self.poisoning_method)
-
-        if poisoning_method_cls is None:
-            raise ValueError(f"Unsupported poisoning method: {self.poisoning_method}")
-
-        log_file_path = paths.ATTACK_LOGS / available_attacks.POISONING / f"{self.filename}.log"
-        log_file_path.parent.mkdir(parents=True, exist_ok=True)
-
-
-        executor = poisoning_method_cls(self.training_framework, self.training_algorithm, self.training_config,
-                                        self.test_portion, self.min_portion_to_poison, self.max_portion_to_poison,
-                                        self.source_class, self.target_class, self.trigger_pattern, self.override,
-                                        self.dataset, self.poisoning_data, self.seed, self.label_column,
-                                        self.step, self.model_name, log_file_path)
-        executor.execute()
+        pass
 
     def validate_inputs(self):
         if self.dataset is None or not isinstance(self.dataset, pd.DataFrame):

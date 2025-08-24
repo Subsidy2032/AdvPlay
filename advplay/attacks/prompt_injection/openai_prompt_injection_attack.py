@@ -7,16 +7,15 @@ from datetime import datetime
 import json
 
 from advplay.utils.append_log_entry import append_log_entry
+from advplay.attacks.prompt_injection.prompt_injection_attack import PromptInjectionAttack
+from advplay.variables import available_platforms, available_attacks
 
-class OpenAIPromptInjectionAttack():
-    def __init__(self, model: str, instructions: str, prompt_list: list, session_id: str, log_file_path: str):
-        self.model = model
-        self.instructions = instructions
-        self.prompt_list = prompt_list
-        self.session_id = session_id
-        self.log_file_path = log_file_path
+class OpenAIPromptInjectionAttack(PromptInjectionAttack, attack_type=available_attacks.PROMPT_INJECTION, attack_subtype=available_platforms.OPENAI):
+    def __init__(self, template, **kwargs):
+        super().__init__(template, **kwargs)
 
     def execute(self):
+        super().execute()
         chat = ChatOpenAI(model=self.model)
 
         prompt = ChatPromptTemplate.from_messages([

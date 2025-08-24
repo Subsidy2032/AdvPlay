@@ -20,7 +20,7 @@ def add_save_template_pi_parser(save_template_parser):
                        help='Template name')
 
     group.add_argument('-p', '--platform', choices=TemplateBuilderBase.registry[available_attacks.PROMPT_INJECTION].keys(),
-                            help='The platform of the LLM')
+                       help='The platform of the LLM')
     prompt_injection_parser.add_argument('-m', '--model', required=('-p' in sys.argv or '--platform' in sys.argv),
                             help='The name of the model')
     prompt_injection_parser.add_argument('-i', '--instructions', required=False, help='Custom instructions for the model')
@@ -34,7 +34,8 @@ def add_save_template_poisoning_parser(save_template_parser):
     poisoning_parser.add_argument('-t', '--template', required=False,
                                          help='Template name')
 
-    group.add_argument('--technique', choices=TemplateBuilderBase.registry[available_attacks.POISONING].keys(), help='The poisoning attack type')
+    group.add_argument('--technique', choices=TemplateBuilderBase.registry[available_attacks.POISONING].keys(),
+                       help='The poisoning attack type')
     poisoning_parser.add_argument('-f', '--framework', choices=[k[0] for k in BaseTrainer.registry.keys()],
                                   help='Framework for training the model')
     poisoning_parser.add_argument('-a', '--algorithm', choices=[k[1] for k in BaseTrainer.registry.keys()],
@@ -57,9 +58,12 @@ def add_attack_pi_parser(attack_parser):
     prompt_injection_parser = attack_parser.add_parser(available_attacks.PROMPT_INJECTION,
                                                        help='Perform prompt injection attacks')
 
+    prompt_injection_parser.add_argument('-p', '--platform', required=True,
+                                         choices=TemplateBuilderBase.registry[available_attacks.PROMPT_INJECTION].keys(),
+                                         help='The platform of the LLM')
     prompt_injection_parser.add_argument('-c', '--configuration', required=True,
                                          help='Configuration to use for the attack')
-    prompt_injection_parser.add_argument('-p', '--prompt', required=False,
+    prompt_injection_parser.add_argument('--prompt', required=False,
                                          help='Provide a prompt or a file with multiple prompts.')
     prompt_injection_parser.add_argument('-s', '--session-id', required=False, help='Define the session ID')
     prompt_injection_parser.add_argument('-f', '--filename', required=False,
@@ -69,6 +73,8 @@ def add_attack_poison_parser(attack_parser):
     poisoning_parser = attack_parser.add_parser(available_attacks.POISONING,
                                                 help='Perform poisoning attacks')
 
+    poisoning_parser.add_argument('--technique', choices=TemplateBuilderBase.registry[available_attacks.POISONING].keys(),
+                                  required=True, help='The poisoning attack type')
     poisoning_parser.add_argument('-c', '--configuration', required=True, help='Configuration to use for the attack')
     poisoning_parser.add_argument('-d', '--dataset', required=True, help='Dataset to poison')
     poisoning_parser.add_argument('--seed', required=False, help='Seed for reproduction')

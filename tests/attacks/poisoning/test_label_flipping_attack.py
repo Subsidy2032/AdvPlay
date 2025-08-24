@@ -6,7 +6,7 @@ import numpy as np
 import os
 
 from advplay.attacks.attack_runner import attack_runner
-from advplay.variables import available_attacks, poisoning_techniques
+from advplay.variables import available_attacks, poisoning_techniques, available_frameworks, available_training_algorithms
 from advplay import paths
 from advplay.model_ops.dataset_loaders.base_dataset_loader import BaseDatasetLoader
 
@@ -42,9 +42,8 @@ def single_class_data():
 @pytest.fixture
 def valid_template():
     return {
-        "poisoning_method": "label_flipping",
-        "training_framework": "sklearn",
-        "training_algorithm": "logistic_regression",
+        "training_framework": available_frameworks.SKLEARN,
+        "training_algorithm": available_training_algorithms.LOGISTIC_REGRESSION,
         "training_config": None,
         "source_class": 0,
         "target_class": 1,
@@ -59,6 +58,7 @@ def valid_template():
 def attack_parameters():
     return {
         "attack": available_attacks.POISONING,
+        "poisoning_method": poisoning_techniques.LABEL_FLIPPING,
         "seed": 42,
         "label_column": "label",
         "step": 0.02,
@@ -84,6 +84,7 @@ def model_path(fake_dataset_dir, attack_parameters, valid_template):
 def test_attack_runs_without_errors(attack_parameters, sample_dataset, valid_template, log_file_path, tmp_path, dataset_path, model_path):
     attack_runner(
         attack_type=attack_parameters['attack'],
+        attack_subtype=attack_parameters['poisoning_method'],
         template_name=valid_template,
         dataset=sample_dataset,
         poisoning_data=None,
@@ -119,6 +120,7 @@ def test_attack_runs_without_errors(attack_parameters, sample_dataset, valid_tem
 def test_two_log_entries(attack_parameters, sample_dataset, valid_template, log_file_path, dataset_path, model_path):
     attack_runner(
         attack_type=attack_parameters['attack'],
+        attack_subtype=attack_parameters['poisoning_method'],
         template_name=valid_template,
         dataset=sample_dataset,
         poisoning_data=None,
@@ -131,6 +133,7 @@ def test_two_log_entries(attack_parameters, sample_dataset, valid_template, log_
 
     attack_runner(
         attack_type=attack_parameters['attack'],
+        attack_subtype=attack_parameters['poisoning_method'],
         template_name=valid_template,
         dataset=sample_dataset,
         poisoning_data=None,
@@ -153,6 +156,7 @@ def test_override_false_appends_data(tmp_path, dataset_path, valid_template, att
     valid_template["override"] = False
     attack_runner(
         attack_type=available_attacks.POISONING,
+        attack_subtype=attack_parameters['poisoning_method'],
         template_name=valid_template,
         dataset=sample_dataset,
         poisoning_data=None,
@@ -185,6 +189,7 @@ def test_attack_invalid(attack_parameters, valid_template, bad_kwargs, expected_
 
     define_kwargs = {
         "attack_type": kwargs['attack'],
+        "attack_subtype": kwargs['poisoning_method'],
         "template_name": valid_template,
         "dataset": sample_dataset,
         "poisoning_data": None,
@@ -202,6 +207,7 @@ def test_invalid_attack_type(valid_template, attack_parameters, tmp_path, sample
     with pytest.raises(ValueError, match="Unsupported attack type"):
         attack_runner(
             attack_type="INVALID_ATTACK",
+            attack_subtype=attack_parameters['poisoning_method'],
             template_name=valid_template,
             dataset=sample_dataset,
             label_column=attack_parameters["label_column"]
@@ -211,16 +217,18 @@ def test_single_class_error(tmp_path, valid_template, attack_parameters, single_
     with pytest.raises(ValueError, match="Only one class is present"):
         attack_runner(
             attack_type=attack_parameters["attack"],
+            attack_subtype=attack_parameters['poisoning_method'],
             template_name=valid_template,
             dataset=single_class_data,
             label_column=attack_parameters["label_column"],
             seed=attack_parameters["seed"]
         )
 
-def test_invalid_template_type(tmp_path):
+def test_invalid_template_type(tmp_path, attack_parameters):
     with patch("advplay.utils.load_files.load_json", return_value="not_a_dict"):
         with pytest.raises(TypeError, match="template must be a JSON object"):
             attack_runner(
                 attack_type=available_attacks.POISONING,
+                attack_subtype=attack_parameters['poisoning_method'],
                 template_name="ignored"
             )

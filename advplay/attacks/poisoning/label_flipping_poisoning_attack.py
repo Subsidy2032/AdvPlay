@@ -7,42 +7,26 @@ from advplay.model_ops import registry
 from advplay.utils import save_model
 from advplay import paths
 from advplay.utils.append_log_entry import append_log_entry
+from advplay.attacks.poisoning.poisoing_attack import PoisoningAttack
+from advplay.variables import available_attacks, poisoning_techniques
 
-class LabelFlippingPoisoningAttack():
-    def __init__(self, training_framework, training_algorithm, training_config, test_portion, min_portion_to_poison,
-                 max_portion_to_poison, source_class, target_class, trigger_pattern, override,
-                 dataset, poisoning_data, seed, label_column, step, model_name, log_file_path):
-        self.training_framework = training_framework
-        self.training_algorithm = training_algorithm
-        self.training_config = training_config
-        self.test_portion = test_portion
-        self.min_portion_to_poison = min_portion_to_poison
-        self.max_portion_to_poison = max_portion_to_poison
-        self.source_class = source_class
-        self.target_class = target_class
-        self.trigger_pattern = trigger_pattern
-        self.override = override
-        self.dataset = dataset
-        self.poisoning_data = poisoning_data
-        self.seed = seed
-        self.label_column = label_column
-        self.step = step
-        self.model_name = model_name
-        self.log_file_path = log_file_path
+class LabelFlippingPoisoningAttack(PoisoningAttack, attack_type=available_attacks.POISONING, attack_subtype=poisoning_techniques.LABEL_FLIPPING):
+    def __init__(self, template, **kwargs):
+        super().__init__(template, **kwargs)
 
         self.log_data = {
-            "training_framework": training_framework,
-            "training_algorithm": training_algorithm,
-            "training_config": training_config,
-            "test_portion": test_portion,
-            "min_portion_to_poison": min_portion_to_poison,
-            "max_portion_to_poison": max_portion_to_poison,
-            "source_class": source_class,
-            "target_class": target_class,
-            "override": override,
-            "seed": seed,
-            "step": step,
-            "model_name": model_name,
+            "training_framework": self.training_framework,
+            "training_algorithm": self.training_algorithm,
+            "training_config": self.training_config,
+            "test_portion": self.test_portion,
+            "min_portion_to_poison": self.min_portion_to_poison,
+            "max_portion_to_poison": self.max_portion_to_poison,
+            "source_class": self.source_class,
+            "target_class": self.target_class,
+            "override": self.override,
+            "seed": self.seed,
+            "step": self.step,
+            "model_name": self.model_name,
             "poisoning_results": []
         }
 

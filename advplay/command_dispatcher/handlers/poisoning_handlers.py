@@ -59,6 +59,7 @@ def handle_attack_poisoning(args):
     dataset = load_dataset(ext, dataset_path)
 
     kwargs = {
+        "poisoning_method": args.technique,
         "dataset": dataset,
         "label_column": args.label_column,
     }
@@ -72,4 +73,4 @@ def handle_attack_poisoning(args):
     if getattr(args, "filename", None):
         kwargs["filename"] = args.filename
 
-    attack_runner(args.attack_type, args.configuration, **kwargs)
+    attack_runner(args.attack_type, args.technique, args.configuration, **kwargs)

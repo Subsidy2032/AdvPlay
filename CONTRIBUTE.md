@@ -53,7 +53,6 @@ Once the attack infrastructure is in place, adding a sub-technique is simpler:
 
 1. Add a template builder class under template_builders/[attack]. 
 2. Add an Attack class under attacks/[attack].
-3. Register the new sub-technique in the attack technique class by adding it to `platforms_cls`:
 
     ```python
     self.platforms_cls = {

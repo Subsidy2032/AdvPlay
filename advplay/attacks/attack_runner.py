@@ -4,10 +4,11 @@ from advplay.attacks.base_attack import BaseAttack
 from advplay import paths
 from advplay.utils import load_files
 
-def attack_runner(attack_type: str, template_name, **kwargs):
-    attack_cls = BaseAttack.registry.get(attack_type)
+def attack_runner(attack_type: str, attack_subtype, template_name, **kwargs):
+    key = (attack_type, attack_subtype)
+    attack_cls = BaseAttack.registry.get(key)
     if attack_cls is None:
-        raise ValueError(f"Unsupported attack type: {attack_type}")
+        raise ValueError(f"Unsupported attack type and platform: {key}")
 
     default_path = paths.TEMPLATES / attack_type
     if isinstance(template_name, str):
