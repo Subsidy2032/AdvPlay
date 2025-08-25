@@ -31,6 +31,10 @@ class LabelFlippingPoisoningAttack(PoisoningAttack, attack_type=available_attack
         }
 
     def execute(self):
+        unique_labels = list(self.dataset[self.label_column].unique())
+        label_map = {label: idx for idx, label in enumerate(unique_labels)}
+        self.dataset[self.label_column] = self.dataset[self.label_column].map(label_map)
+
         try:
             X = self.dataset.drop(columns=[self.label_column])
             y = pd.Series(self.dataset[self.label_column].values.astype(int))
@@ -46,9 +50,9 @@ class LabelFlippingPoisoningAttack(PoisoningAttack, attack_type=available_attack
         y_test = y_test.reset_index(drop=True)
 
         n_samples = len(y_train)
-        labels = y.unique()
+        unique_labels = y.unique()
 
-        if len(labels) <= 1:
+        if len(unique_labels) <= 1:
             raise ValueError("Only one class is present; poisoning requires at least two distinct classes")
 
         base_model = registry.train(self.training_framework, self.training_algorithm, X_train, y_train)
@@ -68,10 +72,10 @@ class LabelFlippingPoisoningAttack(PoisoningAttack, attack_type=available_attack
             n_to_poison = int(n_samples * portion_to_poison)
 
             if self.source_class is not None:
-                source_mask = y_train == self.source_class
+                source_mask = y_train == label_map[self.source_class]
 
             elif self.target_class is not None:
-                source_mask = y_train != self.target_class
+                source_mask = y_train != label_map[self.target_class]
 
             else:
                 source_mask = pd.Series(True, index=y_train.index)
@@ -90,7 +94,7 @@ class LabelFlippingPoisoningAttack(PoisoningAttack, attack_type=available_attack
             try:
                 source_indices = y_source.index.to_numpy()
                 indices_to_flip = rng.choice(source_indices, size=n_to_poison, replace=False)
-                poisoned_labels = self.poison(y_train.loc[indices_to_flip].copy(), y.unique(), rng)
+                poisoned_labels = self.poison(y_train.loc[indices_to_flip].copy(), unique_labels, label_map, rng)
                 poisoned_labels = poisoned_labels.astype(int)
             except Exception as e:
                 raise RuntimeError(f"Failed during poisoning step at {portion_to_poison * 100:.1f}%: {e}")
@@ -118,7 +122,7 @@ class LabelFlippingPoisoningAttack(PoisoningAttack, attack_type=available_attack
         if not poisoned_models_dict:
             raise RuntimeError("No poisoned models were generated; check your configuration")
 
-        most_effective_portion, min_accuracy = self.evaluate(n_samples, X_test, y_test, base_model, poisoned_models_dict)
+        most_effective_portion, min_accuracy = self.evaluate(n_samples, X_test, y_test, label_map, base_model, poisoned_models_dict)
 
         print(f"The attack was most effective when poisoning {most_effective_portion * 100:.1f}% of the training dataset\n")
         self.log_data["most_effective_portion"] = most_effective_portion
@@ -138,9 +142,9 @@ class LabelFlippingPoisoningAttack(PoisoningAttack, attack_type=available_attack
 
         append_log_entry(self.log_file_path, self.log_data)
 
-    def poison(self, labels_to_poison, labels, rng):
+    def poison(self, labels_to_poison, labels, label_map, rng):
         if self.target_class is not None:
-            return pd.Series([self.target_class] * len(labels_to_poison), index=labels_to_poison.index)
+            return pd.Series([label_map[self.target_class]] * len(labels_to_poison), index=labels_to_poison.index)
 
         poisoned = labels_to_poison.copy()
         for idx in poisoned.index:
@@ -149,17 +153,17 @@ class LabelFlippingPoisoningAttack(PoisoningAttack, attack_type=available_attack
 
         return poisoned
 
-    def evaluate(self, n_samples, X_test, y_test, base_model, poisoned_models: dict):
+    def evaluate(self, n_samples, X_test, y_test, label_map: dict, base_model, poisoned_models: dict):
         min_accuracy = 1.1
         most_effective_portion = None
 
         if self.source_class is not None:
-            source_mask = y_test == self.source_class
+            source_mask = y_test == label_map[self.source_class]
             X_test = X_test.loc[source_mask]
             y_test = y_test.loc[source_mask]
 
         if self.target_class is not None:
-            non_target_mask = y_test != self.target_class
+            non_target_mask = y_test != label_map[self.target_class]
             X_test = X_test.loc[non_target_mask]
             y_test = y_test.loc[non_target_mask]
 
@@ -167,7 +171,7 @@ class LabelFlippingPoisoningAttack(PoisoningAttack, attack_type=available_attack
         base_model_accuracy = registry.evaluate_model_accuracy(self.training_framework, base_model, X_test, y_test)
         self.log_data["base_accuracy"] = base_model_accuracy
         print(f"Base model accuracy on sample from the source class "
-              f"{self.source_class if self.source_class is not None else 'all classes'} is: {base_model_accuracy}\n")
+              f"{self.source_class if self.source_class is not None else 'all classes'} is: {base_model_accuracy:.2f}\n")
 
         for portion_to_poison, model in poisoned_models.items():
             try:
@@ -176,9 +180,9 @@ class LabelFlippingPoisoningAttack(PoisoningAttack, attack_type=available_attack
                 n_to_poison = int(n_samples * portion_to_poison)
                 print(f"The accuracy for the model on samples from the source class "
                       f"{self.source_class if self.source_class is not None else 'all classes'} with {n_to_poison} "
-                      f"samples poisoned ({portion_to_poison * 100:.1f}%) is {accuracy}")
+                      f"samples poisoned ({portion_to_poison * 100:.1f}%) is {accuracy:.2f}")
 
-                print(f"Attack success rate: {base_model_accuracy - accuracy}")
+                print(f"Attack success rate: {base_model_accuracy - accuracy:.2f}")
 
                 if self.target_class is not None:
                     num_target = sum(pred == self.target_class for pred in predictions)
