@@ -5,6 +5,7 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.schema import HumanMessage, AIMessage
 from datetime import datetime
 import json
+import os
 
 from advplay.utils.append_log_entry import append_log_entry
 from advplay.attacks.prompt_injection.prompt_injection_attack import PromptInjectionAttack
@@ -16,7 +17,21 @@ class OpenAIPromptInjectionAttack(PromptInjectionAttack, attack_type=available_a
 
     def execute(self):
         super().execute()
-        chat = ChatOpenAI(model=self.model)
+
+        openai_key = os.getenv("OPENAI_API_KEY")
+        openrouter_key = os.getenv("OPENROUTER_API_KEY")
+        openrouter_url = os.getenv("OPENROUTER_BASE_URL")
+
+        if openai_key:
+            chat = ChatOpenAI(model=self.model)
+        elif openrouter_key and openrouter_url:
+            chat = ChatOpenAI(
+                model=self.model,
+                api_key=openrouter_key,
+                base_url=openrouter_url
+            )
+        else:
+            raise ValueError("No valid API key found for OpenAI or OpenRouter.")
 
         prompt = ChatPromptTemplate.from_messages([
             ("system", self.instructions),
