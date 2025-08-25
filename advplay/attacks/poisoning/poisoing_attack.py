@@ -11,6 +11,7 @@ from advplay import paths
 class PoisoningAttack(BaseAttack, ABC, attack_type=available_attacks.POISONING, attack_subtype=None):
     def __init__(self, template: dict, **kwargs):
         super().__init__(template, **kwargs)
+        self.poisoning_method = template.get("poisoning_method")
         self.training_framework = template.get('training_framework')
         self.training_algorithm = template.get("training_algorithm")
         self.training_config = template.get("training_config")
@@ -22,7 +23,6 @@ class PoisoningAttack(BaseAttack, ABC, attack_type=available_attacks.POISONING, 
         self.trigger_pattern = template.get('trigger_pattern')
         self.override = template.get('override')
 
-        self.poisoning_method = kwargs.get('poisoning_method')
         self.dataset = kwargs.get('dataset')
         self.poisoning_data = kwargs.get('poisoning_data')
         self.seed = kwargs.get('seed')

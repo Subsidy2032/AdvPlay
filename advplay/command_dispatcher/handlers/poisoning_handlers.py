@@ -4,6 +4,8 @@ import os
 
 from advplay.attack_templates.template_registry.registry import define_template
 from advplay.utils.list_templates import list_template_names, list_template_contents
+from advplay.utils import load_files
+from advplay import paths
 from advplay.variables import commands, available_attacks
 from advplay.attacks.attack_runner import attack_runner
 from advplay.command_dispatcher.handler_registry import register_handler
@@ -59,7 +61,6 @@ def handle_attack_poisoning(args):
     dataset = load_dataset(ext, dataset_path)
 
     kwargs = {
-        "poisoning_method": args.technique,
         "dataset": dataset,
         "label_column": args.label_column,
     }
@@ -73,4 +74,8 @@ def handle_attack_poisoning(args):
     if getattr(args, "filename", None):
         kwargs["filename"] = args.filename
 
-    attack_runner(args.attack_type, args.technique, args.configuration, **kwargs)
+    default_path = paths.TEMPLATES / available_attacks.POISONING
+    template = load_files.load_json(default_path, args.configuration)
+    attack_subtype = template.get("poisoning_method")
+
+    attack_runner(args.attack_type, attack_subtype, args.configuration, **kwargs)

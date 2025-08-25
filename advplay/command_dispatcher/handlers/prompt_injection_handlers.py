@@ -3,6 +3,8 @@ from pathlib import Path
 from advplay.attack_templates.template_registry.registry import define_template
 from advplay.attacks.attack_runner import attack_runner
 from advplay.utils.list_templates import list_template_names, list_template_contents
+from advplay.utils import load_files
+from advplay import paths
 from advplay.variables import commands, available_attacks
 from advplay.command_dispatcher.handler_registry import register_handler
 
@@ -31,9 +33,7 @@ def handle_attack_prompt_injection(args):
     if not args.configuration:
         return
 
-    kwargs = {
-        "platform": args.platform
-    }
+    kwargs = {}
 
     if getattr(args, "session_id", None):
         kwargs["session_id"] = args.session_id
@@ -44,5 +44,8 @@ def handle_attack_prompt_injection(args):
     if getattr(args, "filename", None):
         kwargs["filename"] = args.filename
 
+    default_path = paths.TEMPLATES / available_attacks.PROMPT_INJECTION
+    template = load_files.load_json(default_path, args.configuration)
+    attack_subtype = template.get("platform")
 
-    attack_runner(args.attack_type, args.platform, args.configuration, **kwargs)
+    attack_runner(args.attack_type, attack_subtype, args.configuration, **kwargs)

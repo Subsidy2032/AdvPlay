@@ -12,7 +12,6 @@ class PromptInjectionAttack(BaseAttack, attack_type=available_attacks.PROMPT_INJ
         self.model = template.get('model')
         self.instructions = template.get('instructions')
 
-        self.platform = kwargs.get('platform')
         self.prompt_list = kwargs.get('prompt_list', None)
         self.session_id = kwargs.get('session_id', "default_session")
         self.filename = kwargs.get('filename', datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
