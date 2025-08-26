@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import os
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import confusion_matrix
 
 from advplay.model_ops import registry
 from advplay.utils import save_model
@@ -31,8 +32,8 @@ class LabelFlippingPoisoningAttack(PoisoningAttack, attack_type=available_attack
         }
 
     def execute(self):
-        unique_labels = list(self.dataset[self.label_column].unique())
-        label_map = {label: idx for idx, label in enumerate(unique_labels)}
+        unique_labels_original = list(self.dataset[self.label_column].unique())
+        label_map = {label: idx for idx, label in enumerate(unique_labels_original)}
         self.dataset[self.label_column] = self.dataset[self.label_column].map(label_map)
 
         try:
@@ -122,7 +123,7 @@ class LabelFlippingPoisoningAttack(PoisoningAttack, attack_type=available_attack
         if not poisoned_models_dict:
             raise RuntimeError("No poisoned models were generated; check your configuration")
 
-        most_effective_portion, min_accuracy = self.evaluate(n_samples, X_test, y_test, label_map, base_model, poisoned_models_dict)
+        most_effective_portion, min_accuracy = self.evaluate(n_samples, X_test, y_test, unique_labels_original, base_model, poisoned_models_dict)
 
         print(f"The attack was most effective when poisoning {most_effective_portion * 100:.1f}% of the training dataset\n")
         self.log_data["most_effective_portion"] = most_effective_portion
@@ -153,46 +154,39 @@ class LabelFlippingPoisoningAttack(PoisoningAttack, attack_type=available_attack
 
         return poisoned
 
-    def evaluate(self, n_samples, X_test, y_test, label_map: dict, base_model, poisoned_models: dict):
+    def evaluate(self, n_samples, X_test, y_test, unique_labels, base_model, poisoned_models: dict):
         min_accuracy = 1.1
         most_effective_portion = None
-
-        if self.source_class is not None:
-            source_mask = y_test == label_map[self.source_class]
-            X_test = X_test.loc[source_mask]
-            y_test = y_test.loc[source_mask]
-
-        if self.target_class is not None:
-            non_target_mask = y_test != label_map[self.target_class]
-            X_test = X_test.loc[non_target_mask]
-            y_test = y_test.loc[non_target_mask]
 
         print("\n")
         base_model_accuracy = registry.evaluate_model_accuracy(self.training_framework, base_model, X_test, y_test)
         self.log_data["base_accuracy"] = base_model_accuracy
-        print(f"Base model accuracy on sample from the source class "
-              f"{self.source_class if self.source_class is not None else 'all classes'} is: {base_model_accuracy:.2f}\n")
+        print(f"Base model accuracy is: {base_model_accuracy:.2f}\n")
+
+        base_model_predictions = base_model.predict(X_test)
+        base_confusion_mat = confusion_matrix(y_test, base_model_predictions)
+        self.log_data["labels"] = unique_labels
+        self.log_data["base_confusion_matrix"] = base_confusion_mat.tolist()
 
         for portion_to_poison, model in poisoned_models.items():
             try:
-                predictions = model.predict(X_test)
                 accuracy = registry.evaluate_model_accuracy(self.training_framework, model, X_test, y_test)
                 n_to_poison = int(n_samples * portion_to_poison)
-                print(f"The accuracy for the model on samples from the source class "
-                      f"{self.source_class if self.source_class is not None else 'all classes'} with {n_to_poison} "
+                print(f"The accuracy for the model with {n_to_poison} "
                       f"samples poisoned ({portion_to_poison * 100:.1f}%) is {accuracy:.2f}")
 
                 print(f"Attack success rate: {base_model_accuracy - accuracy:.2f}")
 
-                if self.target_class is not None:
-                    num_target = sum(pred == self.target_class for pred in predictions)
-                    print(f"Portion of samples not from the target class {self.target_class} classified as "
-                          f"{self.target_class}: {num_target / len(y_test)}\n")
+                predictions = model.predict(X_test)
+                confusion_mat = confusion_matrix(y_test, predictions)
+                print(confusion_mat)
+                print(unique_labels)
 
                 self.log_data["poisoning_results"].append({
                     "portion_to_poison": portion_to_poison,
                     "n_samples_poisoned": n_to_poison,
-                    "accuracy": accuracy
+                    "accuracy": accuracy,
+                    "confusion_matrix": confusion_mat.tolist()
                 })
 
                 if accuracy < min_accuracy:
