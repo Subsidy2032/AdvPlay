@@ -42,8 +42,12 @@ Create a handler file under `advplay/command_dispatcher/handlers/`. You can take
 
     - advplay/attack_templates/template_builders/[attack]
     - advplay/attacks/[attack]
+  
+6. **Implement the template builder class**
 
-6. **Implement the attack class**
+Add a template builder class under template_builders/[attack].
+
+7. **Implement the attack class**
 
 Add a class under `advplay/attacks/[attack]` that sets up the infrastructure to run sub-techniques. This class does **not** execute the attack itself—it simply orchestrates sub-techniques when called.
 
@@ -51,13 +55,6 @@ Add a class under `advplay/attacks/[attack]` that sets up the infrastructure to 
 
 Once the attack infrastructure is in place, adding a sub-technique is simpler:
 
-1. Add a template builder class under template_builders/[attack]. 
-2. Add an Attack class under attacks/[attack].
-
-    ```python
-    self.platforms_cls = {
-        [available_sub_techniques].[sub_technique]: [SubTechniqueClass]
-    }
-    ```
+1. Add an Attack class under attacks/[attack].
 
 Test the sub-technique to ensure it can be executed via run.py and logs results correctly.
