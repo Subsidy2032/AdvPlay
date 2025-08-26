@@ -1,4 +1,5 @@
 import numpy as np
+import os
 import matplotlib.pyplot as plt
 
 from advplay.visualization.poisoning.poisoning_visualizer import PoisoningVisualizer
@@ -25,5 +26,7 @@ class LabelFlippingPoisoningVisualizer(PoisoningVisualizer, attack_type=availabl
             ax.text(x, y + 0.01, f"{y:.2f}", ha='center', fontsize=10)
 
         fig.tight_layout()
-        plt.show()
+        plt.savefig(os.path.join(self.directory_name, "poisoned_vs_accuracy.png"))
+        plt.close()
 
+        print(f"Results are saved to {self.directory_name}")
