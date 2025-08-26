@@ -1,5 +1,5 @@
 import json
-
+import numpy as np
 
 def append_log_entry(log_file_path, log_entry):
     try:
@@ -13,4 +13,14 @@ def append_log_entry(log_file_path, log_entry):
     existing_logs.append(log_entry)
 
     with open(log_file_path, 'w', encoding='utf-8') as f:
-        json.dump(existing_logs, f, ensure_ascii=False, indent=2)
+        json.dump(existing_logs, f, ensure_ascii=False, indent=2, default=convert_numpy)
+
+
+def convert_numpy(obj):
+    if isinstance(obj, np.integer):
+        return int(obj)
+    if isinstance(obj, np.floating):
+        return float(obj)
+    if isinstance(obj, np.ndarray):
+        return obj.tolist()
+    return obj

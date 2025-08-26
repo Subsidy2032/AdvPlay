@@ -166,7 +166,7 @@ class LabelFlippingPoisoningAttack(PoisoningAttack, attack_type=available_attack
         base_model_predictions = base_model.predict(X_test)
         base_confusion_mat = confusion_matrix(y_test, base_model_predictions)
         self.log_data["labels"] = unique_labels
-        self.log_data["base_confusion_matrix"] = base_confusion_mat.tolist()
+        self.log_data["base_confusion_matrix"] = base_confusion_mat
 
         for portion_to_poison, model in poisoned_models.items():
             try:
@@ -179,14 +179,12 @@ class LabelFlippingPoisoningAttack(PoisoningAttack, attack_type=available_attack
 
                 predictions = model.predict(X_test)
                 confusion_mat = confusion_matrix(y_test, predictions)
-                print(confusion_mat)
-                print(unique_labels)
 
                 self.log_data["poisoning_results"].append({
                     "portion_to_poison": portion_to_poison,
                     "n_samples_poisoned": n_to_poison,
                     "accuracy": accuracy,
-                    "confusion_matrix": confusion_mat.tolist()
+                    "confusion_matrix": confusion_mat
                 })
 
                 if accuracy < min_accuracy:
