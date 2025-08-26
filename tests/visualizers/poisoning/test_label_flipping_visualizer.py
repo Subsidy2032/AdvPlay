@@ -5,7 +5,7 @@ from advplay.variables import available_attacks, poisoning_techniques
 @pytest.fixture
 def valid_log_data():
     # Minimal valid log structure for your visualizer
-    return {
+    return [{
         "base_accuracy": 0.95,
         "base_confusion_matrix": [[3, 7, 0],
                                   [0, 9, 0],
@@ -18,7 +18,7 @@ def valid_log_data():
             {"portion_to_poison": 0.2, "n_samples_poisoned": 10, "accuracy": 0.88,
              "confusion_matrix": [[3, 7, 0], [0, 9, 0], [0, 0, 11]]}
         ]
-    }
+    }]
 
 @pytest.fixture
 def attack_info():

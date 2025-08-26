@@ -3,6 +3,7 @@ class commands:
 
     SAVE_TEMPLATE: str = 'save_template'
     ATTACK: str = 'attack'
+    VISUALIZE: str = 'visualize'
 
     ATTACK_TYPE: str = 'attack_type'
 

@@ -16,6 +16,7 @@ class LabelFlippingPoisoningAttack(PoisoningAttack, attack_type=available_attack
         super().__init__(template, **kwargs)
 
         self.log_data = {
+            "poisoning_method": self.poisoning_method,
             "training_framework": self.training_framework,
             "training_algorithm": self.training_algorithm,
             "training_config": self.training_config,

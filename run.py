@@ -78,6 +78,12 @@ def add_attack_poison_parser(attack_parser):
     poisoning_parser.add_argument('-m', '--model-name', required=False, help='The name of the model for saving')
     poisoning_parser.add_argument('-f', '--filename', required=False, help='The file name to save the attack results to')
 
+def add_visualize_poisoning_parser(visualize_parser):
+    poisoning_parser = visualize_parser.add_parser(available_attacks.POISONING, help='Visualize poisoning attack results')
+
+    poisoning_parser.add_argument('-f', '--file', required=True, help='Attack log file')
+    poisoning_parser.add_argument('-d', '--directory', required=False, help='Name of the directory the results will be saved to')
+
 def main():
     load_required_classes()
 
@@ -93,6 +99,10 @@ def main():
     attack_subparsers = attack_parser.add_subparsers(dest=commands.ATTACK_TYPE, help='Types of attacks')
     add_attack_pi_parser(attack_subparsers)
     add_attack_poison_parser(attack_subparsers)
+
+    visualize_parser = subparsers.add_parser(commands.VISUALIZE, help='Visualize attack results')
+    visualize_subparsers = visualize_parser.add_subparsers(dest=commands.ATTACK_TYPE, help='Type of attack')
+    add_visualize_poisoning_parser(visualize_subparsers)
 
     perform_action(parser.parse_args())
 

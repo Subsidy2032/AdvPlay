@@ -10,6 +10,7 @@ from advplay.variables import commands, available_attacks
 from advplay.attacks.attack_runner import attack_runner
 from advplay.command_dispatcher.handler_registry import register_handler
 from advplay.model_ops.registry import load_dataset
+from advplay.visualization.visualizer import visualizer
 from advplay import paths
 
 @register_handler(commands.SAVE_TEMPLATE, available_attacks.POISONING)
@@ -79,3 +80,19 @@ def handle_attack_poisoning(args):
     attack_subtype = template.get("poisoning_method")
 
     attack_runner(args.attack_type, attack_subtype, args.configuration, **kwargs)
+
+@register_handler(commands.VISUALIZE, available_attacks.POISONING)
+def handle_visualize_poisoning(args):
+    if not args.file:
+        return
+
+    kwargs = {}
+
+    if getattr(args, "directory", None):
+        kwargs["directory_name"] = args.directory
+
+    default_path = paths.ATTACK_LOGS / available_attacks.POISONING
+    log_file = load_files.load_json(default_path, args.file)
+    attack_subtype = log_file[0].get("poisoning_method")
+
+    visualizer(args.attack_type, attack_subtype, args.file, **kwargs)
