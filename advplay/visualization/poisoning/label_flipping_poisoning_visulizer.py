@@ -18,7 +18,7 @@ class LabelFlippingPoisoningVisualizer(PoisoningVisualizer, attack_type=availabl
         ax.set_ylabel("Accuracy", fontsize=12, fontweight='bold')
         ax.set_title("Model Accuracy vs Poisoned Portion", fontsize=14, fontweight='bold')
         ax.set_xticks(self.percentages_poisoned)
-        ax.set_ylim(0, 1)
+        ax.set_ylim(0, 1.05)
         ax.grid(True, linestyle=':', linewidth=0.8, alpha=0.7)
 
         # Optional: annotate each point with its value
