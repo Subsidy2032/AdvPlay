@@ -12,6 +12,9 @@ TEMPLATES = ATTACK_TEMPLATES / 'templates'
 ATTACKS = ADVPLAY / 'attacks'
 ATTACK_LOGS = ATTACKS / 'logs'
 
+VISUALIZATIONS = ADVPLAY / 'visualization'
+VISUALIZATIONS_RESULTS = VISUALIZATIONS / 'results'
+
 MODEL_OPS = ADVPLAY / 'model_ops'
 
 RESOURCES = ADVPLAY / 'resources'

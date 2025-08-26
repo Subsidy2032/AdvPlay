@@ -2,10 +2,10 @@ import os
 import importlib
 from pathlib import Path
 
-from advplay.paths import TEMPLATE_BUILDERS, PROJECT_ROOT, ATTACKS, HANDLERS, MODEL_OPS
+from advplay.paths import TEMPLATE_BUILDERS, PROJECT_ROOT, ATTACKS, HANDLERS, MODEL_OPS, VISUALIZATIONS
 
 def load_required_classes():
-    base_paths = [TEMPLATE_BUILDERS, ATTACKS, HANDLERS, MODEL_OPS]
+    base_paths = [TEMPLATE_BUILDERS, ATTACKS, HANDLERS, MODEL_OPS, VISUALIZATIONS]
 
     for base_path in base_paths:
         for dirpath, _, filenames in os.walk(base_path):
