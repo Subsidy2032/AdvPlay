@@ -10,6 +10,7 @@ def valid_log_data():
         "base_confusion_matrix": [[3, 7, 0],
                                   [0, 9, 0],
                                   [0, 0, 11]],
+        "labels": [0, 1, 2],
         "source_class": None,
         "target_class": None,
         "poisoning_results": [
