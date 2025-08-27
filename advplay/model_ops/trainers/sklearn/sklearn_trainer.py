@@ -7,9 +7,10 @@ from advplay import paths
 class SKLearnTrainer(BaseTrainer, framework=available_frameworks.SKLEARN, training_algorithm=None):
     def __init__(self, X_train, y_train, config: dict = None):
         super().__init__(X_train, y_train, config)
+        self.model = None
 
     def train(self):
-        if not hasattr(self, "model"):
+        if self.model is None:
             raise NotImplementedError("Subclasses must define self.model before calling train.")
 
         self.model.fit(self.X_train, self.y_train)
