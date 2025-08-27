@@ -51,13 +51,7 @@ Add a class under `advplay/attacks/[attack]` that sets up the infrastructure to 
 
 Once the attack infrastructure is in place, adding a sub-technique is simpler:
 
-1. Add a template builder class under template_builders/[attack]. 
+1. Add a template builder class under template_builders/[attack].
 2. Add an Attack class under attacks/[attack].
-
-    ```python
-    self.platforms_cls = {
-        [available_sub_techniques].[sub_technique]: [SubTechniqueClass]
-    }
-    ```
 
 Test the sub-technique to ensure it can be executed via run.py and logs results correctly.
