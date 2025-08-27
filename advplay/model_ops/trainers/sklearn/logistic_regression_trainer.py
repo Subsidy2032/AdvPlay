@@ -12,9 +12,4 @@ class LogisticRegressionTrainer(SKLearnTrainer, framework=available_frameworks.S
                                 training_algorithm=available_training_algorithms.LOGISTIC_REGRESSION):
     def __init__(self, X_train, y_train, config: dict = None):
         super().__init__(X_train, y_train, config)
-
-    def train(self):
-        model = LogisticRegression()
-        model.fit(self.X_train, self.y_train)
-
-        return model
+        self.model = LogisticRegression()
