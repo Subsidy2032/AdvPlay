@@ -9,6 +9,15 @@ from advplay.variables import available_attacks, poisoning_techniques
 from advplay import paths
 
 class PoisoningAttack(BaseAttack, ABC, attack_type=available_attacks.POISONING, attack_subtype=None):
+    ATTACK_PARAMETERS = {
+        "dataset": {"type": pd.DataFrame, "required": True, "default": None, "help": 'Dataset to poison'},
+        "label_column": {"type": str, "required": True, "default": None, "help": 'The name of the label column'},
+        "poisoning_dataset": {"type": pd.DataFrame, "required": False, "default": None, "help": 'Poisoned samples to add to the training dataset'},
+        "seed": {"type": int, "required": False, "default": None, "help": 'Seed for reproduction'},
+        "step": {"type": float, "required": False, "default": 0.1, "help": 'Incrementing steps to take for poisoning portions'},
+        "model_name": {"type": int, "required": False, "default": datetime.now().strftime("%Y-%m-%d_%H-%M-%S"), "help": 'The name of the model that will be saved'}
+    }
+
     def __init__(self, template: dict, **kwargs):
         super().__init__(template, **kwargs)
         self.poisoning_method = template.get("poisoning_method")

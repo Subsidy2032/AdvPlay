@@ -5,6 +5,18 @@ from advplay.model_ops.trainers.base_trainer import BaseTrainer
 from advplay.variables import poisoning_techniques, default_template_file_names, available_attacks
 
 class PoisoningTemplateBuilder(TemplateBuilderBase, attack_type=available_attacks.POISONING, template_type=None):
+    PARAMETERS = {
+        "training_framework": {"type": str, "required": True, "default": "sklearn", "help": 'Framework for training the model'},
+        "training_algorithm": {"type": str, "required": True, "default": "logistic_regression", "help": 'The training algorithm'},
+        "training_configuration": {"type": dict, "required": False, "default": None, "help": 'Path to a training configuration file'},
+        "test_portion": {"type": float, "required": True, "default": 0.2, "help": 'Portion of the dataset to be used for testing'},
+        "min_portion_to_poison": {"type": float, "required": True, "default": 0.1, "help": 'Minimum portion of the dataset to poison'},
+        "max_portion_to_poison": {"type": float, "required": False, "default": None, "help": 'Maximum portion of the dataset to poison'},
+        "source": {"type": (str, int), "required": False, "default": None, "help": 'Source class to poison'},
+        "target": {"type": (str, int), "required": False, "default": None, "help": 'Target class'},
+        "trigger_pattern": {"required": False, "default": None, "help": "A trigger to be used for poisoning"},
+        "override": {"type": bool, "required": False, "default": None, "help": "Whether to override examples from the training dataset"}
+    }
     def __init__(self, attack_type: str, **kwargs):
         super().__init__(attack_type, **kwargs)
         self.training_framework = self.kwargs.get("framework")

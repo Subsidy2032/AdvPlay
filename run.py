@@ -10,6 +10,7 @@ from advplay.main import perform_action
 from advplay.variables import commands, available_attacks
 from advplay.utils.load_classes import load_required_classes
 from advplay.model_ops.trainers.base_trainer import BaseTrainer
+from advplay.attacks.base_attack import BaseAttack
 
 def add_save_template_pi_parser(save_template_parser):
     prompt_injection_parser = save_template_parser.add_parser(available_attacks.PROMPT_INJECTION, help='Define a template for prompt injection attacks')
@@ -95,10 +96,17 @@ def main():
     add_save_template_pi_parser(save_template_subparsers)
     add_save_template_poisoning_parser(save_template_subparsers)
 
+    attacks = BaseAttack.registry.keys()
+    unique_attack_categories = list({x[0] for x in attacks})
+    print(unique_attack_categories)
     attack_parser = subparsers.add_parser(commands.ATTACK, help='Run attacks from templates')
     attack_subparsers = attack_parser.add_subparsers(dest=commands.ATTACK_TYPE, help='Types of attacks')
-    add_attack_pi_parser(attack_subparsers)
-    add_attack_poison_parser(attack_subparsers)
+    for attack in unique_attack_categories:
+        subparser = attack_subparsers.add_parser(attack, help=f"{attack} attack")
+
+
+    # add_attack_pi_parser(attack_subparsers)
+    # add_attack_poison_parser(attack_subparsers)
 
     visualize_parser = subparsers.add_parser(commands.VISUALIZE, help='Visualize attack results')
     visualize_subparsers = visualize_parser.add_subparsers(dest=commands.ATTACK_TYPE, help='Type of attack')

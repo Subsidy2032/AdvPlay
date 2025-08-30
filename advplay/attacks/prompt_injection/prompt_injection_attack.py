@@ -6,6 +6,10 @@ from advplay.variables import available_attacks, available_platforms
 from advplay import paths
 
 class PromptInjectionAttack(BaseAttack, attack_type=available_attacks.PROMPT_INJECTION, attack_subtype=None):
+    ATTACK_PARAMETERS = {
+        "prompt_list": {"type": (list, str), "required": False, "default": None, "help": 'A list or file of prompts to run'},
+        "session_id": {"type": str, "required": False, "default": "default_session", "help": 'The session ID'}
+    }
     def __init__(self, template: dict, **kwargs):
         super().__init__(template, **kwargs)
         self.platform = template.get('platform')
