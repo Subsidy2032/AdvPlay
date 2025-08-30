@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.colors import LinearSegmentedColormap
 import seaborn as sns
 import os
 
@@ -44,7 +45,9 @@ class PoisoningVisualizer(BaseVisualizer, ABC, attack_type=available_attacks.POI
             figsize = plt.rcParams.get('figure.figsize')
 
             plt.figure(figsize=figsize)
-            sns.heatmap(confusion_matrix, annot=cell_values, fmt="", cmap='Reds', cbar=True, xticklabels=self.labels,
+
+            dark_red = LinearSegmentedColormap.from_list("DarkRed", ["#330000", "#990000", "#ff0000"])
+            sns.heatmap(confusion_matrix, annot=cell_values, fmt="", cmap=dark_red, cbar=True, xticklabels=self.labels,
                         yticklabels=self.labels)
 
             accuracy_text = f"\n\nAccuracy={accuracy:.2f}"
