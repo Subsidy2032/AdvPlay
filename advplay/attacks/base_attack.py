@@ -16,14 +16,20 @@ class BaseAttack(ABC):
         BaseAttack.registry[key] = cls
 
     def __init__(self, template: dict, **kwargs):
-        template_params = getattr(self.__class__, "TEMPLATE_PARAMETERS", {})
-        attack_params = getattr(self.__class__, "ATTACK_PARAMETERS", {})
+        template_params = getattr(super(self.__class__, self), "TEMPLATE_PARAMETERS", {})
+        attack_params = getattr(super(self.__class__, self), "ATTACK_PARAMETERS", {})
 
         for key, meta in template_params.items():
-            setattr(self, key, template.get(key, kwargs.get(key, meta.get("default"))))
+            value = template.get(key)
+            if value is None:
+                value = meta.get("default")
+            setattr(self, key, value)
 
         for key, meta in attack_params.items():
-            setattr(self, key, kwargs.get(key, meta.get("default")))
+            value = kwargs.get(key)
+            if value is None:
+                value = meta.get("default")
+            setattr(self, key, value)
 
         self.log_file_path = None
         self.setup_logging()
@@ -35,7 +41,7 @@ class BaseAttack(ABC):
 
     def build(self):
         template_values = {key: getattr(self, key) for key in getattr(self.__class__, "TEMPLATE_PARAMETERS", {})}
-        self.save_template(self.log_file_path, template_values)
+        self.save_template(self.template_filename, template_values)
 
     def save_template(self, filename: str, template: dict):
         template_json = json.dumps(template, indent=4)

@@ -7,9 +7,9 @@ HANDLERS = ADVPLAY / 'command_dispatcher'
 
 ATTACK_TEMPLATES = ADVPLAY / 'attack_templates'
 TEMPLATE_BUILDERS = ATTACK_TEMPLATES / 'template_builders'
-TEMPLATES = ATTACK_TEMPLATES / 'templates'
 
 ATTACKS = ADVPLAY / 'attacks'
+TEMPLATES = ATTACKS / 'templates'
 ATTACK_LOGS = ATTACKS / 'logs'
 
 VISUALIZATIONS = ADVPLAY / 'visualization'

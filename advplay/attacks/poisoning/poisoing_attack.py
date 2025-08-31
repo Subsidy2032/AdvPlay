@@ -11,8 +11,8 @@ from advplay.model_ops.trainers.base_trainer import BaseTrainer
 
 class PoisoningAttack(BaseAttack, ABC, attack_type=available_attacks.POISONING, attack_subtype=None):
     TEMPLATE_PARAMETERS = {
-        "poisoning_method": {"type": str, "required": True, "default": poisoning_techniques.LABEL_FLIPPING,
-                             "help": "The poisoning method"},
+        "technique": {"type": str, "required": True, "default": poisoning_techniques.LABEL_FLIPPING,
+                             "help": "The poisoning technique"},
         "training_framework": {"type": str, "required": True, "default": "sklearn",
                                "help": 'Framework for training the model'},
         "training_algorithm": {"type": str, "required": True, "default": "logistic_regression",
@@ -44,14 +44,11 @@ class PoisoningAttack(BaseAttack, ABC, attack_type=available_attacks.POISONING, 
         "seed": {"type": int, "required": False, "default": None, "help": 'Seed for reproduction'},
         "step": {"type": float, "required": False, "default": 0.1,
                  "help": 'Incrementing steps to take for poisoning portions'},
-        "model_name": {"type": int, "required": False, "default": datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
+        "model_name": {"type": str, "required": False, "default": datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
                        "help": 'The name of the model that will be saved'},
         "log_filename": {"type": str, "required": False, "default": datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
                          "help": "Log file name to save attack results to"}
     }
-
-    def execute(self):
-        pass
 
     def validate_inputs(self):
         if self.dataset is None or not isinstance(self.dataset, pd.DataFrame):

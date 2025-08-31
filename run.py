@@ -5,18 +5,12 @@ load_dotenv()
 
 import argparse
 
-from advplay.attack_templates.template_builders.template_builder_base import TemplateBuilderBase
 from advplay.main import perform_action
 from advplay.variables import commands, available_attacks
 from advplay.utils.load_classes import load_required_classes
 from advplay.model_ops.trainers.base_trainer import BaseTrainer
 from advplay.attacks.base_attack import BaseAttack
-
-def add_visualize_poisoning_parser(visualize_parser):
-    poisoning_parser = visualize_parser.add_parser(available_attacks.POISONING, help='Visualize poisoning attack results')
-
-    poisoning_parser.add_argument('-f', '--file', required=True, help='Attack log file')
-    poisoning_parser.add_argument('-d', '--directory', required=False, help='Name of the directory the results will be saved to')
+from advplay.visualization.base_visualizer import BaseVisualizer
 
 def main():
     load_required_classes()
@@ -47,7 +41,15 @@ def main():
 
     visualize_parser = subparsers.add_parser(commands.VISUALIZE, help='Visualize attack results')
     visualize_subparsers = visualize_parser.add_subparsers(dest=commands.ATTACK_TYPE, help='Type of attack')
-    add_visualize_poisoning_parser(visualize_subparsers)
+
+    visualizers = BaseVisualizer.registry.keys()
+    unique_visualizers = list({x[0] for x in attacks})
+
+    for visualizer in unique_visualizers:
+        visualize_subparser = visualize_subparsers.add_parser(visualizer, help=f"Visualize {visualizer} attack")
+        visualize_subparser.add_argument('--log-filename', required=True, help='Attack log file')
+        visualize_subparser.add_argument('--directory', required=False,
+                                      help='Name of the directory the results will be saved to')
 
     perform_action(parser.parse_args())
 

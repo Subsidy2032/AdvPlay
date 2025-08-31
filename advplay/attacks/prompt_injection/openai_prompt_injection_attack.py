@@ -118,6 +118,7 @@ class OpenAIPromptInjectionAttack(PromptInjectionAttack, attack_type=available_a
 
         log_entry = {
             "attack": self.attack_type,
+            "technique": self.technique,
             "timestamp": datetime.utcnow().isoformat() + "Z",
             "session_id": session_id,
             "model": self.model,
