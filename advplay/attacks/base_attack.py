@@ -31,6 +31,7 @@ class BaseAttack(ABC):
                 value = meta.get("default")
             setattr(self, key, value)
 
+
         self.log_file_path = None
         self.setup_logging()
 

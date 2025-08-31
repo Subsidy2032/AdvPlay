@@ -14,9 +14,9 @@ from advplay.model_ops.registry import load_dataset
 def perform_action(args):
     kwargs = vars(args)
     attack_type = kwargs.get(commands.ATTACK_TYPE)
-    parameters = {k: v for k, v in kwargs.items() if k not in (commands.COMMAND, commands.ATTACK_TYPE, 'template')}
 
     if args.command == commands.SAVE_TEMPLATE:
+        parameters = {k: v for k, v in kwargs.items() if k not in (commands.COMMAND, commands.ATTACK_TYPE)}
         for key, value in parameters.items():
             type = BaseAttack.registry.get((attack_type, None)).TEMPLATE_PARAMETERS[key].get("type")
             parameters[key] = cast_parameter(value, type)
@@ -25,6 +25,7 @@ def perform_action(args):
         attack_runner.define_template(attack_type, attack_subtype, **parameters)
 
     elif args.command == commands.ATTACK:
+        parameters = {k: v for k, v in kwargs.items() if k not in (commands.COMMAND, commands.ATTACK_TYPE, 'template')}
         for key, value in parameters.items():
             type = BaseAttack.registry.get((attack_type, None)).ATTACK_PARAMETERS[key].get("type")
             parameters[key] = cast_parameter(value, type)
@@ -33,11 +34,12 @@ def perform_action(args):
         attack_runner.attack_runner(attack_type, template_name, **parameters)
 
     elif args.command == commands.VISUALIZE:
+        parameters = {k: v for k, v in kwargs.items() if k not in (commands.COMMAND, commands.ATTACK_TYPE)}
         visualizer(attack_type, **parameters)
 
 def cast_parameter(parameter, type):
-    if parameter is None:
-        return
+    if parameter is None or type is None:
+        return parameter
 
     if type == pd.DataFrame:
         dataset_path = parameter
@@ -75,6 +77,9 @@ def cast_parameter(parameter, type):
 
         except:
             return str(parameter)
+
+    elif type == bool:
+        return parameter.lower() == "true"
 
     else:
         return type(parameter)
