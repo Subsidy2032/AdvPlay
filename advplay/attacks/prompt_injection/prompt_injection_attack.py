@@ -25,13 +25,12 @@ class PromptInjectionAttack(BaseAttack, attack_type=available_attacks.PROMPT_INJ
                          "help": "Log file name to save attack results to"}
     }
 
-    def __init__(self, template: dict, **kwargs):
-        super().__init__(template, **kwargs)
-
+    def execute(self):
         if self.prompt_list is not None and Path(self.prompt_list[0]).exists():
             with open(self.prompt_list[0], 'r') as prompts_file:
                 prompts = [prompt.strip() for prompt in prompts_file]
                 self.prompt_list = prompts
+        pass
 
     def build(self):
         if self.custom_instructions and Path(self.custom_instructions).exists():

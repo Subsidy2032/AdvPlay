@@ -35,6 +35,7 @@ class LabelFlippingPoisoningAttack(PoisoningAttack, attack_type=available_attack
         }
 
     def execute(self):
+        super().execute()
         unique_labels_original = list(self.dataset[self.label_column].unique())
         label_map = {label: idx for idx, label in enumerate(unique_labels_original)}
         self.dataset[self.label_column] = self.dataset[self.label_column].map(label_map)

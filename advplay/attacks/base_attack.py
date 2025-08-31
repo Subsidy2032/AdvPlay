@@ -35,13 +35,17 @@ class BaseAttack(ABC):
         self.log_file_path = None
         self.setup_logging()
 
+        self.validate_template_inputs()
+
     def setup_logging(self):
         filename = getattr(self, "log_filename", datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
         self.log_file_path = paths.ATTACK_LOGS / f"{self.attack_type}" / f"{filename}.log"
         self.log_file_path.parent.mkdir(parents=True, exist_ok=True)
 
     def build(self):
-        template_values = {key: getattr(self, key) for key in getattr(self.__class__, "TEMPLATE_PARAMETERS", {})}
+        template_values = {key: getattr(self, key)
+                           for key in getattr(self.__class__, "TEMPLATE_PARAMETERS", {})
+                           if key != "template_filename"}
         self.save_template(self.template_filename, template_values)
 
     def save_template(self, filename: str, template: dict):
@@ -61,6 +65,12 @@ class BaseAttack(ABC):
         os.makedirs(os.path.dirname(filename), exist_ok=True)
         with open(filename, "w") as f:
             f.write(template_json)
+
+    def validate_attack_inputs(self):
+        pass
+
+    def validate_template_inputs(self):
+        pass
 
     @abstractmethod
     def execute(self):

@@ -11,6 +11,10 @@ def define_template(attack_type: str, attack_subtype: str, **kwargs):
         raise ValueError(f"Unsupported template type: {attack_subtype}")
 
     print(f"Creating a template for {attack_type} attack with type {attack_subtype}")
+
+    if kwargs.get("technique") is None:
+        kwargs["technique"] = attack_subtype
+
     builder = attack_cls(kwargs)
     builder.build()
 

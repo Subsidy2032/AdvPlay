@@ -50,7 +50,10 @@ class PoisoningAttack(BaseAttack, ABC, attack_type=available_attacks.POISONING, 
                          "help": "Log file name to save attack results to"}
     }
 
-    def validate_inputs(self):
+    def execute(self):
+        self.validate_attack_inputs()
+
+    def validate_attack_inputs(self):
         if self.dataset is None or not isinstance(self.dataset, pd.DataFrame):
             raise TypeError("training_data must be a pandas DataFrame")
 
@@ -75,6 +78,7 @@ class PoisoningAttack(BaseAttack, ABC, attack_type=available_attacks.POISONING, 
         if self.seed is not None and not isinstance(self.seed, (int, np.integer)):
             raise TypeError("seed must be an integer or None")
 
+    def validate_template_inputs(self):
         if self.max_portion_to_poison == self.min_portion_to_poison and self.step > 0:
             raise ValueError("Can't use the step parameter if max_portion_to_poison is equal to min_portion_to_poison or not set")
 
@@ -108,7 +112,7 @@ class PoisoningAttack(BaseAttack, ABC, attack_type=available_attacks.POISONING, 
 
         if not isinstance(self.template_filename, str) or not self.template_filename.strip():
             raise ValueError("Tempalte filename must be a non-empty string")
-        if any(c in self.filename for c in r'\/:*?"<>|'):
+        if any(c in self.template_filename for c in r'\/:*?"<>|'):
             raise ValueError(f"Template filename contains invalid characters: {self.template_filename}")
 
         if self.training_configuration is not None and not Path(self.training_configuration).exists():

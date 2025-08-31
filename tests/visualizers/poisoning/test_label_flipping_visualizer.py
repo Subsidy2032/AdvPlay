@@ -6,6 +6,7 @@ from advplay.variables import available_attacks, poisoning_techniques
 def valid_log_data():
     # Minimal valid log structure for your visualizer
     return [{
+        "technique": poisoning_techniques.LABEL_FLIPPING,
         "base_accuracy": 0.95,
         "base_confusion_matrix": [[3, 7, 0],
                                   [0, 9, 0],
@@ -25,14 +26,13 @@ def valid_log_data():
 def attack_info():
     return {
         "attack_type": available_attacks.POISONING,
-        "attack_subtype": poisoning_techniques.LABEL_FLIPPING,
-        "directory_name": "test_visualizations"
+        "technique": poisoning_techniques.LABEL_FLIPPING,
+        "directory": "test_visualizations"
     }
 
 def test_label_flipping_visualizer(valid_log_data, attack_info):
     visualizer(
         attack_type=attack_info["attack_type"],
-        attack_subtype=attack_info["attack_subtype"],
-        log_file=valid_log_data,
-        directory_name=attack_info["directory_name"]
+        log_filename=valid_log_data,
+        directory=attack_info["directory"]
     )

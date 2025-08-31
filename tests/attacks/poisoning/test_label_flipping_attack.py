@@ -42,14 +42,15 @@ def single_class_data():
 @pytest.fixture
 def valid_template():
     return {
+        "technique": poisoning_techniques.LABEL_FLIPPING,
         "training_framework": available_frameworks.SKLEARN,
         "training_algorithm": available_training_algorithms.LOGISTIC_REGRESSION,
-        "training_config": None,
-        "source_class": 0,
-        "target_class": 1,
+        "training_configuration": None,
+        "test_portion": 0.2,
         "min_portion_to_poison": 0.3,
         "max_portion_to_poison": 0.4,
-        "test_portion": 0.2,
+        "source": 0,
+        "target": 1,
         "trigger_pattern": None,
         "override": True
     }
@@ -58,7 +59,7 @@ def valid_template():
 def attack_parameters():
     return {
         "attack": available_attacks.POISONING,
-        "poisoning_method": poisoning_techniques.LABEL_FLIPPING,
+        "technique": poisoning_techniques.LABEL_FLIPPING,
         "seed": 42,
         "label_column": "label",
         "step": 0.02,
@@ -84,7 +85,6 @@ def model_path(fake_dataset_dir, attack_parameters, valid_template):
 def test_attack_runs_without_errors(attack_parameters, sample_dataset, valid_template, log_file_path, tmp_path, dataset_path, model_path):
     attack_runner(
         attack_type=attack_parameters['attack'],
-        attack_subtype=attack_parameters['poisoning_method'],
         template_name=valid_template,
         dataset=sample_dataset,
         poisoning_data=None,
@@ -92,7 +92,7 @@ def test_attack_runs_without_errors(attack_parameters, sample_dataset, valid_tem
         label_column=attack_parameters["label_column"],
         step=attack_parameters["step"],
         model_name=attack_parameters["model_name"],
-        filename=attack_parameters["log_filename"]
+        log_filename=attack_parameters["log_filename"]
     )
 
     assert log_file_path.exists(), f"{log_file_path} was not created"
@@ -120,7 +120,6 @@ def test_attack_runs_without_errors(attack_parameters, sample_dataset, valid_tem
 def test_two_log_entries(attack_parameters, sample_dataset, valid_template, log_file_path, dataset_path, model_path):
     attack_runner(
         attack_type=attack_parameters['attack'],
-        attack_subtype=attack_parameters['poisoning_method'],
         template_name=valid_template,
         dataset=sample_dataset,
         poisoning_data=None,
@@ -128,12 +127,11 @@ def test_two_log_entries(attack_parameters, sample_dataset, valid_template, log_
         label_column=attack_parameters["label_column"],
         step=attack_parameters["step"],
         model_name=attack_parameters["model_name"],
-        filename=attack_parameters["log_filename"]
+        log_filename=attack_parameters["log_filename"]
     )
 
     attack_runner(
         attack_type=attack_parameters['attack'],
-        attack_subtype=attack_parameters['poisoning_method'],
         template_name=valid_template,
         dataset=sample_dataset,
         poisoning_data=None,
@@ -141,7 +139,7 @@ def test_two_log_entries(attack_parameters, sample_dataset, valid_template, log_
         label_column=attack_parameters["label_column"],
         step=attack_parameters["step"],
         model_name=attack_parameters["model_name"],
-        filename=attack_parameters["log_filename"]
+        log_filename=attack_parameters["log_filename"]
     )
 
     assert log_file_path.exists(), f"{log_file_path} was not created"
@@ -156,14 +154,13 @@ def test_override_false_appends_data(tmp_path, dataset_path, valid_template, att
     valid_template["override"] = False
     attack_runner(
         attack_type=available_attacks.POISONING,
-        attack_subtype=attack_parameters['poisoning_method'],
         template_name=valid_template,
         dataset=sample_dataset,
         poisoning_data=None,
         seed=attack_parameters["seed"],
         label_column=attack_parameters["label_column"],
         model_name = attack_parameters["model_name"],
-        filename = attack_parameters["log_filename"]
+        log_filename = attack_parameters["log_filename"]
     )
 
     assert dataset_path.exists(), f"{dataset_path} was not created"
@@ -189,7 +186,6 @@ def test_attack_invalid(attack_parameters, valid_template, bad_kwargs, expected_
 
     define_kwargs = {
         "attack_type": kwargs['attack'],
-        "attack_subtype": kwargs['poisoning_method'],
         "template_name": valid_template,
         "dataset": sample_dataset,
         "poisoning_data": None,
@@ -197,7 +193,7 @@ def test_attack_invalid(attack_parameters, valid_template, bad_kwargs, expected_
         "label_column": kwargs["label_column"],
         "step": kwargs["step"],
         "model_name": kwargs["model_name"],
-        "filename": kwargs["log_filename"]
+        "log_filename": kwargs["log_filename"]
     }
 
     with pytest.raises(expected_error):
@@ -207,7 +203,6 @@ def test_invalid_attack_type(valid_template, attack_parameters, tmp_path, sample
     with pytest.raises(ValueError, match="Unsupported attack type"):
         attack_runner(
             attack_type="INVALID_ATTACK",
-            attack_subtype=attack_parameters['poisoning_method'],
             template_name=valid_template,
             dataset=sample_dataset,
             label_column=attack_parameters["label_column"]
@@ -217,7 +212,6 @@ def test_single_class_error(tmp_path, valid_template, attack_parameters, single_
     with pytest.raises(ValueError, match="Only one class is present"):
         attack_runner(
             attack_type=attack_parameters["attack"],
-            attack_subtype=attack_parameters['poisoning_method'],
             template_name=valid_template,
             dataset=single_class_data,
             label_column=attack_parameters["label_column"],
@@ -229,6 +223,5 @@ def test_invalid_template_type(tmp_path, attack_parameters):
         with pytest.raises(TypeError, match="template must be a JSON object"):
             attack_runner(
                 attack_type=available_attacks.POISONING,
-                attack_subtype=attack_parameters['poisoning_method'],
                 template_name="ignored"
             )

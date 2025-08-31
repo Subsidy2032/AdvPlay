@@ -3,17 +3,17 @@ import os
 import pytest
 
 from advplay import paths
-from advplay.attack_templates.template_registry.registry import define_template
+from advplay.attacks.attack_runner import define_template
 from advplay.variables import available_platforms, available_attacks, default_template_file_names
 
 @pytest.fixture
 def openai_template_data() -> dict:
     return {
-        "platform": available_platforms.OPENAI,
+        "technique": available_platforms.OPENAI,
         "attack": available_attacks.PROMPT_INJECTION,
         "model": "gpt-4o",
-        "instructions": "Those are the custom instructions instructions",
-        "filename": "test_custom_instructions"
+        "custom_instructions": "Those are the custom instructions instructions",
+        "template_filename": "test_custom_instructions"
     }
 
 @pytest.fixture(autouse=True)
@@ -23,14 +23,14 @@ def fake_templates_dir(tmp_path, monkeypatch):
 
 @pytest.fixture
 def file_path(openai_template_data: dict, fake_templates_dir) -> str:
-    return paths.TEMPLATES / openai_template_data["attack"] / f"{openai_template_data['filename']}.json"
+    return paths.TEMPLATES / openai_template_data["attack"] / f"{openai_template_data['template_filename']}.json"
 
 @pytest.fixture
 def expected_json(openai_template_data: dict) -> dict:
     return {
-        "platform": openai_template_data["platform"],
+        "technique": openai_template_data["technique"],
         "model": openai_template_data["model"],
-        "instructions": openai_template_data["instructions"]
+        "custom_instructions": openai_template_data["custom_instructions"]
     }
 
 @pytest.fixture(autouse=True)
@@ -43,11 +43,11 @@ def cleanup_file(file_path):
 
 def test_template_building_with_file_name(openai_template_data, expected_json, file_path):
     define_template(
-        openai_template_data["platform"],
         openai_template_data["attack"],
+        openai_template_data["technique"],
         model=openai_template_data["model"],
-        instructions=openai_template_data["instructions"],
-        filename=openai_template_data["filename"]
+        custom_instructions=openai_template_data["custom_instructions"],
+        template_filename=openai_template_data["template_filename"]
     )
 
     assert file_path.exists(), f"{file_path} was not created"
@@ -59,14 +59,14 @@ def test_template_building_with_file_name(openai_template_data, expected_json, f
 
 def test_instructions_from_file(openai_template_data, expected_json, file_path, tmp_path):
     instruction_file = tmp_path / "temp_instructions.txt"
-    instruction_file.write_text(openai_template_data["instructions"])
+    instruction_file.write_text(openai_template_data["custom_instructions"])
 
     define_template(
-        openai_template_data["platform"],
         openai_template_data["attack"],
+        openai_template_data["technique"],
         model=openai_template_data["model"],
-        instructions=str(instruction_file),
-        filename=openai_template_data["filename"]
+        custom_instructions=str(instruction_file),
+        template_filename=openai_template_data["template_filename"]
     )
 
     assert file_path.exists(), f"{file_path} was not created"
@@ -82,10 +82,10 @@ def test_default_filename_used(openai_template_data, expected_json):
         os.remove(default_file)
 
     define_template(
-        openai_template_data["platform"],
         openai_template_data["attack"],
+        openai_template_data["technique"],
         model=openai_template_data["model"],
-        instructions=openai_template_data["instructions"]
+        custom_instructions=openai_template_data["custom_instructions"]
     )
 
     assert default_file.exists()
@@ -96,13 +96,13 @@ def test_default_filename_used(openai_template_data, expected_json):
     assert data == expected_json
 
 def test_missing_instructions(openai_template_data, expected_json, file_path):
-    expected_json["instructions"] = None
+    expected_json["custom_instructions"] = None
 
     define_template(
-        openai_template_data["platform"],
         openai_template_data["attack"],
+        openai_template_data["technique"],
         model=openai_template_data["model"],
-        filename=openai_template_data["filename"]
+        template_filename=openai_template_data["template_filename"]
     )
 
     assert file_path.exists()
@@ -113,19 +113,19 @@ def test_missing_instructions(openai_template_data, expected_json, file_path):
 def test_missing_model(openai_template_data):
     with pytest.raises(NameError, match="does not exist"):
         define_template(
-            openai_template_data["platform"],
             openai_template_data["attack"],
+            openai_template_data["technique"],
             model="non-existent-model",
-            instructions=openai_template_data["instructions"],
-            filename=openai_template_data["filename"]
+            custom_instructions=openai_template_data["custom_instructions"],
+            template_filename=openai_template_data["template_filename"]
         )
 
 def test_non_existent_platform(openai_template_data):
     with pytest.raises(ValueError, match="Unsupported"):
         define_template(
-            'WrongPlatform',
             openai_template_data["attack"],
+            'WrongPlatform',
             model=openai_template_data["model"],
-            instructions=openai_template_data["instructions"],
-            filename=openai_template_data["filename"]
+            custom_instructions=openai_template_data["custom_instructions"],
+            template_filename=openai_template_data["template_filename"]
         )

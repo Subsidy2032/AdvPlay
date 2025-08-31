@@ -73,7 +73,7 @@ def cast_parameter(parameter, type):
 
     elif type == (list, str):
         try:
-            return list(parameter)
+            return [parameter]
 
         except:
             return str(parameter)
