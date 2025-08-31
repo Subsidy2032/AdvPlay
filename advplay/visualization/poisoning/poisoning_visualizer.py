@@ -16,8 +16,8 @@ class PoisoningVisualizer(BaseVisualizer, ABC, attack_type=available_attacks.POI
 
         self.base_accuracy = log_file.get('base_accuracy')
         self.base_confusion_matrix = log_file.get('base_confusion_matrix')
-        self.source_class = log_file.get('source_class')
-        self.target_class = log_file.get('target_class')
+        self.source_class = log_file.get('source')
+        self.target_class = log_file.get('target')
         self.labels = log_file.get('labels')
 
         self.poisoning_results = log_file.get('poisoning_results')

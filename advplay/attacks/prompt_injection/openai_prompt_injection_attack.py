@@ -6,6 +6,7 @@ from langchain.schema import HumanMessage, AIMessage
 from datetime import datetime
 import json
 import os
+from openai import OpenAI
 
 from advplay.utils.append_log_entry import append_log_entry
 from advplay.attacks.prompt_injection.prompt_injection_attack import PromptInjectionAttack
@@ -34,7 +35,7 @@ class OpenAIPromptInjectionAttack(PromptInjectionAttack, attack_type=available_a
             raise ValueError("No valid API key found for OpenAI or OpenRouter.")
 
         prompt = ChatPromptTemplate.from_messages([
-            ("system", self.instructions),
+            ("system", self.custom_instructions),
             MessagesPlaceholder(variable_name="history"),
             ("human", "{input}")
         ])
@@ -116,12 +117,29 @@ class OpenAIPromptInjectionAttack(PromptInjectionAttack, attack_type=available_a
             })
 
         log_entry = {
+            "attack": self.attack_type,
             "timestamp": datetime.utcnow().isoformat() + "Z",
             "session_id": session_id,
             "model": self.model,
-            "instructions": self.instructions,
+            "instructions": self.custom_instructions,
             "total_turns": len(conversation),
             "conversation": conversation
         }
 
         append_log_entry(log_file_path, log_entry)
+
+    def build(self):
+        try:
+            client = OpenAI()
+            models = client.models.list()
+            model_names = [model.id for model in models.data]
+
+        except Exception as e:
+            print(e)
+            model_names = []
+
+        if self.model not in model_names:
+            raise NameError(f"An OpenAI model with the name {self.model} does not exist. "
+                            f"Some popular OpenAI models are gpt-5 and gpt-5-mini.")
+
+        super().build()

@@ -4,6 +4,16 @@ from advplay.attacks.base_attack import BaseAttack
 from advplay import paths
 from advplay.utils import load_files
 
+def define_template(attack_type: str, attack_subtype: str, **kwargs):
+    key = (attack_type, attack_subtype)
+    attack_cls = BaseAttack.registry.get(key)
+    if attack_cls is None:
+        raise ValueError(f"Unsupported template type: {attack_subtype}")
+
+    print(f"Creating a template for {attack_type} attack with type {attack_subtype}")
+    builder = attack_cls(attack_type, **kwargs)
+    builder.build()
+
 def attack_runner(attack_type: str, attack_subtype, template_name, **kwargs):
     key = (attack_type, attack_subtype)
     attack_cls = BaseAttack.registry.get(key)

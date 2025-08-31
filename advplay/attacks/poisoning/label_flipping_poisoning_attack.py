@@ -11,20 +11,22 @@ from advplay.utils.append_log_entry import append_log_entry
 from advplay.attacks.poisoning.poisoing_attack import PoisoningAttack
 from advplay.variables import available_attacks, poisoning_techniques
 
+
 class LabelFlippingPoisoningAttack(PoisoningAttack, attack_type=available_attacks.POISONING, attack_subtype=poisoning_techniques.LABEL_FLIPPING):
     def __init__(self, template, **kwargs):
         super().__init__(template, **kwargs)
 
         self.log_data = {
+            "attack": self.attack_type,
             "poisoning_method": self.poisoning_method,
             "training_framework": self.training_framework,
             "training_algorithm": self.training_algorithm,
-            "training_config": self.training_config,
+            "training_configuration": self.training_config,
             "test_portion": self.test_portion,
             "min_portion_to_poison": self.min_portion_to_poison,
             "max_portion_to_poison": self.max_portion_to_poison,
-            "source_class": self.source_class,
-            "target_class": self.target_class,
+            "source": self.source_class,
+            "target": self.target_class,
             "override": self.override,
             "seed": self.seed,
             "step": self.step,
@@ -73,11 +75,11 @@ class LabelFlippingPoisoningAttack(PoisoningAttack, attack_type=available_attack
         for portion_to_poison in np.linspace(self.min_portion_to_poison, self.max_portion_to_poison, num_steps):
             n_to_poison = int(n_samples * portion_to_poison)
 
-            if self.source_class is not None:
-                source_mask = y_train == label_map[self.source_class]
+            if self.source is not None:
+                source_mask = y_train == label_map[self.source]
 
-            elif self.target_class is not None:
-                source_mask = y_train != label_map[self.target_class]
+            elif self.target is not None:
+                source_mask = y_train != label_map[self.target]
 
             else:
                 source_mask = pd.Series(True, index=y_train.index)
@@ -145,8 +147,8 @@ class LabelFlippingPoisoningAttack(PoisoningAttack, attack_type=available_attack
         append_log_entry(self.log_file_path, self.log_data)
 
     def poison(self, labels_to_poison, labels, label_map, rng):
-        if self.target_class is not None:
-            return pd.Series([label_map[self.target_class]] * len(labels_to_poison), index=labels_to_poison.index)
+        if self.target is not None:
+            return pd.Series([label_map[self.target]] * len(labels_to_poison), index=labels_to_poison.index)
 
         poisoned = labels_to_poison.copy()
         for idx in poisoned.index:

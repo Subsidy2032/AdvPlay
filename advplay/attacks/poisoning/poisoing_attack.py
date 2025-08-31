@@ -5,45 +5,50 @@ import numpy as np
 from abc import ABC, abstractmethod
 
 from advplay.attacks.base_attack import BaseAttack
-from advplay.variables import available_attacks, poisoning_techniques
+from advplay.variables import available_attacks, poisoning_techniques, default_template_file_names
 from advplay import paths
+from advplay.model_ops.trainers.base_trainer import BaseTrainer
 
 class PoisoningAttack(BaseAttack, ABC, attack_type=available_attacks.POISONING, attack_subtype=None):
-    ATTACK_PARAMETERS = {
-        "dataset": {"type": pd.DataFrame, "required": True, "default": None, "help": 'Dataset to poison'},
-        "label_column": {"type": str, "required": True, "default": None, "help": 'The name of the label column'},
-        "poisoning_dataset": {"type": pd.DataFrame, "required": False, "default": None, "help": 'Poisoned samples to add to the training dataset'},
-        "seed": {"type": int, "required": False, "default": None, "help": 'Seed for reproduction'},
-        "step": {"type": float, "required": False, "default": 0.1, "help": 'Incrementing steps to take for poisoning portions'},
-        "model_name": {"type": int, "required": False, "default": datetime.now().strftime("%Y-%m-%d_%H-%M-%S"), "help": 'The name of the model that will be saved'}
+    TEMPLATE_PARAMETERS = {
+        "poisoning_method": {"type": str, "required": True, "default": poisoning_techniques.LABEL_FLIPPING,
+                             "help": "The poisoning method"},
+        "training_framework": {"type": str, "required": True, "default": "sklearn",
+                               "help": 'Framework for training the model'},
+        "training_algorithm": {"type": str, "required": True, "default": "logistic_regression",
+                               "help": 'The training algorithm'},
+        "training_configuration": {"type": dict, "required": False, "default": None,
+                                   "help": 'Path to a training configuration file'},
+        "test_portion": {"type": float, "required": True, "default": 0.2,
+                         "help": 'Portion of the dataset to be used for testing'},
+        "min_portion_to_poison": {"type": float, "required": True, "default": 0.1,
+                                  "help": 'Minimum portion of the dataset to poison'},
+        "max_portion_to_poison": {"type": float, "required": False, "default": None,
+                                  "help": 'Maximum portion of the dataset to poison'},
+        "source": {"type": (str, int), "required": False, "default": None, "help": 'Source class to poison'},
+        "target": {"type": (str, int), "required": False, "default": None, "help": 'Target class'},
+        "trigger_pattern": {"required": False, "default": None, "help": "A trigger to be used for poisoning"},
+        "override": {"type": bool, "required": False, "default": None,
+                     "help": "Whether to override examples from the training dataset"},
+        "template_filename": {"type": str, "required": False,
+                              "default": default_template_file_names.CUSTOM_INSTRUCTIONS,
+                              "help": "Template file name"}
     }
 
-    def __init__(self, template: dict, **kwargs):
-        super().__init__(template, **kwargs)
-        self.poisoning_method = template.get("poisoning_method")
-        self.training_framework = template.get('training_framework')
-        self.training_algorithm = template.get("training_algorithm")
-        self.training_config = template.get("training_config")
-        self.test_portion = template.get('test_portion')
-        self.min_portion_to_poison = template.get('min_portion_to_poison')
-        self.max_portion_to_poison = template.get('max_portion_to_poison') or self.min_portion_to_poison
-        self.source_class = template.get('source_class')
-        self.target_class = template.get('target_class')
-        self.trigger_pattern = template.get('trigger_pattern')
-        self.override = template.get('override')
-
-        self.dataset = kwargs.get('dataset')
-        self.poisoning_data = kwargs.get('poisoning_data')
-        self.seed = kwargs.get('seed')
-        self.label_column = kwargs.get('label_column')
-        self.step = kwargs.get('step', ((self.max_portion_to_poison - self.min_portion_to_poison) / 5))
-        self.model_name = kwargs.get('model_name', datetime.now().strftime(f"{self.poisoning_method}_{self.training_algorithm}_model"))
-        self.filename = kwargs.get('filename', datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
-
-        self.validate_inputs()
-
-        self.log_file_path = paths.ATTACK_LOGS / available_attacks.POISONING / f"{self.filename}.log"
-        self.log_file_path.parent.mkdir(parents=True, exist_ok=True)
+    ATTACK_PARAMETERS = {
+        "template": {"type": str, "required": True, "default": None, "help": "The name of the template for the attack"},
+        "dataset": {"type": pd.DataFrame, "required": True, "default": None, "help": 'Dataset to poison'},
+        "label_column": {"type": str, "required": True, "default": None, "help": 'The name of the label column'},
+        "poisoning_dataset": {"type": pd.DataFrame, "required": False, "default": None,
+                              "help": 'Poisoned samples to add to the training dataset'},
+        "seed": {"type": int, "required": False, "default": None, "help": 'Seed for reproduction'},
+        "step": {"type": float, "required": False, "default": 0.1,
+                 "help": 'Incrementing steps to take for poisoning portions'},
+        "model_name": {"type": int, "required": False, "default": datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
+                       "help": 'The name of the model that will be saved'},
+        "log_filename": {"type": str, "required": False, "default": datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
+                         "help": "Log file name to save attack results to"}
+    }
 
     def execute(self):
         pass
@@ -75,3 +80,39 @@ class PoisoningAttack(BaseAttack, ABC, attack_type=available_attacks.POISONING, 
 
         if self.max_portion_to_poison == self.min_portion_to_poison and self.step > 0:
             raise ValueError("Can't use the step parameter if max_portion_to_poison is equal to min_portion_to_poison or not set")
+
+        if (self.training_framework, self.training_algorithm) not in BaseTrainer.registry.keys():
+            raise ValueError(
+                f"Invalid framework and training algorithm configuration: ({self.training_framework}, {self.training_algorithm})")
+
+        for name, val in [
+            ("test_portion", self.test_portion),
+            ("min_portion_to_poison", self.min_portion_to_poison),
+            ("max_portion_to_poison", self.max_portion_to_poison)
+        ]:
+            if val is None:
+                continue
+            if not isinstance(val, (int, float)):
+                raise TypeError(f"{name} must be a number, got {type(val).__name__}")
+            if not (0 <= val <= 1):
+                raise ValueError(f"{name} must be between 0 and 1, got {val}")
+
+        if (self.min_portion_to_poison is not None
+                and self.max_portion_to_poison is not None
+                and self.min_portion_to_poison > self.max_portion_to_poison):
+            raise ValueError("min_portion_to_poison cannot be greater than max_portion_to_poison")
+
+        if self.source is not None and self.target is not None:
+            if self.source == self.target:
+                raise ValueError("source and target_class must be different")
+
+        if self.override is not None and not isinstance(self.override, bool):
+            raise TypeError(f"override must be a boolean, got {type(self.override).__name__}")
+
+        if not isinstance(self.template_filename, str) or not self.template_filename.strip():
+            raise ValueError("Tempalte filename must be a non-empty string")
+        if any(c in self.filename for c in r'\/:*?"<>|'):
+            raise ValueError(f"Template filename contains invalid characters: {self.template_filename}")
+
+        if self.training_configuration is not None and not Path(self.training_configuration).exists():
+            raise FileNotFoundError(f"training_config file does not exist: {self.training_configuration}")
