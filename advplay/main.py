@@ -10,13 +10,23 @@ from advplay.attacks import attack_runner
 from advplay.visualization.visualizer import visualizer
 from advplay.attacks.base_attack import BaseAttack
 from advplay.model_ops.registry import load_dataset
+from advplay.utils.list_templates import list_template_names, list_template_contents
 
 def perform_action(args):
     kwargs = vars(args)
     attack_type = kwargs.get(commands.ATTACK_TYPE)
 
     if args.command == commands.SAVE_TEMPLATE:
-        parameters = {k: v for k, v in kwargs.items() if k not in (commands.COMMAND, commands.ATTACK_TYPE)}
+        if args.list:
+            if args.template:
+                list_template_contents(attack_type, args.template)
+            else:
+                list_template_names(attack_type)
+            return
+
+        parameters = {k: v for k, v in kwargs.items() if k not in
+                      (commands.COMMAND, commands.ATTACK_TYPE, 'list', 'template')}
+
         for key, value in parameters.items():
             type = BaseAttack.registry.get((attack_type, None)).TEMPLATE_PARAMETERS[key].get("type")
             parameters[key] = cast_parameter(value, type)

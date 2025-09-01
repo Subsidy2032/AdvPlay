@@ -12,11 +12,14 @@ from advplay.model_ops.trainers.base_trainer import BaseTrainer
 class PoisoningAttack(BaseAttack, ABC, attack_type=available_attacks.POISONING, attack_subtype=None):
     TEMPLATE_PARAMETERS = {
         "technique": {"type": str, "required": True, "default": poisoning_techniques.LABEL_FLIPPING,
-                             "help": "The poisoning technique"},
+                      "help": "The poisoning technique",
+                      "choices": lambda: BaseAttack.techniques_per_attack.get(available_attacks.POISONING, [])},
         "training_framework": {"type": str, "required": True, "default": "sklearn",
-                               "help": 'Framework for training the model'},
+                               "help": 'Framework for training the model',
+                               "choices": lambda: list({k[0] for k in BaseTrainer.registry.keys() if k[0] is not None})},
         "training_algorithm": {"type": str, "required": True, "default": "logistic_regression",
-                               "help": 'The training algorithm'},
+                               "help": 'The training algorithm',
+                               "choices": lambda: list({k[1] for k in BaseTrainer.registry.keys() if k[1] is not None})},
         "training_configuration": {"type": dict, "required": False, "default": None,
                                    "help": 'Path to a training configuration file'},
         "test_portion": {"type": float, "required": True, "default": 0.2,

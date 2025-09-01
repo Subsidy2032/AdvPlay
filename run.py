@@ -30,14 +30,28 @@ def main():
         cls = BaseAttack.registry[(attack, None)]
 
         save_template_subparser = save_template_subparsers.add_parser(attack, help=f"Add template for {attack} attack")
+        save_template_subparser.add_argument('--list', action='store_true',
+                                             help=f'List available {attack} templates')
+        save_template_subparser.add_argument('--template', required=False,
+                                             help='List specific template contents')
         for parameter, arguments in cls.TEMPLATE_PARAMETERS.items():
+            choices = arguments.get("choices")
+            if callable(choices):
+                choices = choices()
+
             save_template_subparser.add_argument(f"--{parameter.replace('_', '-')}",
-                                                 required=arguments["required"], help=arguments["help"])
+                                                 required=arguments["required"] and not ('--list' in sys.argv),
+                                                 help=arguments["help"], choices=choices)
 
         attack_subparser = attack_subparsers.add_parser(attack, help=f"{attack} attack")
         for parameter, arguments in cls.ATTACK_PARAMETERS.items():
+            choices = arguments.get("choices")
+            if callable(choices):
+                choices = choices()
+
             attack_subparser.add_argument(f"--{parameter.replace('_', '-')}",
-                                          required=arguments["required"], help=arguments["help"])
+                                          required=arguments["required"], help=arguments["help"],
+                                          choices=choices)
 
     visualize_parser = subparsers.add_parser(commands.VISUALIZE, help='Visualize attack results')
     visualize_subparsers = visualize_parser.add_subparsers(dest=commands.ATTACK_TYPE, help='Type of attack')

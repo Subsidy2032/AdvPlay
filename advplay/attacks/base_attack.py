@@ -7,13 +7,21 @@ from advplay import paths
 
 class BaseAttack(ABC):
     registry = {}
+    techniques_per_attack = {}
 
     def __init_subclass__(cls, attack_type: str, attack_subtype, **kwargs):
         super().__init_subclass__(**kwargs)
         cls.attack_type = attack_type
         cls.attack_subtype = attack_subtype
+
         key = (attack_type, attack_subtype)
         BaseAttack.registry[key] = cls
+
+        if attack_type not in BaseAttack.techniques_per_attack:
+            BaseAttack.techniques_per_attack[attack_type] = []
+
+        if attack_subtype is not None and attack_subtype not in BaseAttack.techniques_per_attack[attack_type]:
+            BaseAttack.techniques_per_attack[attack_type].append(attack_subtype)
 
     def __init__(self, template: dict, **kwargs):
         template_params = getattr(super(self.__class__, self), "TEMPLATE_PARAMETERS", {})

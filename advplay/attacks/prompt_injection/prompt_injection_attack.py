@@ -8,7 +8,8 @@ from advplay.variables import default_template_file_names
 
 class PromptInjectionAttack(BaseAttack, attack_type=available_attacks.PROMPT_INJECTION, attack_subtype=None):
     TEMPLATE_PARAMETERS = {
-        "technique": {"type": str, "required": True, "default": None, "help": 'The platform of the LLM'},
+        "technique": {"type": str, "required": True, "default": None, "help": 'The platform of the LLM',
+                      "choices": lambda: BaseAttack.techniques_per_attack.get(available_attacks.PROMPT_INJECTION, [])},
         "model": {"type": str, "required": True, "default": None, "help": 'The name of the model'},
         "custom_instructions": {"type": str, "required": False, "default": None,
                                 "help": 'Custom instructions for the model'},

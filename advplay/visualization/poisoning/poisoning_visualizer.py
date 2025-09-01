@@ -28,7 +28,7 @@ class PoisoningVisualizer(BaseVisualizer, ABC, attack_type=available_attacks.POI
         self.confusion_matrices = [self.base_confusion_matrix] + [poisoning_result['confusion_matrix'] for poisoning_result in self.poisoning_results]
 
         self.directory_name = (paths.VISUALIZATIONS_RESULTS / available_attacks.POISONING /
-                               kwargs.get('directory_name', datetime.now().strftime("%Y-%m-%d_%H-%M-%S")))
+                               kwargs.get('directory', datetime.now().strftime("%Y-%m-%d_%H-%M-%S")))
         self.directory_name.mkdir(parents=True, exist_ok=True)
 
     def save_confusion_matrices(self):
