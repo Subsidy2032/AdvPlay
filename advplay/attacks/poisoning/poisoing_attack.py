@@ -11,17 +11,10 @@ from advplay.model_ops.trainers.base_trainer import BaseTrainer
 
 class PoisoningAttack(BaseAttack, ABC, attack_type=available_attacks.POISONING, attack_subtype=None):
     TEMPLATE_PARAMETERS = {
-        "technique": {"type": str, "required": True, "default": poisoning_techniques.LABEL_FLIPPING,
-                      "help": "The poisoning technique",
-                      "choices": lambda: BaseAttack.techniques_per_attack.get(available_attacks.POISONING, [])},
-        "training_framework": {"type": str, "required": True, "default": "sklearn",
-                               "help": 'Framework for training the model',
-                               "choices": lambda: list({k[0] for k in BaseTrainer.registry.keys() if k[0] is not None})},
-        "training_algorithm": {"type": str, "required": True, "default": "logistic_regression",
-                               "help": 'The training algorithm',
-                               "choices": lambda: list({k[1] for k in BaseTrainer.registry.keys() if k[1] is not None})},
-        "training_configuration": {"type": dict, "required": False, "default": None,
-                                   "help": 'Path to a training configuration file'},
+        "technique": BaseAttack.COMMON_TEMPLATE_PARAMETERS.get('technique')(available_attacks.POISONING),
+        "training_framework": BaseAttack.COMMON_TEMPLATE_PARAMETERS.get('training_framework'),
+        "training_algorithm": BaseAttack.COMMON_TEMPLATE_PARAMETERS.get('training_algorithm'),
+        "training_configuration": BaseAttack.COMMON_TEMPLATE_PARAMETERS.get('training_configuration'),
         "test_portion": {"type": float, "required": True, "default": 0.2,
                          "help": 'Portion of the dataset to be used for testing'},
         "min_portion_to_poison": {"type": float, "required": True, "default": 0.1,
@@ -39,18 +32,16 @@ class PoisoningAttack(BaseAttack, ABC, attack_type=available_attacks.POISONING, 
     }
 
     ATTACK_PARAMETERS = {
-        "template": {"type": str, "required": True, "default": None, "help": "The name of the template for the attack"},
-        "dataset": {"type": pd.DataFrame, "required": True, "default": None, "help": 'Dataset to poison'},
-        "label_column": {"type": str, "required": True, "default": None, "help": 'The name of the label column'},
+        "template": BaseAttack.COMMON_ATTACK_PARAMETERS.get('template'),
+        "dataset": BaseAttack.COMMON_ATTACK_PARAMETERS.get('dataset'),
+        "label_column": BaseAttack.COMMON_ATTACK_PARAMETERS.get('label_column'),
         "poisoning_dataset": {"type": pd.DataFrame, "required": False, "default": None,
                               "help": 'Poisoned samples to add to the training dataset'},
-        "seed": {"type": int, "required": False, "default": None, "help": 'Seed for reproduction'},
+        "seed": BaseAttack.COMMON_ATTACK_PARAMETERS.get('seed'),
         "step": {"type": float, "required": False, "default": 0.1,
                  "help": 'Incrementing steps to take for poisoning portions'},
-        "model_name": {"type": str, "required": False, "default": datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
-                       "help": 'The name of the model that will be saved'},
-        "log_filename": {"type": str, "required": False, "default": datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
-                         "help": "Log file name to save attack results to"}
+        "model_name": BaseAttack.COMMON_ATTACK_PARAMETERS.get('model_name'),
+        "log_filename": BaseAttack.COMMON_ATTACK_PARAMETERS.get('log_filename')
     }
 
     def execute(self):

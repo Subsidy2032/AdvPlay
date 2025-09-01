@@ -8,8 +8,7 @@ from advplay.variables import default_template_file_names
 
 class PromptInjectionAttack(BaseAttack, attack_type=available_attacks.PROMPT_INJECTION, attack_subtype=None):
     TEMPLATE_PARAMETERS = {
-        "technique": {"type": str, "required": True, "default": None, "help": 'The platform of the LLM',
-                      "choices": lambda: BaseAttack.techniques_per_attack.get(available_attacks.PROMPT_INJECTION, [])},
+        "technique": BaseAttack.COMMON_TEMPLATE_PARAMETERS.get('technique')(available_attacks.PROMPT_INJECTION),
         "model": {"type": str, "required": True, "default": None, "help": 'The name of the model'},
         "custom_instructions": {"type": str, "required": False, "default": None,
                                 "help": 'Custom instructions for the model'},
@@ -18,12 +17,11 @@ class PromptInjectionAttack(BaseAttack, attack_type=available_attacks.PROMPT_INJ
     }
 
     ATTACK_PARAMETERS = {
-        "template": {"type": str, "required": True, "default": None, "help": "The name of the template for the attack"},
+        "template": BaseAttack.COMMON_ATTACK_PARAMETERS.get('template'),
         "prompt_list": {"type": (list, str), "required": False, "default": None,
                         "help": 'A list or file of prompts to run'},
         "session_id": {"type": str, "required": False, "default": "default_session", "help": 'The session ID'},
-        "log_filename": {"type": str, "required": False, "default": datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
-                         "help": "Log file name to save attack results to"}
+        "log_filename": BaseAttack.COMMON_ATTACK_PARAMETERS.get('log_filename')
     }
 
     def execute(self):

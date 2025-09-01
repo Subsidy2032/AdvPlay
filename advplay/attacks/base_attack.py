@@ -2,12 +2,42 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 import json
 import os
+import pandas as pd
 
 from advplay import paths
+from advplay.model_ops.trainers.base_trainer import BaseTrainer
 
 class BaseAttack(ABC):
     registry = {}
     techniques_per_attack = {}
+
+    COMMON_TEMPLATE_PARAMETERS = {
+        "technique": lambda attack: {"type": str, "required": True, "default": None,
+                                     "help": "The poisoning technique",
+                                     "choices": lambda: BaseAttack.techniques_per_attack.get(attack, [])},
+        "training_framework": {"type": str, "required": True, "default": "sklearn",
+                               "help": 'Framework for training the model',
+                               "choices": lambda: list(
+                                   {k[0] for k in BaseTrainer.registry.keys() if k[0] is not None})},
+        "training_algorithm": {"type": str, "required": True, "default": "logistic_regression",
+                               "help": 'The training algorithm',
+                               "choices": lambda: list(
+                                   {k[1] for k in BaseTrainer.registry.keys() if k[1] is not None})},
+        "training_configuration": {"type": dict, "required": False, "default": None,
+                                   "help": 'Path to a training configuration file'}
+    }
+
+    COMMON_ATTACK_PARAMETERS = {
+        "template": {"type": str, "required": True, "default": None, "help": "The name of the template for the attack"},
+        "dataset": {"type": pd.DataFrame, "required": True, "default": None, "help": 'Dataset to poison'},
+        "label_column": {"type": str, "required": True, "default": None, "help": 'The name of the label column'},
+        "seed": {"type": int, "required": False, "default": None, "help": 'Seed for reproduction'},
+        "model_name": {"type": str, "required": False, "default": datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
+                       "help": 'The name of the model that will be saved'},
+        "log_filename": {"type": str, "required": False, "default": datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
+                         "help": "Log file name to save attack results to"}
+
+    }
 
     def __init_subclass__(cls, attack_type: str, attack_subtype, **kwargs):
         super().__init_subclass__(**kwargs)
