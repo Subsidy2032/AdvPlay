@@ -10,63 +10,29 @@ from openai import OpenAI
 
 from advplay.utils.append_log_entry import append_log_entry
 from advplay.attacks.prompt_injection.prompt_injection_attack import PromptInjectionAttack
-from advplay.variables import available_platforms, available_attacks
+from advplay.variables import available_attacks, prompt_injection_techniques
+from advplay.model_ops.llms.base_platform import BasePlatform
 
-class OpenAIPromptInjectionAttack(PromptInjectionAttack, attack_type=available_attacks.PROMPT_INJECTION, attack_subtype=available_platforms.OPENAI):
+class DirectPromptInjectionAttack(PromptInjectionAttack, attack_type=available_attacks.PROMPT_INJECTION,
+                                  attack_subtype=prompt_injection_techniques.DIRECT):
     def __init__(self, template, **kwargs):
         super().__init__(template, **kwargs)
 
     def execute(self):
         super().execute()
 
-        openai_key = os.getenv("OPENAI_API_KEY")
-        openrouter_key = os.getenv("OPENROUTER_API_KEY")
-        openrouter_url = os.getenv("OPENROUTER_BASE_URL")
-
-        if openai_key:
-            chat = ChatOpenAI(model=self.model)
-        elif openrouter_key and openrouter_url:
-            chat = ChatOpenAI(
-                model=self.model,
-                api_key=openrouter_key,
-                base_url=openrouter_url
-            )
-        else:
-            raise ValueError("No valid API key found for OpenAI or OpenRouter.")
-
-        prompt = ChatPromptTemplate.from_messages([
-            ("system", self.custom_instructions),
-            MessagesPlaceholder(variable_name="history"),
-            ("human", "{input}")
-        ])
-
-        session_histories = {}
-
-        def get_session_history(session_id: str):
-            if session_id not in session_histories:
-                session_histories[session_id] = InMemoryChatMessageHistory()
-            return session_histories[session_id]
-
-        conversation = RunnableWithMessageHistory(
-            prompt | chat,
-            get_session_history=get_session_history,
-            input_messages_key="input",
-            history_messages_key="history"
-        )
-
-        session_id = self.session_id
+        llm_cls = BasePlatform.registry.get(self.platform)
+        llm = llm_cls(self.model, self.custom_instructions, self.session_id)
 
         if self.prompt_list and (len(self.prompt_list) > 0):
             for prompt in self.prompt_list:
-                response = conversation.invoke(
-                    {"input": prompt},
-                    config={"configurable": {"session_id": session_id}}
-                )
+                response = llm.query_llm(prompt)
 
                 print(f"Trying prompt: {prompt}")
                 print(f"Response: {response.content}\n")
 
-            self.log_chat_history(session_histories, self.log_file_path)
+            conversation_history = llm.get_conversation_history()
+            self.log_chat_history(conversation_history, self.log_file_path)
             print(f"Chat history saved to {self.log_file_path}. Exiting...")
             return
 
@@ -76,71 +42,33 @@ class OpenAIPromptInjectionAttack(PromptInjectionAttack, attack_type=available_a
             user_input = input("> ")
 
             if user_input.lower() == "clear":
-                session_histories[session_id].clear()
+                llm.clear_chat_history()
                 print("Chat history cleared!")
                 continue
 
             if user_input.lower() == "exit":
-                self.log_chat_history(session_histories, self.log_file_path)
+                conversation_history = llm.get_conversation_history()
+                self.log_chat_history(conversation_history, self.log_file_path)
                 print(f"Chat history saved to {self.log_file_path}. Exiting...")
                 break
 
-            response = conversation.invoke(
-                {"input": user_input},
-                config={"configurable": {"session_id": session_id}}
-            )
-
+            response = llm.query_llm(user_input)
             print(f"Response: {response.content}")
 
-    def log_chat_history(self, history_obj, log_file_path):
-        session_id, chat_history = next(iter(history_obj.items()))
-        messages = chat_history.messages
-
-        conversation = []
-
-        for i in range(0, len(messages), 2):
-            human = messages[i]
-            ai = messages[i + 1] if i + 1 < len(messages) else None
-
-            if isinstance(human, HumanMessage):
-                prompt = human.content
-            else:
-                continue
-
-            response = ""
-            if isinstance(ai, AIMessage):
-                response = ai.content
-
-            conversation.append({
-                "prompt": prompt,
-                "response": response
-            })
-
+    def log_chat_history(self, conversation_history, log_file_path):
         log_entry = {
             "attack": self.attack_type,
             "technique": self.technique,
             "timestamp": datetime.utcnow().isoformat() + "Z",
-            "session_id": session_id,
+            "session_id": self.session_id,
             "model": self.model,
             "instructions": self.custom_instructions,
-            "total_turns": len(conversation),
-            "conversation": conversation
+            "total_turns": len(conversation_history),
+            "conversation": conversation_history
         }
 
         append_log_entry(log_file_path, log_entry)
 
     def build(self):
-        try:
-            client = OpenAI()
-            models = client.models.list()
-            model_names = [model.id for model in models.data]
-
-        except Exception as e:
-            print(e)
-            model_names = []
-
-        if self.model not in model_names:
-            raise NameError(f"An OpenAI model with the name {self.model} does not exist. "
-                            f"Some popular OpenAI models are gpt-5 and gpt-5-mini.")
-
+        llm = BasePlatform.registry.get(self.platform)
         super().build()

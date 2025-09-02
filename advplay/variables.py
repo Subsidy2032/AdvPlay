@@ -20,6 +20,9 @@ class available_attacks():
 class poisoning_techniques():
     LABEL_FLIPPING: str = 'label_flipping'
 
+class prompt_injection_techniques():
+    DIRECT: str = 'direct'
+
 class available_training_algorithms():
     LOGISTIC_REGRESSION = 'logistic_regression'
 

@@ -5,10 +5,13 @@ from advplay.attacks.base_attack import BaseAttack
 from advplay.variables import available_attacks, available_platforms
 from advplay import paths
 from advplay.variables import default_template_file_names
+from advplay.model_ops.llms.base_platform import BasePlatform
 
 class PromptInjectionAttack(BaseAttack, attack_type=available_attacks.PROMPT_INJECTION, attack_subtype=None):
     TEMPLATE_PARAMETERS = {
         "technique": BaseAttack.COMMON_TEMPLATE_PARAMETERS.get('technique')(available_attacks.PROMPT_INJECTION),
+        "platform": {"type": str, "required": True, "default": available_platforms.OPENAI,
+                     "help": 'The platform of the LLM', "choices": BasePlatform.registry.keys()},
         "model": {"type": str, "required": True, "default": None, "help": 'The name of the model'},
         "custom_instructions": {"type": str, "required": False, "default": None,
                                 "help": 'Custom instructions for the model'},
