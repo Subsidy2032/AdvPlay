@@ -23,9 +23,9 @@ class BaseTrainer:
         self.y_train = y_train
         self.config = config
 
-        if not isinstance(X_train, pd.DataFrame):
+        if not isinstance(X_train, np.ndarray):
             raise TypeError(f"Expected X_train to be a Pandas DataFrame, got {type(X_train)}")
-        if not isinstance(y_train, (pd.Series, np.ndarray, list)):
+        if not isinstance(y_train, (np.ndarray, np.ndarray, list)):
             raise TypeError(f"Expected y_train to be array-like, got {type(y_train)}")
         if len(X_train) != len(y_train):
             raise ValueError(f"X_train length {len(X_train)} != y_train length {len(y_train)}")

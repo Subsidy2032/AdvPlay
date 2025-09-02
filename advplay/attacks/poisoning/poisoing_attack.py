@@ -3,11 +3,13 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 from abc import ABC, abstractmethod
+import os
 
 from advplay.attacks.base_attack import BaseAttack
 from advplay.variables import available_attacks, poisoning_techniques, default_template_file_names
 from advplay import paths
 from advplay.model_ops.trainers.base_trainer import BaseTrainer
+from advplay.model_ops.registry import load_dataset
 
 class PoisoningAttack(BaseAttack, ABC, attack_type=available_attacks.POISONING, attack_subtype=None):
     TEMPLATE_PARAMETERS = {
@@ -48,11 +50,8 @@ class PoisoningAttack(BaseAttack, ABC, attack_type=available_attacks.POISONING, 
         self.validate_attack_inputs()
 
     def validate_attack_inputs(self):
-        if self.dataset is None or not isinstance(self.dataset, pd.DataFrame):
+        if self.dataset is None or not isinstance(self.dataset, np.ndarray):
             raise TypeError("training_data must be a pandas DataFrame")
-
-        if self.label_column not in self.dataset.columns:
-            raise ValueError(f"label_column '{self.label_column}' not found in training_data")
 
         if not (0 < self.test_portion < 1):
             raise ValueError("test_portion must be between 0 and 1")

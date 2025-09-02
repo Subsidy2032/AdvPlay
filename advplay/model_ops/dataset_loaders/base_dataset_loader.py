@@ -18,5 +18,5 @@ class BaseDatasetLoader(ABC):
         self.path = path
 
     @abstractmethod
-    def load(self) -> pd.DataFrame:
-        raise NotImplementedError
+    def load(self, label_column=None) -> np.ndarray:
+        raise NotImplementedError("Subclasses must implement the load method")

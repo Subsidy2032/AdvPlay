@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 import os
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
@@ -36,26 +35,23 @@ class LabelFlippingPoisoningAttack(PoisoningAttack, attack_type=available_attack
 
     def execute(self):
         super().execute()
-        unique_labels_original = list(self.dataset[self.label_column].unique())
+        unique_labels_original = np.unique(self.dataset[:, self.label_column])
         label_map = {label: idx for idx, label in enumerate(unique_labels_original)}
-        self.dataset[self.label_column] = self.dataset[self.label_column].map(label_map)
+        labels = self.dataset[:, self.label_column]
+        mapped_labels = np.vectorize(label_map.get)(labels)
+        self.dataset[:, self.label_column] = mapped_labels
 
         try:
-            X = self.dataset.drop(columns=[self.label_column])
-            y = pd.Series(self.dataset[self.label_column].values.astype(int))
+            X = np.delete(self.dataset, self.label_column, axis=1)
+            y = self.dataset[:, self.label_column].astype(int)
         except Exception as e:
             raise RuntimeError(f"Failed to split features and labels: {e}")
 
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=self.test_portion,
                                                                 random_state=self.seed)
 
-        X_train = X_train.reset_index(drop=True)
-        y_train = y_train.reset_index(drop=True)
-        X_test = X_test.reset_index(drop=True)
-        y_test = y_test.reset_index(drop=True)
-
         n_samples = len(y_train)
-        unique_labels = y.unique()
+        unique_labels = np.unique(y)
 
         if len(unique_labels) <= 1:
             raise ValueError("Only one class is present; poisoning requires at least two distinct classes")
@@ -83,7 +79,7 @@ class LabelFlippingPoisoningAttack(PoisoningAttack, attack_type=available_attack
                 source_mask = y_train != label_map[self.target]
 
             else:
-                source_mask = pd.Series(True, index=y_train.index)
+                source_mask = np.ones_like(y_train, dtype=bool)
 
             X_source = X_train[source_mask]
             y_source = y_train[source_mask]
@@ -97,9 +93,9 @@ class LabelFlippingPoisoningAttack(PoisoningAttack, attack_type=available_attack
             print(f"Poisoning {n_to_poison} samples ({portion_to_poison * 100:.1f}%) from the dataset")
 
             try:
-                source_indices = y_source.index.to_numpy()
+                source_indices = np.where(source_mask)[0]
                 indices_to_flip = rng.choice(source_indices, size=n_to_poison, replace=False)
-                poisoned_labels = self.poison(y_train.loc[indices_to_flip].copy(), unique_labels, label_map, rng)
+                poisoned_labels = self.poison(y_train[indices_to_flip].copy(), unique_labels, label_map, rng)
                 poisoned_labels = poisoned_labels.astype(int)
             except Exception as e:
                 raise RuntimeError(f"Failed during poisoning step at {portion_to_poison * 100:.1f}%: {e}")
@@ -107,11 +103,11 @@ class LabelFlippingPoisoningAttack(PoisoningAttack, attack_type=available_attack
             if self.override:
                 X_train_poisoned = X_train.copy()
                 y_train_poisoned = y_train.copy()
-                y_train_poisoned.loc[indices_to_flip] = poisoned_labels
+                y_train_poisoned[indices_to_flip] = poisoned_labels
 
             else:
-                X_train_poisoned = pd.concat([X_train, X_train.loc[indices_to_flip]])
-                y_train_poisoned = pd.concat([y_train, poisoned_labels])
+                X_train_poisoned = np.vstack([X_train, X_train[indices_to_flip]])
+                y_train_poisoned = np.concatenate([y_train, poisoned_labels])
 
             y_train_poisoned = y_train_poisoned.astype(int)
 
@@ -121,8 +117,7 @@ class LabelFlippingPoisoningAttack(PoisoningAttack, attack_type=available_attack
                 raise RuntimeError(f"Failed to train poisoned model at {portion_to_poison * 100:.1f}%: {e}")
 
             poisoned_models_dict[portion_to_poison] = model
-            poisoned_datasets_dict[portion_to_poison] = X_train_poisoned.copy()
-            poisoned_datasets_dict[portion_to_poison][self.label_column] = y_train_poisoned
+            poisoned_datasets_dict[portion_to_poison] = np.column_stack((X_train_poisoned, y_train_poisoned))
 
         if not poisoned_models_dict:
             raise RuntimeError("No poisoned models were generated; check your configuration")
@@ -141,7 +136,8 @@ class LabelFlippingPoisoningAttack(PoisoningAttack, attack_type=available_attack
             save_model.save_model(self.training_framework, poisoned_models_dict[most_effective_portion], f"{self.model_name}_poisoned")
             dataset_path = paths.DATASETS / 'poisoned_datasets' / f"{self.model_name}_dataset.csv"
             os.makedirs(dataset_path.parent, exist_ok=True)
-            poisoned_datasets_dict[most_effective_portion].to_csv(dataset_path)
+            np.save(dataset_path.with_suffix(".npy"), poisoned_datasets_dict[most_effective_portion])
+
         except Exception as e:
             raise RuntimeError(f"Failed to save model(s) and dataset: {e}")
 
@@ -149,12 +145,12 @@ class LabelFlippingPoisoningAttack(PoisoningAttack, attack_type=available_attack
 
     def poison(self, labels_to_poison, labels, label_map, rng):
         if self.target is not None:
-            return pd.Series([label_map[self.target]] * len(labels_to_poison), index=labels_to_poison.index)
+            return np.full_like(labels_to_poison, fill_value=label_map[self.target])
 
         poisoned = labels_to_poison.copy()
-        for idx in poisoned.index:
-            labels_without_source = labels[labels != poisoned.loc[idx]]
-            poisoned.loc[idx] = rng.choice(labels_without_source)
+        for i in range(len(poisoned)):
+            labels_without_source = labels[labels != poisoned[i]]
+            poisoned[i] = rng.choice(labels_without_source)
 
         return poisoned
 

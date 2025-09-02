@@ -9,7 +9,7 @@ from advplay import paths
 
 def load_dataset(source_type, path):
     if not Path(path).is_file():
-        path = paths.DATASETS / f"{path}.csv"
+        path = paths.DATASETS / f"{path}"
         if not Path(path).is_file():
             raise FileNotFoundError(f"File {path} does not exist")
 

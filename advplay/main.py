@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from pathlib import Path
 import os
@@ -29,7 +30,7 @@ def perform_action(args):
 
         for key, value in parameters.items():
             type = BaseAttack.registry.get((attack_type, None)).TEMPLATE_PARAMETERS[key].get("type")
-            parameters[key] = cast_parameter(value, type)
+            parameters[key] = cast_parameter(value, type, parameters)
 
         attack_subtype = kwargs.get('technique')
         attack_runner.define_template(attack_type, attack_subtype, **parameters)
@@ -38,7 +39,7 @@ def perform_action(args):
         parameters = {k: v for k, v in kwargs.items() if k not in (commands.COMMAND, commands.ATTACK_TYPE, 'template')}
         for key, value in parameters.items():
             type = BaseAttack.registry.get((attack_type, None)).ATTACK_PARAMETERS[key].get("type")
-            parameters[key] = cast_parameter(value, type)
+            parameters[key] = cast_parameter(value, type, parameters)
 
         template_name = args.template
         attack_runner.attack_runner(attack_type, template_name, **parameters)
@@ -47,20 +48,32 @@ def perform_action(args):
         parameters = {k: v for k, v in kwargs.items() if k not in (commands.COMMAND, commands.ATTACK_TYPE)}
         visualizer(attack_type, **parameters)
 
-def cast_parameter(parameter, type):
+def cast_parameter(parameter, type, parameters):
     if parameter is None or type is None:
         return parameter
 
-    if type == pd.DataFrame:
-        dataset_path = parameter
-        if not Path(dataset_path).is_file():
-            dataset_path = paths.DATASETS / parameter
-            if not Path(dataset_path).is_file():
-                raise ValueError(f"Dataset not found: {dataset_path}")
+    if type == np.array:
+        if parameter is None:
+            return None
 
-        ext = os.path.splitext(dataset_path)[1][1:]
-        dataset = load_dataset(ext, dataset_path)
-        return dataset
+        ext = os.path.splitext(parameter)[1][1:]
+
+        if isinstance(parameters['label_column'], str):
+            path = parameter
+            if not Path(path).is_file():
+                path = paths.DATASETS / f"{path}"
+                if not Path(path).is_file():
+                    raise FileNotFoundError(f"File {path} does not exist")
+
+            if not ext == 'csv':
+                raise TypeError("str column name is currently only supported for csv files")
+            df = pd.read_csv(path)
+            parameters['label_column'] = df.columns.get_loc(parameters['label_column'])
+
+        return load_dataset(ext, parameter)
+
+    elif type == 'label':
+        return parameter
 
     elif type == dict:
         if not parameter.is_file():

@@ -8,20 +8,16 @@ class NPZDatasetLoader(BaseDatasetLoader, source_type="npz"):
     def __init__(self, path: str):
         super().__init__(path)
 
-    def load(self) -> pd.DataFrame:
+    def load(self) -> np.ndarray:
         if not os.path.exists(self.path):
             raise FileNotFoundError(f"NPZ file not found: {self.path}")
 
         dataset_file = np.load(self.path)
+        arrays = [dataset_file[key] for key in dataset_file.files]
 
-        for key in dataset_file.files:
-            if dataset_file[key].ndim > 2:
-                raise AttributeError(f"Array '{key}' has {dataset_file[key].ndim} dimensions; only 1D/2D supported")
+        arrays = [arr.reshape(len(arr), -1) if arr.ndim > 1 else arr.reshape(-1, 1) for arr in arrays]
 
-        if 'X' in dataset_file.files and 'y' in dataset_file.files:
-                X = dataset_file['X'].reshape(len(dataset_file['y']), -1)
-                df = pd.DataFrame(X)
-                df['y'] = dataset_file['y']
-                return df
+        dataset = np.hstack(arrays)
 
-        return pd.DataFrame({key: dataset_file[key] for key in dataset_file.files})
+        return dataset
+
