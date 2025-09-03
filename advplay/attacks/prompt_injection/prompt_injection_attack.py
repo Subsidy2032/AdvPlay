@@ -1,9 +1,7 @@
-from datetime import datetime
 from pathlib import Path
 
 from advplay.attacks.base_attack import BaseAttack
 from advplay.variables import available_attacks, available_platforms
-from advplay import paths
 from advplay.variables import default_template_file_names
 from advplay.model_ops.llms.base_platform import BasePlatform
 
@@ -21,7 +19,7 @@ class PromptInjectionAttack(BaseAttack, attack_type=available_attacks.PROMPT_INJ
 
     ATTACK_PARAMETERS = {
         "template": BaseAttack.COMMON_ATTACK_PARAMETERS.get('template'),
-        "prompt_list": {"type": (list, str), "required": False, "default": None,
+        "prompt_list": {"type": list, "required": False, "default": None,
                         "help": 'A list or file of prompts to run'},
         "session_id": {"type": str, "required": False, "default": "default_session", "help": 'The session ID'},
         "log_filename": BaseAttack.COMMON_ATTACK_PARAMETERS.get('log_filename')

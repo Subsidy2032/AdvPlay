@@ -1,12 +1,4 @@
-from langchain_openai import ChatOpenAI
-from langchain_core.runnables.history import RunnableWithMessageHistory
-from langchain_core.chat_history import InMemoryChatMessageHistory
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain.schema import HumanMessage, AIMessage
 from datetime import datetime
-import json
-import os
-from openai import OpenAI
 
 from advplay.utils.append_log_entry import append_log_entry
 from advplay.attacks.prompt_injection.prompt_injection_attack import PromptInjectionAttack
@@ -38,6 +30,7 @@ class DirectPromptInjectionAttack(PromptInjectionAttack, attack_type=available_a
 
         print("Start trying different prompts. Type 'clear' to clear conversation history, and 'exit' to exit")
 
+        c = 0
         while True:
             user_input = input("> ")
 
@@ -47,6 +40,9 @@ class DirectPromptInjectionAttack(PromptInjectionAttack, attack_type=available_a
                 continue
 
             if user_input.lower() == "exit":
+                if c == 0:
+                    return
+
                 conversation_history = llm.get_conversation_history()
                 self.log_chat_history(conversation_history, self.log_file_path)
                 print(f"Chat history saved to {self.log_file_path}. Exiting...")
@@ -54,6 +50,7 @@ class DirectPromptInjectionAttack(PromptInjectionAttack, attack_type=available_a
 
             response = llm.query_llm(user_input)
             print(f"Response: {response.content}")
+            c += 1
 
     def log_chat_history(self, conversation_history, log_file_path):
         log_entry = {

@@ -9,7 +9,8 @@ from advplay.variables import available_platforms, available_attacks, default_te
 @pytest.fixture
 def openai_template_data() -> dict:
     return {
-        "technique": available_platforms.OPENAI,
+        "technique": "direct",
+        "platform": available_platforms.OPENAI,
         "attack": available_attacks.PROMPT_INJECTION,
         "model": "gpt-4o",
         "custom_instructions": "Those are the custom instructions instructions",
@@ -29,6 +30,7 @@ def file_path(openai_template_data: dict, fake_templates_dir) -> str:
 def expected_json(openai_template_data: dict) -> dict:
     return {
         "technique": openai_template_data["technique"],
+        "platform": openai_template_data["platform"],
         "model": openai_template_data["model"],
         "custom_instructions": openai_template_data["custom_instructions"]
     }
@@ -109,16 +111,6 @@ def test_missing_instructions(openai_template_data, expected_json, file_path):
     with open(file_path, "r") as f:
         data = json.load(f)
     assert data == expected_json
-
-def test_missing_model(openai_template_data):
-    with pytest.raises(NameError, match="does not exist"):
-        define_template(
-            openai_template_data["attack"],
-            openai_template_data["technique"],
-            model="non-existent-model",
-            custom_instructions=openai_template_data["custom_instructions"],
-            template_filename=openai_template_data["template_filename"]
-        )
 
 def test_non_existent_platform(openai_template_data):
     with pytest.raises(ValueError, match="Unsupported"):

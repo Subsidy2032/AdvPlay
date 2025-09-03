@@ -8,7 +8,7 @@ import os
 from advplay.attacks.attack_runner import attack_runner
 from advplay.variables import available_attacks, poisoning_techniques, available_frameworks, available_training_algorithms
 from advplay import paths
-from advplay.model_ops.dataset_loaders.base_dataset_loader import BaseDatasetLoader
+from advplay.model_ops.registry import load_dataset
 
 @pytest.fixture(autouse=True)
 def fake_log_dir(tmp_path, monkeypatch):
@@ -74,7 +74,7 @@ def log_file_path(fake_log_dir, attack_parameters):
 @pytest.fixture
 def dataset_path(fake_dataset_dir, attack_parameters):
     return (paths.DATASETS / "poisoned_datasets" /
-            f"{attack_parameters['model_name']}_dataset.csv")
+            f"{attack_parameters['model_name']}_dataset.npy")
 
 
 @pytest.fixture
@@ -106,13 +106,11 @@ def test_attack_runs_without_errors(attack_parameters, sample_dataset, valid_tem
     assert dataset_path.exists(), f"{dataset_path} was not created"
 
     ext = os.path.splitext(dataset_path)[1][1:]
-    loader_cls = BaseDatasetLoader.registry.get(ext)
-
-    dataset_df = loader_cls(dataset_path).load()
+    dataset = load_dataset(ext, dataset_path)
 
     expected = (1 - valid_template['test_portion']) * sample_dataset.shape[0]
-    assert dataset_df.shape[0] == expected, (
-        f"Dataset row count mismatch: expected {expected}, got {dataset_df.shape[0]}"
+    assert dataset.shape[0] == expected, (
+        f"Dataset row count mismatch: expected {expected}, got {dataset.shape[0]}"
     )
 
     assert model_path.exists()
@@ -166,17 +164,15 @@ def test_override_false_appends_data(tmp_path, dataset_path, valid_template, att
     assert dataset_path.exists(), f"{dataset_path} was not created"
 
     ext = os.path.splitext(dataset_path)[1][1:]
-    loader_cls = BaseDatasetLoader.registry.get(ext)
-
-    dataset_df = loader_cls(dataset_path).load()
+    dataset = load_dataset(ext, dataset_path)
 
     original_num_rows = (1 - valid_template['test_portion']) * sample_dataset.shape[0]
-    assert dataset_df.shape[0] > original_num_rows, (
-        f"Dataset row count mismatch: expected more than {original_num_rows}, got {dataset_df.shape[0]}"
+    assert dataset.shape[0] > original_num_rows, (
+        f"Dataset row count mismatch: expected more than {original_num_rows}, got {dataset.shape[0]}"
     )
 
 @pytest.mark.parametrize("bad_kwargs,expected_error", [
-    ({"label_column": 'fake'}, ValueError),
+    ({"label_column": 'fake'}, KeyError),
     ({"step": -0.4}, ValueError),
     ({"seed": "seed"}, TypeError),
 ])

@@ -23,8 +23,8 @@ class PoisoningAttack(BaseAttack, ABC, attack_type=available_attacks.POISONING, 
                                   "help": 'Minimum portion of the dataset to poison'},
         "max_portion_to_poison": {"type": float, "required": False, "default": None,
                                   "help": 'Maximum portion of the dataset to poison'},
-        "source": {"type": (str, int), "required": False, "default": None, "help": 'Source class to poison'},
-        "target": {"type": (str, int), "required": False, "default": None, "help": 'Target class'},
+        "source": {"type": (int, str), "required": False, "default": None, "help": 'Source class to poison'},
+        "target": {"type": (int, str), "required": False, "default": None, "help": 'Target class'},
         "trigger_pattern": {"required": False, "default": None, "help": "A trigger to be used for poisoning"},
         "override": {"type": bool, "required": False, "default": True,
                      "help": "Whether to override examples from the training dataset"},
@@ -46,12 +46,24 @@ class PoisoningAttack(BaseAttack, ABC, attack_type=available_attacks.POISONING, 
         "log_filename": BaseAttack.COMMON_ATTACK_PARAMETERS.get('log_filename')
     }
 
+    def __init__(self, template, **kwargs):
+        super().__init__(template, **kwargs)
+
+        if isinstance(self.dataset, pd.DataFrame):
+            if isinstance(self.label_column, str):
+                self.label_column = self.dataset.columns.get_loc(self.label_column)
+
+            self.dataset = self.dataset.to_numpy()
+
+        elif isinstance(self.label_column, str):
+            raise TypeError("str column names is only supported for dataframes at the moment")
+
     def execute(self):
         self.validate_attack_inputs()
 
     def validate_attack_inputs(self):
-        if self.dataset is None or not isinstance(self.dataset, np.ndarray):
-            raise TypeError("training_data must be a pandas DataFrame")
+        if self.dataset is None or not (isinstance(self.dataset, np.ndarray) or isinstance(self.dataset, pd.DataFrame)):
+            raise TypeError("training_data must be a Pandas DataFrame or a Numpy Array")
 
         if not (0 < self.test_portion < 1):
             raise ValueError("test_portion must be between 0 and 1")

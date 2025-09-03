@@ -11,7 +11,8 @@ from advplay.variables import available_attacks, available_platforms
 @pytest.fixture
 def valid_template(tmp_path):
     return {
-        "technique": "openai",
+        "technique": "direct",
+        "platform": "openai",
         "model": "gpt-4o",
         "custom_instructions": "test instructions"
     }
@@ -20,7 +21,7 @@ def valid_template(tmp_path):
 def attack_parameters():
     return {
         "attack": available_attacks.PROMPT_INJECTION,
-        "technique": available_platforms.OPENAI,
+        "technique": "direct",
         "prompt_list": ["test prompt"],
         "session_id": "test"
     }

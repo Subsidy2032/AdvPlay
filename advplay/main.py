@@ -30,7 +30,7 @@ def perform_action(args):
 
         for key, value in parameters.items():
             type = BaseAttack.registry.get((attack_type, None)).TEMPLATE_PARAMETERS[key].get("type")
-            parameters[key] = cast_parameter(value, type, parameters)
+            parameters[key] = cast_parameter(value, type)
 
         attack_subtype = kwargs.get('technique')
         attack_runner.define_template(attack_type, attack_subtype, **parameters)
@@ -39,7 +39,7 @@ def perform_action(args):
         parameters = {k: v for k, v in kwargs.items() if k not in (commands.COMMAND, commands.ATTACK_TYPE, 'template')}
         for key, value in parameters.items():
             type = BaseAttack.registry.get((attack_type, None)).ATTACK_PARAMETERS[key].get("type")
-            parameters[key] = cast_parameter(value, type, parameters)
+            parameters[key] = cast_parameter(value, type)
 
         template_name = args.template
         attack_runner.attack_runner(attack_type, template_name, **parameters)
@@ -48,61 +48,33 @@ def perform_action(args):
         parameters = {k: v for k, v in kwargs.items() if k not in (commands.COMMAND, commands.ATTACK_TYPE)}
         visualizer(attack_type, **parameters)
 
-def cast_parameter(parameter, type, parameters):
+def cast_parameter(parameter, type):
     if parameter is None or type is None:
         return parameter
 
-    if type == np.array:
-        if parameter is None:
-            return None
+    if type == (np.array, pd.DataFrame):
+        return load_dataset(os.path.splitext(parameter)[1][1:], parameter) if parameter is not None else None
 
-        ext = os.path.splitext(parameter)[1][1:]
-
-        if isinstance(parameters['label_column'], str):
-            path = parameter
-            if not Path(path).is_file():
-                path = paths.DATASETS / f"{path}"
-                if not Path(path).is_file():
-                    raise FileNotFoundError(f"File {path} does not exist")
-
-            if not ext == 'csv':
-                raise TypeError("str column name is currently only supported for csv files")
-            df = pd.read_csv(path)
-            parameters['label_column'] = df.columns.get_loc(parameters['label_column'])
-
-        return load_dataset(ext, parameter)
-
-    elif type == 'label':
-        return parameter
+    elif isinstance(type, tuple):
+        for t in type:
+            try:
+                return t(parameter)
+            except Exception:
+                pass
+        raise ValueError(f"Cannot cast {parameter!r} to any of {type}")
 
     elif type == dict:
-        if not parameter.is_file():
+        path = Path(parameter)
+        if not path.is_file():
             raise FileNotFoundError(f"Config file not found: {parameter}")
+        with open(path, "r") as f:
+            return json.load(f)
 
-        try:
-            with open(parameter, "r") as f:
-                return json.load(f)
-
-        except Exception as e:
-            raise ValueError("File is not a valid json")
-
-    elif type == (str, int):
-        try:
-            return int(parameter)
-
-        except:
-            return str(parameter)
-
-
-    elif type == (list, str):
-        try:
-            return [parameter]
-
-        except:
-            return str(parameter)
+    elif type == list:
+        return [parameter]
 
     elif type == bool:
-        return parameter.lower() == "true"
+        return str(parameter).lower() == "true"
 
     else:
         return type(parameter)
