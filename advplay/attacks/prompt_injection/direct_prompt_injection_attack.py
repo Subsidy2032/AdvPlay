@@ -7,9 +7,6 @@ from advplay.model_ops.llms.base_platform import BasePlatform
 
 class DirectPromptInjectionAttack(PromptInjectionAttack, attack_type=available_attacks.PROMPT_INJECTION,
                                   attack_subtype=prompt_injection_techniques.DIRECT):
-    def __init__(self, template, **kwargs):
-        super().__init__(template, **kwargs)
-
     def execute(self):
         super().execute()
 

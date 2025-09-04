@@ -15,24 +15,6 @@ class LabelFlippingPoisoningAttack(PoisoningAttack, attack_type=available_attack
     def __init__(self, template, **kwargs):
         super().__init__(template, **kwargs)
 
-        self.log_data = {
-            "attack": self.attack_type,
-            "technique": self.technique,
-            "training_framework": self.training_framework,
-            "training_algorithm": self.training_algorithm,
-            "training_configuration": self.training_configuration,
-            "test_portion": self.test_portion,
-            "min_portion_to_poison": self.min_portion_to_poison,
-            "max_portion_to_poison": self.max_portion_to_poison,
-            "source": self.source,
-            "target": self.target,
-            "override": self.override,
-            "seed": self.seed,
-            "step": self.step,
-            "model_name": self.model_name,
-            "poisoning_results": []
-        }
-
     def execute(self):
         super().execute()
 
@@ -127,11 +109,10 @@ class LabelFlippingPoisoningAttack(PoisoningAttack, attack_type=available_attack
         if not poisoned_models_dict:
             raise RuntimeError("No poisoned models were generated; check your configuration")
 
-        most_effective_portion, min_accuracy = self.evaluate(n_samples, X_test, y_test, unique_labels_original, base_model, poisoned_models_dict)
+        evaluation_results = self.evaluate(n_samples, X_test, y_test, unique_labels_original, base_model, poisoned_models_dict)
+        most_effective_portion = evaluation_results["most_effective_portion"]
 
         print(f"The attack was most effective when poisoning {most_effective_portion * 100:.1f}% of the training dataset\n")
-        self.log_data["most_effective_portion"] = most_effective_portion
-        self.log_data["most_effective_accuracy"] = min_accuracy
 
         try:
             print(f"Saving base model\n")
@@ -146,7 +127,7 @@ class LabelFlippingPoisoningAttack(PoisoningAttack, attack_type=available_attack
         except Exception as e:
             raise RuntimeError(f"Failed to save model(s) and dataset: {e}")
 
-        append_log_entry(self.log_file_path, self.log_data)
+        self.log_attack_results(unique_labels_original, evaluation_results, self.log_file_path)
 
     def poison(self, labels_to_poison, labels, label_map, rng):
         if self.target is not None:
@@ -162,17 +143,18 @@ class LabelFlippingPoisoningAttack(PoisoningAttack, attack_type=available_attack
     def evaluate(self, n_samples, X_test, y_test, unique_labels, base_model, poisoned_models: dict):
         min_accuracy = 1.1
         most_effective_portion = None
+        evaluation_results = {}
 
         print("\n")
         base_model_accuracy = registry.evaluate_model_accuracy(self.training_framework, base_model, X_test, y_test)
-        self.log_data["base_accuracy"] = base_model_accuracy
+        evaluation_results["base_accuracy"] = base_model_accuracy
         print(f"Base model accuracy is: {base_model_accuracy:.2f}\n")
 
         base_model_predictions = base_model.predict(X_test)
         base_confusion_mat = confusion_matrix(y_test, base_model_predictions)
-        self.log_data["labels"] = unique_labels
-        self.log_data["base_confusion_matrix"] = base_confusion_mat
+        evaluation_results["base_confusion_matrix"] = base_confusion_mat
 
+        evaluation_results["poisoning_results"] = []
         for portion_to_poison, model in poisoned_models.items():
             try:
                 accuracy = registry.evaluate_model_accuracy(self.training_framework, model, X_test, y_test)
@@ -185,7 +167,7 @@ class LabelFlippingPoisoningAttack(PoisoningAttack, attack_type=available_attack
                 predictions = model.predict(X_test)
                 confusion_mat = confusion_matrix(y_test, predictions)
 
-                self.log_data["poisoning_results"].append({
+                evaluation_results["poisoning_results"].append({
                     "portion_to_poison": portion_to_poison,
                     "n_samples_poisoned": n_to_poison,
                     "accuracy": accuracy,
@@ -198,4 +180,32 @@ class LabelFlippingPoisoningAttack(PoisoningAttack, attack_type=available_attack
             except Exception as e:
                 raise RuntimeError(f"Failed to evaluate poisoned model at {portion_to_poison * 100:.1f}%: {e}")
 
-        return most_effective_portion, min_accuracy
+        evaluation_results["most_effective_portion"] = most_effective_portion
+        evaluation_results["min_accuracy"] = min_accuracy
+        return evaluation_results
+
+    def log_attack_results(self, unique_labels, evaluation_results, log_file_path):
+        log_entry = {
+            "attack": self.attack_type,
+            "technique": self.technique,
+            "training_framework": self.training_framework,
+            "training_algorithm": self.training_algorithm,
+            "training_configuration": self.training_configuration,
+            "test_portion": self.test_portion,
+            "min_portion_to_poison": self.min_portion_to_poison,
+            "max_portion_to_poison": self.max_portion_to_poison,
+            "source": self.source,
+            "target": self.target,
+            "override": self.override,
+            "seed": self.seed,
+            "step": self.step,
+            "model_name": self.model_name,
+            "labels": unique_labels,
+            "base_accuracy": evaluation_results["base_accuracy"],
+            "base_confusion_matrix": evaluation_results["base_confusion_matrix"],
+            "most_effective_portion": evaluation_results["most_effective_portion"],
+            "min_accuracy": evaluation_results["min_accuracy"],
+            "poisoning_results": evaluation_results["poisoning_results"]
+        }
+
+        append_log_entry(log_file_path, log_entry)

@@ -76,7 +76,6 @@ class BaseAttack(ABC):
 
         self.log_file_path = None
         self.setup_logging()
-
         self.validate_template_inputs()
 
     def setup_logging(self):
