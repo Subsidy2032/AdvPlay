@@ -11,24 +11,21 @@ def fake_templates_dir(tmp_path, monkeypatch):
     return tmp_path
 
 @pytest.fixture
-def fake_training_config_file(tmp_path):
-    config_file = tmp_path / "fake_training_config.json"
-    fake_config = {
+def fake_training_config(tmp_path):
+    return {
         "learning_rate": 0.01,
         "batch_size": 32,
         "epochs": 5
     }
-    config_file.write_text(json.dumps(fake_config))
-    return str(config_file)
 
 @pytest.fixture
-def label_flipping_template_data(fake_training_config_file, tmp_path):
+def label_flipping_template_data(fake_training_config, tmp_path):
     return {
         "attack": available_attacks.POISONING,
         "technique": poisoning_techniques.LABEL_FLIPPING,
         "training_framework": "sklearn",
         "training_algorithm": "logistic_regression",
-        "training_configuration": fake_training_config_file,
+        "training_configuration": fake_training_config,
         "test_portion": 0.2,
         "min_portion_to_poison": 0.3,
         "max_portion_to_poison": 0.6,
@@ -39,9 +36,6 @@ def label_flipping_template_data(fake_training_config_file, tmp_path):
 
 @pytest.fixture
 def expected_json(label_flipping_template_data):
-    with open(label_flipping_template_data["training_configuration"], 'r', encoding='utf-8') as config_file:
-        training_config = config_file.read()
-
     return {
         "technique": label_flipping_template_data["technique"],
         "training_framework": label_flipping_template_data["training_framework"],

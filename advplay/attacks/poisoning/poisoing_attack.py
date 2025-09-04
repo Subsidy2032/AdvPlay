@@ -128,5 +128,5 @@ class PoisoningAttack(BaseAttack, ABC, attack_type=available_attacks.POISONING, 
         if any(c in self.template_filename for c in r'\/:*?"<>|'):
             raise ValueError(f"Template filename contains invalid characters: {self.template_filename}")
 
-        if self.training_configuration is not None and not Path(self.training_configuration).exists():
-            raise FileNotFoundError(f"training_config file does not exist: {self.training_configuration}")
+        if self.training_configuration is not None and not isinstance(self.training_configuration, dict):
+            raise FileNotFoundError(f"training_configuration must be a dictionary, got {type(self.training_configuration)}")

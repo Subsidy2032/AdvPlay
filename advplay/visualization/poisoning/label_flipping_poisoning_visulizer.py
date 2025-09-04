@@ -7,9 +7,6 @@ from advplay.variables import available_attacks, poisoning_techniques
 
 class LabelFlippingPoisoningVisualizer(PoisoningVisualizer, attack_type=available_attacks.POISONING,
                                        attack_subtype=poisoning_techniques.LABEL_FLIPPING):
-    def __init__(self, log_file, **kwargs):
-        super().__init__(log_file, **kwargs)
-
     def visualize(self):
         self.save_accuracy_graph()
         self.save_confusion_matrices()
