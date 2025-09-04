@@ -30,8 +30,6 @@ def label_flipping_template_data(fake_training_config_file, tmp_path):
         "training_algorithm": "logistic_regression",
         "training_configuration": fake_training_config_file,
         "test_portion": 0.2,
-        "source": 0,
-        "target": 1,
         "min_portion_to_poison": 0.3,
         "max_portion_to_poison": 0.6,
         "trigger_pattern": None,
@@ -52,8 +50,6 @@ def expected_json(label_flipping_template_data):
         "test_portion": label_flipping_template_data["test_portion"],
         "min_portion_to_poison": label_flipping_template_data["min_portion_to_poison"],
         "max_portion_to_poison": label_flipping_template_data["max_portion_to_poison"],
-        "source": label_flipping_template_data["source"],
-        "target": label_flipping_template_data["target"],
         "trigger_pattern": label_flipping_template_data["trigger_pattern"],
         "override": label_flipping_template_data["override"]
 }
@@ -72,8 +68,6 @@ def test_define_template_valid(label_flipping_template_data, file_path, expected
         test_portion=label_flipping_template_data["test_portion"],
         min_portion_to_poison=label_flipping_template_data["min_portion_to_poison"],
         max_portion_to_poison=label_flipping_template_data["max_portion_to_poison"],
-        source=label_flipping_template_data["source"],
-        target=label_flipping_template_data["target"],
         trigger_pattern=label_flipping_template_data["trigger_pattern"],
         override=label_flipping_template_data["override"],
         template_filename=label_flipping_template_data["template_filename"],
@@ -91,7 +85,6 @@ def test_define_template_valid(label_flipping_template_data, file_path, expected
     ({"min_portion_to_poison": 1.2}, ValueError),
     ({"max_portion_to_poison": -0.5}, ValueError),
     ({"min_portion_to_poison": 0.8, "max_portion_to_poison": 0.1}, ValueError),
-    ({"source": 0, "target": 0}, ValueError),
     ({"override": "yes"}, TypeError),
     ({"template_filename": ""}, ValueError),
 ])
@@ -108,8 +101,6 @@ def test_define_template_invalid(label_flipping_template_data, bad_kwargs, expec
         "test_portion": kwargs["test_portion"],
         "min_portion_to_poison": kwargs["min_portion_to_poison"],
         "max_portion_to_poison": kwargs["max_portion_to_poison"],
-        "source": kwargs["source"],
-        "target": kwargs["target"],
         "trigger_pattern": kwargs["trigger_pattern"],
         "override": kwargs["override"],
         "template_filename": kwargs["template_filename"],

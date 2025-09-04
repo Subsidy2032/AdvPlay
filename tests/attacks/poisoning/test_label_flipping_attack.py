@@ -49,8 +49,6 @@ def valid_template():
         "test_portion": 0.2,
         "min_portion_to_poison": 0.3,
         "max_portion_to_poison": 0.4,
-        "source": 0,
-        "target": 1,
         "trigger_pattern": None,
         "override": True
     }
@@ -62,6 +60,8 @@ def attack_parameters():
         "technique": poisoning_techniques.LABEL_FLIPPING,
         "seed": 42,
         "label_column": "label",
+        "source": 0,
+        "target": 1,
         "step": 0.02,
         "model_name": "test_model",
         "log_filename": "test_attack"
@@ -90,6 +90,8 @@ def test_attack_runs_without_errors(attack_parameters, sample_dataset, valid_tem
         poisoning_data=None,
         seed=attack_parameters["seed"],
         label_column=attack_parameters["label_column"],
+        source=attack_parameters["source"],
+        target=attack_parameters["target"],
         step=attack_parameters["step"],
         model_name=attack_parameters["model_name"],
         log_filename=attack_parameters["log_filename"]
@@ -123,6 +125,8 @@ def test_two_log_entries(attack_parameters, sample_dataset, valid_template, log_
         poisoning_data=None,
         seed=attack_parameters["seed"],
         label_column=attack_parameters["label_column"],
+        source=attack_parameters["source"],
+        target=attack_parameters["target"],
         step=attack_parameters["step"],
         model_name=attack_parameters["model_name"],
         log_filename=attack_parameters["log_filename"]
@@ -135,6 +139,8 @@ def test_two_log_entries(attack_parameters, sample_dataset, valid_template, log_
         poisoning_data=None,
         seed=attack_parameters["seed"],
         label_column=attack_parameters["label_column"],
+        source=attack_parameters["source"],
+        target=attack_parameters["target"],
         step=attack_parameters["step"],
         model_name=attack_parameters["model_name"],
         log_filename=attack_parameters["log_filename"]
@@ -157,6 +163,8 @@ def test_override_false_appends_data(tmp_path, dataset_path, valid_template, att
         poisoning_data=None,
         seed=attack_parameters["seed"],
         label_column=attack_parameters["label_column"],
+        source=attack_parameters["source"],
+        target=attack_parameters["target"],
         model_name = attack_parameters["model_name"],
         log_filename = attack_parameters["log_filename"]
     )
@@ -187,6 +195,8 @@ def test_attack_invalid(attack_parameters, valid_template, bad_kwargs, expected_
         "poisoning_data": None,
         "seed": kwargs["seed"],
         "label_column": kwargs["label_column"],
+        "source": kwargs["source"],
+        "target": kwargs["target"],
         "step": kwargs["step"],
         "model_name": kwargs["model_name"],
         "log_filename": kwargs["log_filename"]
