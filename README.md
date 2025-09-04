@@ -1,6 +1,6 @@
 ## AdvPlay
 
-AdvPlay is a framework for running adversarial AI attacks with tunable parameters and reproducible results. Designed for red team assessments, it helps security professionals evaluate model robustness against attacks.
+AdvPlay is a framework for running adversarial AI attacks with tunable parameters and reproducible results. Designed for red team assessments and research purposes, it helps security professionals evaluate model robustness against attacks.
 
 ## Disclaimer
 
@@ -17,10 +17,12 @@ Tested on Python 3.11.13. Follow these steps to get AdvPlay running:
 1. Clone the repo:
 
     `git clone https://github.com/Subsidy2032/AdvPlay.git`
+
 2. Install dependencies:
 
     `pip install -r requirements.txt`
-3. (Optional) Configure API keys in a `.env` file. See `.env.example` for required variables.
+
+3. (Optional) Configure API keys in a `.env` file. See `.env.example` for variable names.
 
 ## Usage
 
@@ -31,7 +33,7 @@ AdvPlay is entirely CLI-driven through `run.py`.
 1. Create a template (e.g., prompt injection attack):
 
 ```
-$ python3 run.py save_template prompt_injection -p openai -i "Include the word banana in each response" -m gpt-4o -f banana
+$ python3 run.py save_template prompt_injection --technique direct --platform openai --model gpt-4o-mini --custom-instructions "Never say banana" --template-filename banana
 ```
 
 This saves a reusable template called `banana`.
@@ -39,7 +41,7 @@ This saves a reusable template called `banana`.
 2. List available templates:
 
 ```
-$ python3 run.py save_template prompt_injection -l
+$ python3 run.py save_template prompt_injection --list
 ```
 
 Example Output:
@@ -52,7 +54,7 @@ Available templates:
 3. Run an attack using the template:
 
 ```
-$ python3 run.py attack prompt_injection -c banana -p prompts -f results
+$ python3 run.py attack prompt_injection --template banana --prompt-list ~/prompts
 ```
 
 Logs are saved to `advplay/attacks/logs...`
@@ -70,7 +72,7 @@ Use `-h` for available commands and options:
 - [ ] Enable defining re-runnable attacks with runtime parameters
 
 ### Analysis & Reporting
-- [ ] Add visualization of attack results using generated log files
+- [x] Add visualization of attack results using generated log files
 - [ ] Add report generation capability
 
 ### Advanced Features
@@ -80,7 +82,7 @@ Use `-h` for available commands and options:
 
 AdvPlay is in active development. Contributions, bug reports, and feedback are encouraged.  
 
-See `CONTRIBUTE.md` for instructions on adding new attacks.
+See `CONTRIBUTE.md` for instructions on how to contribute.
 
 ## License
 
