@@ -31,8 +31,10 @@ class BaseAttack(ABC):
 
     COMMON_ATTACK_PARAMETERS = {
         "template": {"type": str, "required": True, "default": None, "help": "The name of the template for the attack"},
-        "dataset": {"type": (np.array, pd.DataFrame), "required": True, "default": None, "help": 'Dataset to poison'},
-        "label_column": {"type": (int, str), "required": True, "default": None, "help": 'The name of the label column'},
+        "dataset": {"type": (np.array, pd.DataFrame), "required": False, "default": None, "help": 'Dataset to poison'},
+        "features_dataset": {"type": (np.array, pd.DataFrame), "required": False, "default": None, "help": 'Examples dataset'},
+        "labels_array": {"type": (np.array, pd.DataFrame), "required": False, "default": None, "help": 'Dataset to poison'},
+        "label_column": {"type": (int, str), "required": False, "default": None, "help": 'The name of the label column'},
         "seed": {"type": int, "required": False, "default": None, "help": 'Seed for reproduction'},
         "model_name": {"type": str, "required": False, "default": datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
                        "help": 'The name of the model that will be saved'},

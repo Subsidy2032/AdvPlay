@@ -34,6 +34,8 @@ class PoisoningAttack(BaseAttack, ABC, attack_type=available_attacks.POISONING, 
     ATTACK_PARAMETERS = {
         "template": BaseAttack.COMMON_ATTACK_PARAMETERS.get('template'),
         "dataset": BaseAttack.COMMON_ATTACK_PARAMETERS.get('dataset'),
+        "features_dataset": BaseAttack.COMMON_ATTACK_PARAMETERS.get('features_dataset'),
+        "labels_array": BaseAttack.COMMON_ATTACK_PARAMETERS.get('labels_array'),
         "label_column": BaseAttack.COMMON_ATTACK_PARAMETERS.get('label_column'),
         "source": {"type": (int, str), "required": False, "default": None, "help": 'Source class to poison'},
         "target": {"type": (int, str), "required": False, "default": None, "help": 'Target class'},
@@ -55,6 +57,12 @@ class PoisoningAttack(BaseAttack, ABC, attack_type=available_attacks.POISONING, 
 
             self.dataset = self.dataset.to_numpy()
 
+        elif isinstance(self.features_dataset, pd.DataFrame):
+            self.features_dataset = self.features_dataset.to_numpy()
+
+            if isinstance(self.labels_array, pd.DataFrame):
+                self.labels_array = self.labels_array.to_numpy().ravel()
+
         elif isinstance(self.label_column, str):
             raise TypeError("str column names is only supported for dataframes at the moment")
 
@@ -62,7 +70,7 @@ class PoisoningAttack(BaseAttack, ABC, attack_type=available_attacks.POISONING, 
         self.validate_attack_inputs()
 
     def validate_attack_inputs(self):
-        if self.dataset is None or not (isinstance(self.dataset, np.ndarray) or isinstance(self.dataset, pd.DataFrame)):
+        if self.dataset is not None and not (isinstance(self.dataset, np.ndarray) or isinstance(self.dataset, pd.DataFrame)):
             raise TypeError("training_data must be a Pandas DataFrame or a Numpy Array")
 
         if not (0 < self.test_portion < 1):

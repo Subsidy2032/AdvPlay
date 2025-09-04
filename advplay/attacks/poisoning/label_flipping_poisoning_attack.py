@@ -35,17 +35,22 @@ class LabelFlippingPoisoningAttack(PoisoningAttack, attack_type=available_attack
 
     def execute(self):
         super().execute()
-        unique_labels_original = np.unique(self.dataset[:, self.label_column])
-        label_map = {label: idx for idx, label in enumerate(unique_labels_original)}
-        labels = self.dataset[:, self.label_column]
-        mapped_labels = np.vectorize(label_map.get)(labels)
-        self.dataset[:, self.label_column] = mapped_labels
 
-        try:
-            X = np.delete(self.dataset, self.label_column, axis=1)
-            y = self.dataset[:, self.label_column].astype(int)
-        except Exception as e:
-            raise RuntimeError(f"Failed to split features and labels: {e}")
+        if self.dataset is not None:
+            try:
+                X = np.delete(self.dataset, self.label_column, axis=1)
+                y = self.dataset[:, self.label_column]
+            except Exception as e:
+                raise RuntimeError(f"Failed to split features and labels: {e}")
+
+        else:
+            X = self.features_dataset
+            y = self.labels_array
+
+        unique_labels_original = np.unique(y)
+        label_map = {label: idx for idx, label in enumerate(unique_labels_original)}
+        mapped_labels = np.vectorize(label_map.get)(y)
+        y = mapped_labels.astype(int)
 
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=self.test_portion,
                                                                 random_state=self.seed)
