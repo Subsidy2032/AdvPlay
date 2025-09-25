@@ -68,7 +68,7 @@ class PoisoningAttack(BaseAttack, ABC, attack_type=available_attacks.POISONING, 
             elif isinstance(self.label_column, str):
                 raise TypeError("string column names are only supported for CSV and NPZ formats")
 
-        else:
+        elif self.features_dataset is not None:
             self.split = True
             self.X_source_type = self.features_dataset.source_type
             self.X_metadata = self.features_dataset.metadata

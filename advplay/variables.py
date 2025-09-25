@@ -25,6 +25,7 @@ class prompt_injection_techniques():
 
 class available_training_algorithms():
     LOGISTIC_REGRESSION: str = 'logistic_regression'
+    ONE_VS_REST: str = 'one_vs_rest'
 
 class default_template_file_names():
     CUSTOM_INSTRUCTIONS: str = 'custom_instructions'
