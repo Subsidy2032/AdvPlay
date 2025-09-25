@@ -9,6 +9,8 @@ from advplay.attacks.base_attack import BaseAttack
 from advplay.variables import available_attacks, poisoning_techniques, default_template_file_names
 from advplay import paths
 from advplay.model_ops.trainers.base_trainer import BaseTrainer
+from advplay.variables import dataset_formats
+from advplay.model_ops.dataset_loaders.loaded_dataset import LoadedDataset
 from advplay.model_ops.registry import load_dataset
 
 class PoisoningAttack(BaseAttack, ABC, attack_type=available_attacks.POISONING, attack_subtype=None):
@@ -50,28 +52,36 @@ class PoisoningAttack(BaseAttack, ABC, attack_type=available_attacks.POISONING, 
 
     def __init__(self, template, **kwargs):
         super().__init__(template, **kwargs)
+        self.split = False
 
-        if isinstance(self.dataset, pd.DataFrame):
-            if isinstance(self.label_column, str):
-                self.label_column = self.dataset.columns.get_loc(self.label_column)
+        if self.dataset is not None:
+            self.source_type = self.dataset.source_type
+            self.metadata = self.dataset.metadata
+            if self.source_type == dataset_formats.CSV:
+                if isinstance(self.label_column, str):
+                    self.label_column = self.metadata["columns"].get_loc(self.label_column)
 
-            self.dataset = self.dataset.to_numpy()
+            elif self.source_type == dataset_formats.NPZ:
+                if isinstance(self.label_column, str):
+                    self.label_column = self.metadata["keys"].index(self.label_column)
 
-        elif isinstance(self.features_dataset, pd.DataFrame):
-            self.features_dataset = self.features_dataset.to_numpy()
+            elif isinstance(self.label_column, str):
+                raise TypeError("string column names are only supported for CSV and NPZ formats")
 
-            if isinstance(self.labels_array, pd.DataFrame):
-                self.labels_array = self.labels_array.to_numpy().ravel()
+        else:
+            self.split = True
+            self.X_source_type = self.features_dataset.source_type
+            self.X_metadata = self.features_dataset.metadata
+            self.y_source_type = self.labels_array.source_type
+            self.y_metadata = self.labels_array.metadata
 
-        elif isinstance(self.label_column, str):
-            raise TypeError("str column names is only supported for dataframes at the moment")
 
     def execute(self):
         self.validate_attack_inputs()
 
     def validate_attack_inputs(self):
-        if self.dataset is not None and not (isinstance(self.dataset, np.ndarray) or isinstance(self.dataset, pd.DataFrame)):
-            raise TypeError("training_data must be a Pandas DataFrame or a Numpy Array")
+        if self.dataset is not None and type(self.dataset) is not LoadedDataset:
+            raise TypeError(f"training_data must be of type LoadedDataset. Got {type(self.dataset)} instead")
 
         if not (0 < self.test_portion < 1):
             raise ValueError("test_portion must be between 0 and 1")

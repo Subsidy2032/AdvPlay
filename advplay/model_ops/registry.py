@@ -4,6 +4,8 @@ from advplay.model_ops.dataset_loaders.base_dataset_loader import BaseDatasetLoa
 from advplay.model_ops.trainers.base_trainer import BaseTrainer
 from advplay.model_ops.model_loaders.base_model_loader import BaseModelLoader
 from advplay.model_ops.evaluators.base_evaluator import BaseEvaluator
+from advplay.model_ops.dataset_savers.base_dataset_saver import BaseDatasetSaver
+from advplay.model_ops.dataset_loaders.loaded_dataset import LoadedDataset
 from advplay.utils import load_files
 from advplay import paths
 
@@ -21,6 +23,15 @@ def load_dataset(source_type, path):
     loader = loader_cls(path)
     dataset = loader.load()
     return dataset
+
+def save_dataset(loaded_dataset: LoadedDataset, path):
+    saver_cls = BaseDatasetSaver.registry.get(loaded_dataset.source_type)
+
+    if saver_cls is None:
+        raise ValueError(f"Unsupported source type: {loaded_dataset.source_type}")
+
+    saver = saver_cls(loaded_dataset.data, loaded_dataset.metadata, Path(path))
+    saver.save()
 
 def build_trainer_cls(framework: str, training_algorithm: str, X_train, y_train, config: dict = None):
     default_path = paths.TRAINING_CONFIGURATIONS / framework

@@ -3,6 +3,7 @@ import numpy as np
 import os
 from abc import ABC, abstractmethod
 
+from advplay.model_ops.dataset_loaders.loaded_dataset import LoadedDataset
 
 class BaseDatasetLoader(ABC):
     registry = {}
@@ -12,11 +13,13 @@ class BaseDatasetLoader(ABC):
         if key in BaseDatasetLoader.registry:
             raise ValueError(f"Loader already registered for source '{source_type}'")
         super().__init_subclass__()
+
+        cls.source_type = source_type
         BaseDatasetLoader.registry[key] = cls
 
     def __init__(self, path):
         self.path = path
 
     @abstractmethod
-    def load(self):
+    def load(self) -> LoadedDataset:
         raise NotImplementedError("Subclasses must implement the load method")

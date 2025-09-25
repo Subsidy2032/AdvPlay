@@ -8,6 +8,7 @@ import pandas as pd
 
 from advplay import paths
 from advplay.model_ops.trainers.base_trainer import BaseTrainer
+from advplay.model_ops.dataset_loaders.loaded_dataset import LoadedDataset
 
 class BaseAttack(ABC):
     registry = {}
@@ -31,9 +32,9 @@ class BaseAttack(ABC):
 
     COMMON_ATTACK_PARAMETERS = {
         "template": {"type": str, "required": True, "default": None, "help": "The name of the template for the attack"},
-        "dataset": {"type": (np.array, pd.DataFrame), "required": False, "default": None, "help": 'Dataset to poison'},
-        "features_dataset": {"type": (np.array, pd.DataFrame), "required": False, "default": None, "help": 'Examples dataset'},
-        "labels_array": {"type": (np.array, pd.DataFrame), "required": False, "default": None, "help": 'Dataset to poison'},
+        "dataset": {"type": LoadedDataset, "required": False, "default": None, "help": 'Dataset to poison'},
+        "features_dataset": {"type": LoadedDataset, "required": False, "default": None, "help": 'Examples dataset'},
+        "labels_array": {"type": LoadedDataset, "required": False, "default": None, "help": 'Dataset to poison'},
         "label_column": {"type": (int, str), "required": False, "default": None, "help": 'The name of the label column'},
         "seed": {"type": int, "required": False, "default": None, "help": 'Seed for reproduction'},
         "model_name": {"type": str, "required": False, "default": datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),

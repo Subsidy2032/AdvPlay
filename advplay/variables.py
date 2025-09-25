@@ -24,8 +24,13 @@ class prompt_injection_techniques():
     DIRECT: str = 'direct'
 
 class available_training_algorithms():
-    LOGISTIC_REGRESSION = 'logistic_regression'
+    LOGISTIC_REGRESSION: str = 'logistic_regression'
 
 class default_template_file_names():
     CUSTOM_INSTRUCTIONS: str = 'custom_instructions'
     LABEL_FLIPPING: str = 'label_flipping'
+
+class dataset_formats():
+    CSV: str = 'csv'
+    NPZ: str = 'npz'
+    NPY: str = 'npy'

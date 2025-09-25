@@ -12,6 +12,7 @@ from advplay.visualization.visualizer import visualizer
 from advplay.attacks.base_attack import BaseAttack
 from advplay.model_ops.registry import load_dataset
 from advplay.utils.list_templates import list_template_names, list_template_contents
+from advplay.model_ops.dataset_loaders.loaded_dataset import LoadedDataset
 
 def perform_action(args):
     kwargs = vars(args)
@@ -52,7 +53,7 @@ def cast_parameter(parameter, type):
     if parameter is None or type is None:
         return parameter
 
-    if type == (np.array, pd.DataFrame):
+    if type == LoadedDataset:
         return load_dataset(os.path.splitext(parameter)[1][1:], parameter) if parameter is not None else None
 
     elif isinstance(type, tuple):
