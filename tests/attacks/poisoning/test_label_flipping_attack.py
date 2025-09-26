@@ -9,6 +9,7 @@ from advplay.attacks.attack_runner import attack_runner
 from advplay.variables import available_attacks, poisoning_techniques, available_frameworks, available_training_algorithms
 from advplay import paths
 from advplay.model_ops.registry import load_dataset
+from advplay.model_ops.dataset_loaders.loaded_dataset import LoadedDataset
 
 @pytest.fixture(autouse=True)
 def fake_log_dir(tmp_path, monkeypatch):
@@ -25,19 +26,34 @@ def fake_models_dir(tmp_path, monkeypatch):
 
 @pytest.fixture
 def sample_dataset():
-    return pd.DataFrame({
-        'feature1': np.arange(10),
-        'feature2': np.arange(10, 20),
-        'label': [0, 1] * 5
-    })
+    df = pd.DataFrame({
+            'feature1': np.arange(10),
+            'feature2': np.arange(10, 20),
+            'label': [0, 1] * 5
+        })
+    data = df.to_numpy()
+
+    return LoadedDataset(
+        data,
+        'csv',
+        {"columns": df.columns}
+    )
 
 @pytest.fixture
 def single_class_data():
-    return pd.DataFrame({
+    df = pd.DataFrame({
         'feature1': np.arange(5),
         'feature2': np.arange(5, 10),
         'label': [0] * 5
     })
+
+    data = df.to_numpy()
+
+    return LoadedDataset(
+        data,
+        'csv',
+        {"columns": df.columns}
+    )
 
 @pytest.fixture
 def valid_template():
@@ -74,7 +90,7 @@ def log_file_path(fake_log_dir, attack_parameters):
 @pytest.fixture
 def dataset_path(fake_dataset_dir, attack_parameters):
     return (paths.DATASETS / "poisoned_datasets" /
-            f"{attack_parameters['model_name']}_dataset.npy")
+            f"{attack_parameters['model_name']}_dataset.csv")
 
 
 @pytest.fixture
@@ -110,9 +126,9 @@ def test_attack_runs_without_errors(attack_parameters, sample_dataset, valid_tem
     ext = os.path.splitext(dataset_path)[1][1:]
     dataset = load_dataset(ext, dataset_path)
 
-    expected = (1 - valid_template['test_portion']) * sample_dataset.shape[0]
-    assert dataset.shape[0] == expected, (
-        f"Dataset row count mismatch: expected {expected}, got {dataset.shape[0]}"
+    expected = (1 - valid_template['test_portion']) * sample_dataset.data.shape[0]
+    assert dataset.data.shape[0] == expected, (
+        f"Dataset row count mismatch: expected {expected}, got {dataset.data.shape[0]}"
     )
 
     assert model_path.exists()
@@ -174,9 +190,9 @@ def test_override_false_appends_data(tmp_path, dataset_path, valid_template, att
     ext = os.path.splitext(dataset_path)[1][1:]
     dataset = load_dataset(ext, dataset_path)
 
-    original_num_rows = (1 - valid_template['test_portion']) * sample_dataset.shape[0]
-    assert dataset.shape[0] > original_num_rows, (
-        f"Dataset row count mismatch: expected more than {original_num_rows}, got {dataset.shape[0]}"
+    original_num_rows = (1 - valid_template['test_portion']) * sample_dataset.data.shape[0]
+    assert dataset.data.shape[0] > original_num_rows, (
+        f"Dataset row count mismatch: expected more than {original_num_rows}, got {dataset.data.shape[0]}"
     )
 
 @pytest.mark.parametrize("bad_kwargs,expected_error", [
