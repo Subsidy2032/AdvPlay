@@ -17,7 +17,7 @@ class PoisoningAttack(BaseAttack, ABC, attack_type=available_attacks.POISONING, 
     TEMPLATE_PARAMETERS = {
         "technique": BaseAttack.COMMON_TEMPLATE_PARAMETERS.get('technique')(available_attacks.POISONING),
         "training_framework": BaseAttack.COMMON_TEMPLATE_PARAMETERS.get('training_framework'),
-        "training_algorithm": BaseAttack.COMMON_TEMPLATE_PARAMETERS.get('training_algorithm'),
+        "model": BaseAttack.COMMON_TEMPLATE_PARAMETERS.get('model'),
         "training_configuration": BaseAttack.COMMON_TEMPLATE_PARAMETERS.get('training_configuration'),
         "test_portion": {"type": float, "required": True, "default": 0.2,
                          "help": 'Portion of the dataset to be used for testing'},
@@ -105,9 +105,9 @@ class PoisoningAttack(BaseAttack, ABC, attack_type=available_attacks.POISONING, 
         if self.max_portion_to_poison == self.min_portion_to_poison and self.step > 0:
             raise ValueError("Can't use the step parameter if max_portion_to_poison is equal to min_portion_to_poison or not set")
 
-        if (self.training_framework, self.training_algorithm) not in BaseTrainer.registry.keys():
+        if (self.training_framework, self.model) not in BaseTrainer.registry.keys():
             raise ValueError(
-                f"Invalid framework and training algorithm configuration: ({self.training_framework}, {self.training_algorithm})")
+                f"Invalid framework and training algorithm configuration: ({self.training_framework}, {self.model})")
 
         for name, val in [
             ("test_portion", self.test_portion),

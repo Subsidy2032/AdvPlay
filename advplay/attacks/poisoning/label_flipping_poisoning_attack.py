@@ -31,7 +31,7 @@ class LabelFlippingPoisoningAttack(PoisoningAttack,
 
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=self.test_portion, random_state=self.seed)
 
-        base_model = registry.train(self.training_framework, self.training_algorithm, X_train, y_train)
+        base_model = registry.train(self.training_framework, self.model, X_train, y_train)
 
         source_mask = (
             (y_train == label_map[self.source]) if self.source else
@@ -52,7 +52,7 @@ class LabelFlippingPoisoningAttack(PoisoningAttack,
             y_poisoned[idx] = self.poison(y_train[idx], np.unique(y), label_map, rng)
 
             X_poisoned = X_train.copy() if self.override else np.vstack([X_train, X_train[idx]])
-            poisoned_models[portion] = registry.train(self.training_framework, self.training_algorithm, X_poisoned, y_poisoned)
+            poisoned_models[portion] = registry.train(self.training_framework, self.model, X_poisoned, y_poisoned)
             poisoned_datasets[portion] = np.column_stack((X_poisoned, y_poisoned))
 
         if not poisoned_models:
@@ -66,10 +66,35 @@ class LabelFlippingPoisoningAttack(PoisoningAttack,
             save_model.save_model(self.training_framework, poisoned_models[results["most_effective_portion"]],
                                   f"{self.model_name}_poisoned")
 
-            dataset_path = paths.DATASETS / 'poisoned_datasets' / f"{self.model_name}_dataset"
-            os.makedirs(dataset_path.parent, exist_ok=True)
-            registry.save_dataset(LoadedDataset(poisoned_datasets[results["most_effective_portion"]],
-                                               self.source_type, self.metadata), dataset_path)
+            if self.split:
+                X_dataset_path = paths.DATASETS / 'poisoned_datasets' / f"{self.model_name}_dataset_X"
+                y_dataset_path = paths.DATASETS / 'poisoned_datasets' / f"{self.model_name}_dataset_y"
+                os.makedirs(X_dataset_path.parent, exist_ok=True)
+                os.makedirs(y_dataset_path.parent, exist_ok=True)
+                X_train_poisoned_final = poisoned_datasets[results["most_effective_portion"]][:, :-1]
+                y_train_poisoned_final = poisoned_datasets[results["most_effective_portion"]][:, -1]
+
+                X_loaded_dataset = LoadedDataset(
+                    X_train_poisoned_final,
+                    self.X_source_type,
+                    self.X_metadata
+                )
+
+                y_loaded_dataset = LoadedDataset(
+                    y_train_poisoned_final,
+                    self.y_source_type,
+                    self.y_metadata
+                )
+                registry.save_dataset(X_loaded_dataset, X_dataset_path)
+                registry.save_dataset(y_loaded_dataset, y_dataset_path)
+
+            else:
+                dataset_path = paths.DATASETS / 'poisoned_datasets' / f"{self.model_name}_dataset"
+                os.makedirs(dataset_path.parent, exist_ok=True)
+                loaded_dataset = LoadedDataset(results["most_effective_portion"],
+                                               self.source_type, self.metadata)
+                registry.save_dataset(loaded_dataset, dataset_path)
+
         except Exception as e:
             raise RuntimeError(f"Failed to save model(s) or dataset: {e}")
 
@@ -111,7 +136,7 @@ class LabelFlippingPoisoningAttack(PoisoningAttack,
     def log_attack_results(self, labels, results, log_file_path):
         log_entry = {
             "attack": self.attack_type, "technique": self.technique,
-            "training_framework": self.training_framework, "training_algorithm": self.training_algorithm,
+            "training_framework": self.training_framework, "model": self.model,
             "training_configuration": self.training_configuration,
             "test_portion": self.test_portion, "min_portion_to_poison": self.min_portion_to_poison,
             "max_portion_to_poison": self.max_portion_to_poison, "source": self.source, "target": self.target,

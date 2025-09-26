@@ -22,7 +22,7 @@ class BaseAttack(ABC):
                                "help": 'Framework for training the model',
                                "choices": lambda: list(
                                    {k[0] for k in BaseTrainer.registry.keys() if k[0] is not None})},
-        "training_algorithm": {"type": str, "required": True, "default": "logistic_regression",
+        "model": {"type": str, "required": True, "default": "logistic_regression",
                                "help": 'The training algorithm',
                                "choices": lambda: list(
                                    {k[1] for k in BaseTrainer.registry.keys() if k[1] is not None})},

@@ -10,10 +10,10 @@ from advplay import paths
 class BaseTrainer:
     registry = {}
 
-    def __init_subclass__(cls, framework: str, training_algorithm: str):
-        key = (framework, training_algorithm)
+    def __init_subclass__(cls, framework: str, model: str):
+        key = (framework, model)
         if key in BaseTrainer.registry:
-            raise ValueError(f"Subclass already registered for {framework} + {training_algorithm}")
+            raise ValueError(f"Subclass already registered for {framework} + {model}")
 
         super().__init_subclass__()
         BaseTrainer.registry[key] = cls

@@ -9,7 +9,7 @@ from advplay.variables import available_training_algorithms, available_framework
 from advplay import paths
 
 class LogisticRegressionTrainer(SKLearnTrainer, framework=available_frameworks.SKLEARN,
-                                training_algorithm=available_training_algorithms.LOGISTIC_REGRESSION):
+                                model=available_training_algorithms.LOGISTIC_REGRESSION):
     def __init__(self, X_train, y_train, config: dict = None):
         super().__init__(X_train, y_train, config)
         self.model = LogisticRegression()
