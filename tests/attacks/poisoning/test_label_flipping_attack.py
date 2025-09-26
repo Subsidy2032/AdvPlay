@@ -60,7 +60,7 @@ def valid_template():
     return {
         "technique": poisoning_techniques.LABEL_FLIPPING,
         "training_framework": available_frameworks.SKLEARN,
-        "training_algorithm": available_training_algorithms.LOGISTIC_REGRESSION,
+        "model": available_training_algorithms.LOGISTIC_REGRESSION,
         "training_configuration": None,
         "test_portion": 0.2,
         "min_portion_to_poison": 0.3,
@@ -231,7 +231,7 @@ def test_invalid_attack_type(valid_template, attack_parameters, tmp_path, sample
         )
 
 def test_single_class_error(tmp_path, valid_template, attack_parameters, single_class_data):
-    with pytest.raises(ValueError, match="Only one class is present"):
+    with pytest.raises(ValueError, match="Poisoning requires at least two classes"):
         attack_runner(
             attack_type=attack_parameters["attack"],
             template_name=valid_template,

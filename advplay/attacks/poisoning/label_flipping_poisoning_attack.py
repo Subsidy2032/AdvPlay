@@ -91,7 +91,7 @@ class LabelFlippingPoisoningAttack(PoisoningAttack,
             else:
                 dataset_path = paths.DATASETS / 'poisoned_datasets' / f"{self.model_name}_dataset"
                 os.makedirs(dataset_path.parent, exist_ok=True)
-                loaded_dataset = LoadedDataset(results["most_effective_portion"],
+                loaded_dataset = LoadedDataset(poisoned_datasets[results["most_effective_portion"]],
                                                self.source_type, self.metadata)
                 registry.save_dataset(loaded_dataset, dataset_path)
 

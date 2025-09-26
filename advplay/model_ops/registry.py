@@ -33,7 +33,7 @@ def save_dataset(loaded_dataset: LoadedDataset, path):
     saver = saver_cls(loaded_dataset.data, loaded_dataset.metadata, Path(path))
     saver.save()
 
-def build_trainer_cls(framework: str, training_algorithm: str, X_train, y_train, config: dict = None):
+def build_trainer_cls(framework: str, model: str, X_train, y_train, config: dict = None):
     default_path = paths.TRAINING_CONFIGURATIONS / framework
     if isinstance(config, str):
         config = load_files.load_json(default_path, config)
@@ -41,7 +41,7 @@ def build_trainer_cls(framework: str, training_algorithm: str, X_train, y_train,
     if config is not None and not isinstance(config, dict):
         raise TypeError(f"Config must be a JSON object (dict), got {type(config).__name__}")
 
-    key = (framework, training_algorithm)
+    key = (framework, model)
     trainer_cls = BaseTrainer.registry.get(key)
     if trainer_cls is None:
         raise ValueError(f"Unsupported framework + algorithm: {key}")
@@ -49,9 +49,9 @@ def build_trainer_cls(framework: str, training_algorithm: str, X_train, y_train,
     trainer = trainer_cls(X_train, y_train, config)
     return trainer
 
-def train(framework: str, training_algorithm: str, X_train, y_train, config: dict = None):
-    trainer = build_trainer_cls(framework, training_algorithm, X_train, y_train, config)
-    print(f"Training a model using the {training_algorithm} training algorithm")
+def train(framework: str, model: str, X_train, y_train, config: dict = None):
+    trainer = build_trainer_cls(framework, model, X_train, y_train, config)
+    print(f"Training a model using the {model} training algorithm")
     return trainer.train()
 
 def load_model(framework: str, model_path: str):

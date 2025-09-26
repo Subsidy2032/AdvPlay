@@ -37,12 +37,12 @@ def framework():
     return available_frameworks.SKLEARN
 
 @pytest.fixture
-def training_algorithm():
+def model():
     return available_training_algorithms.LOGISTIC_REGRESSION
 
 @pytest.fixture
-def trainer_cls(framework, training_algorithm):
-    return base_trainer.BaseTrainer.registry.get((framework, training_algorithm))
+def trainer_cls(framework, model):
+    return base_trainer.BaseTrainer.registry.get((framework, model))
 
 @pytest.fixture
 def trainer(trainer_cls, train_test, config):
@@ -55,11 +55,11 @@ def test_registry_contains_logistic_regression(trainer_cls):
     assert trainer_cls is not None, "Logistic regression should be registered under the framework"
 
 def test_registry_unique_algorithm(framework):
-    class DummyTrainer(base_trainer.BaseTrainer, framework=framework, training_algorithm="logreg_dup"):
+    class DummyTrainer(base_trainer.BaseTrainer, framework=framework, model="logreg_dup"):
         def train(self): pass
 
     with pytest.raises(ValueError):
-        class DuplicateTrainer(base_trainer.BaseTrainer, framework=framework, training_algorithm="logreg_dup"):
+        class DuplicateTrainer(base_trainer.BaseTrainer, framework=framework, model="logreg_dup"):
             def train(self): pass
 
 # ------------------- Initialization Tests -------------------
@@ -92,22 +92,22 @@ def test_init_empty_X(config):
 
 # ------------------- Integration Tests -------------------
 
-def test_build_cls_returns_correct_instance(train_test, config, framework, training_algorithm):
+def test_build_cls_returns_correct_instance(train_test, config, framework, model):
     X, y = train_test
     trainer = registry.build_trainer_cls(
         framework=framework,
-        training_algorithm=training_algorithm,
+        model=model,
         X_train=X,
         y_train=y,
         config=config
     )
     assert isinstance(trainer, base_trainer.BaseTrainer)
 
-def test_train_flow(train_test, config, framework, training_algorithm):
+def test_train_flow(train_test, config, framework, model):
     X, y = train_test
     trainer = registry.build_trainer_cls(
         framework=framework,
-        training_algorithm=training_algorithm,
+        model=model,
         X_train=X,
         y_train=y,
         config=config

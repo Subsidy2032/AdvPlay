@@ -15,9 +15,9 @@ def valid_log_data():
         "source_class": None,
         "target_class": None,
         "poisoning_results": [
-            {"portion_to_poison": 0.1, "n_samples_poisoned": 5, "accuracy": 0.92,
+            {"portion": 0.1, "n_samples_poisoned": 5, "accuracy": 0.92,
              "confusion_matrix": [[3, 7, 0], [0, 9, 0], [0, 0, 11]]},
-            {"portion_to_poison": 0.2, "n_samples_poisoned": 10, "accuracy": 0.88,
+            {"portion": 0.2, "n_samples_poisoned": 10, "accuracy": 0.88,
              "confusion_matrix": [[3, 7, 0], [0, 9, 0], [0, 0, 11]]}
         ]
     }]
