@@ -21,7 +21,7 @@ class PoisoningVisualizer(BaseVisualizer, ABC, attack_type=available_attacks.POI
         self.labels = log_file.get('labels')
 
         self.poisoning_results = log_file.get('poisoning_results')
-        self.portions_poisoned = [0.0] + [poisoning_result['portion_to_poison'] for poisoning_result in self.poisoning_results]
+        self.portions_poisoned = [0.0] + [poisoning_result['portion'] for poisoning_result in self.poisoning_results]
         self.percentages_poisoned = [portion * 100 for portion in self.portions_poisoned]
         self.n_samples_poisoned = [0] + [poisoning_result['n_samples_poisoned'] for poisoning_result in self.poisoning_results]
         self.accuracies = [self.base_accuracy] + [poisoning_result['accuracy'] for poisoning_result in self.poisoning_results]
