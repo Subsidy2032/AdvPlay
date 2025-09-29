@@ -6,7 +6,7 @@ import numpy as np
 import os
 
 from advplay.attacks.attack_runner import attack_runner
-from advplay.variables import available_attacks, poisoning_techniques, available_frameworks, available_training_algorithms
+from advplay.variables import available_attacks, poisoning_techniques, available_frameworks, available_models
 from advplay import paths
 from advplay.model_ops.registry import load_dataset
 from advplay.model_ops.dataset_loaders.loaded_dataset import LoadedDataset
@@ -60,7 +60,7 @@ def valid_template():
     return {
         "technique": poisoning_techniques.LABEL_FLIPPING,
         "training_framework": available_frameworks.SKLEARN,
-        "model": available_training_algorithms.LOGISTIC_REGRESSION,
+        "model": available_models.LOGISTIC_REGRESSION,
         "training_configuration": None,
         "test_portion": 0.2,
         "min_portion_to_poison": 0.3,

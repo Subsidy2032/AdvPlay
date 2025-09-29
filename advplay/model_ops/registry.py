@@ -51,7 +51,7 @@ def build_trainer_cls(framework: str, model: str, X_train, y_train, config: dict
 
 def train(framework: str, model: str, X_train, y_train, config: dict = None):
     trainer = build_trainer_cls(framework, model, X_train, y_train, config)
-    print(f"Training a model using the {model} training algorithm")
+    print(f"Training a {model} model")
     return trainer.train()
 
 def load_model(framework: str, model_path: str):
@@ -81,3 +81,14 @@ def evaluate_model_accuracy(framework: str, model, X, y):
     print(f"Evaluating model accuracy")
     accuracy = evaluator.accuracy(X, y)
     return accuracy
+
+def predict(framework: str, model, X):
+    evaluator_cls = BaseEvaluator.registry.get(framework)
+
+    if evaluator_cls is None:
+        raise ValueError(f"Unsupported framework: {framework}")
+
+    evaluator = evaluator_cls(model)
+
+    print(f"Getting model predictions")
+    return evaluator.predict(X)

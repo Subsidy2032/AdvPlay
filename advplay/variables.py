@@ -12,6 +12,7 @@ class available_platforms():
 
 class available_frameworks():
     SKLEARN: str = 'sklearn'
+    PYTORCH: str = 'pytorch'
 
 class available_attacks():
     PROMPT_INJECTION: str = 'prompt_injection'
@@ -23,9 +24,10 @@ class poisoning_techniques():
 class prompt_injection_techniques():
     DIRECT: str = 'direct'
 
-class available_training_algorithms():
+class available_models():
     LOGISTIC_REGRESSION: str = 'logistic_regression'
     ONE_VS_REST: str = 'one_vs_rest'
+    CNN: str = 'cnn'
 
 class default_template_file_names():
     CUSTOM_INSTRUCTIONS: str = 'custom_instructions'

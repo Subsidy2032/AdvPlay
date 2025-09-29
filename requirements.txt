@@ -9,3 +9,6 @@ pandas
 joblib
 matplotlib
 seaborn
+torch
+torchvision
+torchaudio

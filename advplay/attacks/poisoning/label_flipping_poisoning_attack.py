@@ -31,7 +31,8 @@ class LabelFlippingPoisoningAttack(PoisoningAttack,
 
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=self.test_portion, random_state=self.seed)
 
-        base_model = registry.train(self.training_framework, self.model, X_train, y_train)
+        base_model = registry.train(self.training_framework, self.model, X_train, y_train,
+                                    config=self.training_configuration)
 
         source_mask = (
             (y_train == label_map[self.source]) if self.source else
@@ -52,7 +53,8 @@ class LabelFlippingPoisoningAttack(PoisoningAttack,
             y_poisoned[idx] = self.poison(y_train[idx], np.unique(y), label_map, rng)
 
             X_poisoned = X_train.copy() if self.override else np.vstack([X_train, X_train[idx]])
-            poisoned_models[portion] = registry.train(self.training_framework, self.model, X_poisoned, y_poisoned)
+            poisoned_models[portion] = registry.train(self.training_framework, self.model, X_poisoned, y_poisoned,
+                                                      config=self.training_configuration)
             poisoned_datasets[portion] = np.column_stack((X_poisoned, y_poisoned))
 
         if not poisoned_models:
@@ -115,17 +117,21 @@ class LabelFlippingPoisoningAttack(PoisoningAttack,
         evaluation_results = {}
 
         evaluation_results["base_accuracy"] = base_acc
-        evaluation_results["base_confusion_matrix"] = confusion_matrix(y_test, base_model.predict(X_test))
+        evaluation_results["base_confusion_matrix"] = confusion_matrix(y_test, registry.predict(self.training_framework,
+                                                                                               base_model, X_test))
         evaluation_results["poisoning_results"] = []
 
         for portion, model in poisoned_models.items():
             acc = registry.evaluate_model_accuracy(self.training_framework, model, X_test, y_test)
             print(f"Model with {int(n_samples*portion)} poisoned samples ({portion*100:.1f}%): accuracy={acc:.2f}, "
                   f"attack success={base_acc-acc:.2f}")
+
+
             evaluation_results["poisoning_results"].append({"portion": portion,
                                  "n_samples_poisoned": int(n_samples*portion),
                                  "accuracy": acc,
-                                 "confusion_matrix": confusion_matrix(y_test, model.predict(X_test))})
+                                 "confusion_matrix": confusion_matrix(y_test, registry.predict(self.training_framework,
+                                                                                               model, X_test))})
             if acc < min_acc:
                 min_acc, best_portion = acc, portion
 

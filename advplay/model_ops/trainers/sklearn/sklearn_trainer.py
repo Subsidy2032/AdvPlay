@@ -1,7 +1,7 @@
 from sklearn.linear_model import LogisticRegression
 
 from advplay.model_ops.trainers.base_trainer import BaseTrainer
-from advplay.variables import available_training_algorithms, available_frameworks
+from advplay.variables import available_models, available_frameworks
 from advplay import paths
 
 class SKLearnTrainer(BaseTrainer, framework=available_frameworks.SKLEARN, model=None):

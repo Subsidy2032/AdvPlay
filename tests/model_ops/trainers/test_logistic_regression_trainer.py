@@ -6,7 +6,7 @@ import joblib
 
 from advplay.model_ops.trainers import base_trainer
 from advplay.model_ops import registry
-from advplay.variables import available_frameworks, available_training_algorithms
+from advplay.variables import available_frameworks, available_models
 from advplay.model_ops.trainers.sklearn.logistic_regression_trainer import LogisticRegressionTrainer
 from advplay.utils import save_model
 from advplay import paths
@@ -38,7 +38,7 @@ def framework():
 
 @pytest.fixture
 def model():
-    return available_training_algorithms.LOGISTIC_REGRESSION
+    return available_models.LOGISTIC_REGRESSION
 
 @pytest.fixture
 def trainer_cls(framework, model):

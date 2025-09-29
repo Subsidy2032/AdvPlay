@@ -5,11 +5,11 @@ import os
 import joblib
 
 from advplay.model_ops.trainers.sklearn.sklearn_trainer import SKLearnTrainer
-from advplay.variables import available_training_algorithms, available_frameworks
+from advplay.variables import available_models, available_frameworks
 from advplay import paths
 
 class LogisticRegressionTrainer(SKLearnTrainer, framework=available_frameworks.SKLEARN,
-                                model=available_training_algorithms.LOGISTIC_REGRESSION):
+                                model=available_models.LOGISTIC_REGRESSION):
     def __init__(self, X_train, y_train, config: dict = None):
         super().__init__(X_train, y_train, config)
         self.model = LogisticRegression()
