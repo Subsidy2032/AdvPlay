@@ -57,6 +57,8 @@ class PoisoningAttack(BaseAttack, ABC, attack_type=available_attacks.POISONING, 
         if self.dataset is not None:
             self.source_type = self.dataset.source_type
             self.metadata = self.dataset.metadata
+            self.dataset_name = self.metadata["dataset_name"]
+
             if self.source_type == dataset_formats.CSV:
                 if isinstance(self.label_column, str):
                     self.label_column = self.metadata["columns"].get_loc(self.label_column)
@@ -69,6 +71,11 @@ class PoisoningAttack(BaseAttack, ABC, attack_type=available_attacks.POISONING, 
                 raise TypeError("string column names are only supported for CSV and NPZ formats")
 
         elif self.features_dataset is not None:
+            features_metadata = self.features_dataset.metadata
+            labels_metadata = self.labels_array.metadata
+            self.features_dataset_name = features_metadata["dataset_name"]
+            self.labels_dataset_name = labels_metadata["dataset_name"]
+
             self.split = True
             self.X_source_type = self.features_dataset.source_type
             self.X_metadata = self.features_dataset.metadata

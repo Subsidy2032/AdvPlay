@@ -23,6 +23,7 @@ class NPZDatasetLoader(BaseDatasetLoader, source_type=dataset_formats.NPZ):
         arrays = [arr.reshape(len(arr), -1) if arr.ndim > 1 else arr.reshape(-1, 1) for arr in arrays]
 
         dataset = np.hstack(arrays)
-        metadata = {"keys": keys, "shapes": shapes}
+
+        metadata = {"keys": keys, "shapes": shapes, "dataset_name": self.dataset_name, "dataset_path": self.path}
 
         return LoadedDataset(dataset, source_type=self.source_type, metadata=metadata)

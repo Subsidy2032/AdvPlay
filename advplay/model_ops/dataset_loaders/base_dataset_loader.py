@@ -19,6 +19,7 @@ class BaseDatasetLoader(ABC):
 
     def __init__(self, path):
         self.path = path
+        self.dataset_name = os.path.splitext(os.path.basename(self.path))[0]
 
     @abstractmethod
     def load(self) -> LoadedDataset:

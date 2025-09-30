@@ -17,9 +17,13 @@ class available_frameworks():
 class available_attacks():
     PROMPT_INJECTION: str = 'prompt_injection'
     POISONING: str = 'poisoning'
+    EVASION: str = 'evasion'
 
 class poisoning_techniques():
     LABEL_FLIPPING: str = 'label_flipping'
+
+class evasion_techniques():
+    FGSM: str = 'fgsm'
 
 class prompt_injection_techniques():
     DIRECT: str = 'direct'
@@ -32,6 +36,7 @@ class available_models():
 class default_template_file_names():
     CUSTOM_INSTRUCTIONS: str = 'custom_instructions'
     LABEL_FLIPPING: str = 'label_flipping'
+    EVASION_ATTACK_TEMPLATE: str = 'evasion_attack_template'
 
 class dataset_formats():
     CSV: str = 'csv'

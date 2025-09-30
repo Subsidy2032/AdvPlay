@@ -1,5 +1,6 @@
 import os
 import torch
+from art.estimators.classification import PyTorchClassifier
 
 from advplay.model_ops.model_loaders.base_model_loader import BaseModelLoader
 from advplay.variables import available_frameworks
@@ -19,3 +20,7 @@ class TorchModelLoader(BaseModelLoader, framework=available_frameworks.PYTORCH):
             raise AttributeError(f"Failed loading model: {self.model_path}. Error: {e}")
 
         return model
+
+    def load_art_classifier(self, loss, input_shape, nb_classes):
+        model = self.load()
+        return PyTorchClassifier(model, loss=loss, input_shape=input_shape, nb_classes=nb_classes)

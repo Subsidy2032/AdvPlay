@@ -14,6 +14,6 @@ class NPYDatasetLoader(BaseDatasetLoader, source_type=dataset_formats.NPY):
             raise FileNotFoundError(f"NPY file not found: {self.path}")
 
         arr = np.load(self.path)
-        arr = arr.reshape(len(arr), -1) if arr.ndim > 1 else arr.reshape(-1, 1)
 
-        return LoadedDataset(arr, source_type=self.source_type)
+        metadata = {"dataset_name": self.dataset_name, "dataset_path": self.path}
+        return LoadedDataset(arr, source_type=self.source_type, metadata=metadata)

@@ -19,6 +19,6 @@ class CSVDatasetLoader(BaseDatasetLoader, source_type=dataset_formats.CSV):
         if df.shape[1] == 1:
             data = data.ravel()
 
-        metadata = {"columns": df.columns}
+        metadata = {"columns": df.columns, "dataset_name": self.dataset_name, "dataset_path": self.path}
 
         return LoadedDataset(data, source_type=self.source_type, metadata=metadata)

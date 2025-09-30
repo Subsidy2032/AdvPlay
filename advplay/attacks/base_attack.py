@@ -59,8 +59,8 @@ class BaseAttack(ABC):
             BaseAttack.techniques_per_attack[attack_type].append(attack_subtype)
 
     def __init__(self, template: dict, **kwargs):
-        template_params = getattr(super(self.__class__, self), "TEMPLATE_PARAMETERS", {})
-        attack_params = getattr(super(self.__class__, self), "ATTACK_PARAMETERS", {})
+        template_params = getattr(self.__class__, "TEMPLATE_PARAMETERS", {})
+        attack_params = getattr(self.__class__, "ATTACK_PARAMETERS", {})
 
         for key, meta in template_params.items():
             value = template.get(key)

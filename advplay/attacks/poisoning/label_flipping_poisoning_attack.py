@@ -69,8 +69,8 @@ class LabelFlippingPoisoningAttack(PoisoningAttack,
                                   f"{self.model_name}_poisoned")
 
             if self.split:
-                X_dataset_path = paths.DATASETS / 'poisoned_datasets' / f"{self.model_name}_dataset_X"
-                y_dataset_path = paths.DATASETS / 'poisoned_datasets' / f"{self.model_name}_dataset_y"
+                X_dataset_path = paths.DATASETS / 'poisoned_datasets' / f"{self.features_dataset_name}_poisoned"
+                y_dataset_path = paths.DATASETS / 'poisoned_datasets' / f"{self.labels_dataset_name}_poisoned"
                 os.makedirs(X_dataset_path.parent, exist_ok=True)
                 os.makedirs(y_dataset_path.parent, exist_ok=True)
                 X_train_poisoned_final = poisoned_datasets[results["most_effective_portion"]][:, :-1]
@@ -91,7 +91,7 @@ class LabelFlippingPoisoningAttack(PoisoningAttack,
                 registry.save_dataset(y_loaded_dataset, y_dataset_path)
 
             else:
-                dataset_path = paths.DATASETS / 'poisoned_datasets' / f"{self.model_name}_dataset"
+                dataset_path = paths.DATASETS / 'poisoned_datasets' / f"{self.dataset_name}_poisoned"
                 os.makedirs(dataset_path.parent, exist_ok=True)
                 loaded_dataset = LoadedDataset(poisoned_datasets[results["most_effective_portion"]],
                                                self.source_type, self.metadata)

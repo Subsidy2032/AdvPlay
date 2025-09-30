@@ -6,7 +6,7 @@ from advplay.model_ops.model_loaders.base_model_loader import BaseModelLoader
 from advplay.model_ops.evaluators.base_evaluator import BaseEvaluator
 from advplay.model_ops.dataset_savers.base_dataset_saver import BaseDatasetSaver
 from advplay.model_ops.dataset_loaders.loaded_dataset import LoadedDataset
-from advplay.utils import load_files
+from advplay.utils import load_files, get_training_componenets
 from advplay import paths
 
 def load_dataset(source_type, path):
@@ -70,6 +70,29 @@ def load_model(framework: str, model_path: str):
     loader = loader_cls(model_path)
     print(f"Loading model: {model_path}")
     return loader.load()
+
+def load_classifier(framework, model_path, config: dict):
+    default_path = paths.MODELS
+
+    if not Path(model_path).is_file():
+        model_path = default_path / model_path
+        if not model_path.is_file():
+            raise FileNotFoundError(f"model path not found: {model_path}")
+
+    loader_cls = BaseModelLoader.registry.get(framework)
+
+    if loader_cls is None:
+        raise ValueError(f"Unsupported framework: {framework}")
+
+    loader = loader_cls(model_path)
+    print(f"Loading classifier: {model_path}")
+
+    loss = config.get("loss")
+    input_shape = config.get("input_shape")
+    nb_classes = config.get("nb_classes")
+
+    loss_fn = get_training_componenets.get_loss_function(framework, loss)
+    return loader.load_art_classifier(loss_fn, input_shape, nb_classes)
 
 def evaluate_model_accuracy(framework: str, model, X, y):
     evaluator_cls = BaseEvaluator.registry.get(framework)
