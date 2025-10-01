@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import numpy as np
+import math
 
 from advplay.model_ops.trainers.pytorch.pytorch_trainer import PyTorchTrainer
 from advplay.variables import available_models, available_frameworks
@@ -17,12 +18,10 @@ class PyTorchCNNTrainer(PyTorchTrainer, framework=available_frameworks.PYTORCH,
         self.num_classes = self.config.get("num_classes", len(np.unique(y_train)))
         self.conv_channels = self.config.get("conv_channels", 8)
         self.channels_first = self.config.get("channels_first", True)
+        self.height = self.config.get("height")
+        self.width = self.config.get("width")
 
-        if X_train.ndim == 2:
-            X_train = X_train.reshape(-1, 1, 28, 28)
-
-        input_shape = (X_train.shape[2], X_train.shape[3])
-
+        input_shape = (self.height, self.width)
         self.model = SimpleCNN(self.in_channels, self.num_classes, self.conv_channels, input_shape)
 
 class SimpleCNN(nn.Module):
@@ -42,11 +41,15 @@ class SimpleCNN(nn.Module):
         return self.fc(x)
 
     @staticmethod
-    def preprocess_data(X, channels_first=True):
+    def preprocess_data(X, height=None, width=None, channels_first=True, in_channels=1):
         X_tensor = torch.tensor(X, dtype=torch.float32)
 
         if X_tensor.ndim == 2:
-            X_tensor = X_tensor.view(-1, 1, 28, 28)
+            if height is None and width is None:
+                height = int(math.sqrt(X_tensor.shape[1]))
+                width = height
+
+            X_tensor = X_tensor.view(-1, in_channels, height, width)
 
         if X_tensor.ndim == 3:
             X_tensor = X_tensor.unsqueeze(1)

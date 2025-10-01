@@ -14,25 +14,25 @@ class FGSMEvasionAttack(EvasionAttack, attack_type=available_attacks.EVASION, at
         super().execute()
 
         wrapper = registry.load_classifier(self.training_framework, self.model_path, self.model_configuration)
-        x_adv_arr = self.art_evasion(FastGradientMethod, wrapper, eps=self.eps)
+        perturbed_samples = self.art_evasion(FastGradientMethod, wrapper, eps=self.eps)
 
-        dataset_path = self.save_perturbated_dataset(x_adv_arr)
+        dataset_path = self.save_perturbed_dataset(perturbed_samples)
 
         results = {
             "original_dataset_path": self.samples.metadata["dataset_path"],
-            "perturbated_dataset_path": str(dataset_path)
+            "perturbed_dataset_path": str(dataset_path)
         }
 
         self.log_attack_results(results, self.log_file_path)
 
-        return x_adv_arr
+        return perturbed_samples
 
     def log_attack_results(self, results, log_file_path):
         log_entry = {
             "attack": self.attack_type,
             "technique": self.technique,
             "original_dataset_path": results["original_dataset_path"],
-            "perturbated_dataset_path": results["perturbated_dataset_path"]
+            "perturbed_dataset_path": results["perturbed_dataset_path"]
         }
 
         append_log_entry(log_file_path, log_entry)

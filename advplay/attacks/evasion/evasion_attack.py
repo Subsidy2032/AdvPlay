@@ -64,23 +64,35 @@ class EvasionAttack(BaseAttack, ABC, attack_type=available_attacks.EVASION, atta
             else:
                 attack_instance = attack_class(wrapper, **kwargs)
 
-            x_adv = attack_instance.generate(x=self.samples_data, y=self.target_label)
+            perturbed_samples = attack_instance.generate(x=self.samples_data, y=self.target_label)
 
         else:
             attack_instance = attack_class(wrapper, **kwargs)
-            x_adv = attack_instance.generate(x=self.samples_data)
+            perturbed_samples = attack_instance.generate(x=self.samples_data)
 
         model = registry.load_model(self.training_framework, self.model_path)
-        original_prediction = registry.predict(self.training_framework, model, self.samples_data)
-        adv_prediction = registry.predict(self.training_framework, model, x_adv)
-        print(f"Original prediction: {original_prediction}")
-        print(f"Perturbated image prediction: {adv_prediction}")
+        original_predictions = registry.predict(self.training_framework, model, self.samples_data)
+        perturbed_predictions = registry.predict(self.training_framework, model, perturbed_samples)
+        print(f"Original prediction: {original_predictions}")
+        print(f"perturbed image prediction: {perturbed_predictions}")
 
-        return x_adv
+        num_mispredictions = sum(original != perturbed for original, perturbed in
+                                 zip(original_predictions, perturbed_predictions))
+        num_samples = len(original_predictions)
 
-    def save_perturbated_dataset(self, x_adv):
+        print(f"{(num_mispredictions / num_samples) * 100}% ({num_mispredictions}/{num_samples}) "
+              f"of the samples are misclassified after perturbations.")
+
+        if self.target_label is not None:
+            num_target_mispredictions = sum(original != 2 and perturbed == 2 for original, perturbed in
+                                            zip(original_predictions, perturbed_predictions))
+            print(f"{(num_target_mispredictions / num_samples) * 100}% ({num_target_mispredictions}/{num_samples}) "
+                  f"of the samples are incorrectly classified as target ({self.target_label}) after perturbations.")
+        return perturbed_samples
+
+    def save_perturbed_dataset(self, x_adv):
         dataset_name = self.samples.metadata["dataset_name"]
-        dataset_path = paths.DATASETS / 'perturbated_datasets' / f"{dataset_name}_perturbated"
+        dataset_path = paths.DATASETS / 'perturbed_datasets' / f"{dataset_name}_perturbed"
         os.makedirs(dataset_path.parent, exist_ok=True)
 
         loaded_dataset = LoadedDataset(x_adv, self.samples.source_type, self.samples.metadata)
