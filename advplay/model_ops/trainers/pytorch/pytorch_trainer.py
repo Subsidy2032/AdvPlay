@@ -27,8 +27,7 @@ class PyTorchTrainer(BaseTrainer, framework=available_frameworks.PYTORCH, model=
         epochs = self.config.get("epochs", 5)
         lr = self.config.get("lr", 0.001)
 
-        X_tensor = self.model.preprocess_data(self.X_train, self.height, self.width, channels_first=self.channels_first,
-                                              in_channels=self.in_channels)
+        X_tensor = torch.tensor(self.X_train, dtype=torch.float32)
         y_tensor = torch.tensor(self.y_train.squeeze(), dtype=torch.long)
         dataset = TensorDataset(X_tensor, y_tensor)
         loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)

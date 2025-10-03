@@ -13,7 +13,7 @@ class PyTorchEvaluator(BaseEvaluator, framework=available_frameworks.PYTORCH):
         self.model.eval()
 
     def predict(self, X: np.ndarray) -> np.ndarray:
-        X_tensor = self.model.preprocess_data(X).to(self.device)
+        X_tensor = torch.tensor(X, dtype=torch.float32).to(self.device)
 
         with torch.no_grad():
             outputs = self.model(X_tensor)

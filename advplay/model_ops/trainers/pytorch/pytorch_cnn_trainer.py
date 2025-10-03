@@ -39,23 +39,3 @@ class SimpleCNN(nn.Module):
         x = self.pool(torch.relu(self.conv(x)))
         x = x.view(x.size(0), -1)
         return self.fc(x)
-
-    @staticmethod
-    def preprocess_data(X, height=None, width=None, channels_first=True, in_channels=1):
-        X_tensor = torch.tensor(X, dtype=torch.float32)
-
-        if X_tensor.ndim == 2:
-            if height is None and width is None:
-                height = int(math.sqrt(X_tensor.shape[1]))
-                width = height
-
-            X_tensor = X_tensor.view(-1, in_channels, height, width)
-
-        if X_tensor.ndim == 3:
-            X_tensor = X_tensor.unsqueeze(1)
-
-        if not channels_first and X_tensor.ndim == 4:
-            X_tensor = X_tensor.permute(0, 3, 1, 2)
-
-        return X_tensor
-
