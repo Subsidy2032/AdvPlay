@@ -24,6 +24,8 @@ class LabelFlippingPoisoningAttack(PoisoningAttack,
         y_raw = self.dataset.data[:, self.label_column] if self.dataset else self.labels_array.data
         labels_unique = np.unique(y_raw)
         label_map = {lbl: i for i, lbl in enumerate(labels_unique)}
+        reverse_label_map = {i: lbl for lbl, i in label_map.items()}
+
         y = np.vectorize(label_map.get)(y_raw).astype(int)
 
         if len(np.unique(y)) <= 1:
@@ -68,6 +70,9 @@ class LabelFlippingPoisoningAttack(PoisoningAttack,
             save_model.save_model(self.training_framework, poisoned_models[results["most_effective_portion"]],
                                   f"{self.model_name}_poisoned")
 
+            X_poisoned, y_poisoned = poisoned_datasets[results["most_effective_portion"]]
+            y_poisoned_original = np.vectorize(reverse_label_map.get)(y_poisoned)
+
             if self.split:
                 X_dataset_path = paths.DATASETS / 'poisoned_datasets' / f"{self.features_dataset_name}_poisoned"
                 y_dataset_path = paths.DATASETS / 'poisoned_datasets' / f"{self.labels_dataset_name}_poisoned"
@@ -82,7 +87,7 @@ class LabelFlippingPoisoningAttack(PoisoningAttack,
                 )
 
                 y_loaded_dataset = LoadedDataset(
-                    y_poisoned,
+                    y_poisoned_original,
                     self.y_source_type,
                     self.y_metadata
                 )
@@ -96,7 +101,7 @@ class LabelFlippingPoisoningAttack(PoisoningAttack,
                 dataset_path = paths.DATASETS / 'poisoned_datasets' / f"{self.dataset_name}_poisoned"
                 os.makedirs(dataset_path.parent, exist_ok=True)
                 X_poisoned, y_poisoned = poisoned_datasets[results["most_effective_portion"]]
-                poisoned_dataset = np.insert(X_poisoned, self.label_column, y_poisoned, axis=1)
+                poisoned_dataset = np.insert(X_poisoned, self.label_column, y_poisoned_original, axis=1)
                 loaded_dataset = LoadedDataset(poisoned_dataset,
                                                self.source_type, self.metadata)
                 registry.save_dataset(loaded_dataset, dataset_path)

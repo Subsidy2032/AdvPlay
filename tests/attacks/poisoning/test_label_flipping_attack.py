@@ -36,7 +36,7 @@ def sample_dataset():
     return LoadedDataset(
         data,
         'csv',
-        {"columns": df.columns}
+        {"columns": df.columns, "dataset_name": "df", "dataset_path": "datasets/df.csv"}
     )
 
 @pytest.fixture
@@ -52,7 +52,7 @@ def single_class_data():
     return LoadedDataset(
         data,
         'csv',
-        {"columns": df.columns}
+        {"columns": df.columns, "dataset_name": "df", "dataset_path": "datasets/df.csv"}
     )
 
 @pytest.fixture
@@ -88,9 +88,9 @@ def log_file_path(fake_log_dir, attack_parameters):
     return paths.ATTACK_LOGS / attack_parameters["attack"] / f"{attack_parameters['log_filename']}.log"
 
 @pytest.fixture
-def dataset_path(fake_dataset_dir, attack_parameters):
+def dataset_path(fake_dataset_dir, attack_parameters, sample_dataset):
     return (paths.DATASETS / "poisoned_datasets" /
-            f"{attack_parameters['model_name']}_dataset.csv")
+            f"{sample_dataset.metadata['dataset_name']}_poisoned.csv")
 
 
 @pytest.fixture
