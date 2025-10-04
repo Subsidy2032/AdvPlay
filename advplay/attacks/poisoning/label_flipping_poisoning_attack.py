@@ -154,7 +154,7 @@ class LabelFlippingPoisoningAttack(PoisoningAttack,
 
     def log_attack_results(self, labels, results, log_file_path):
         log_entry = {
-            "attack": self.attack_type, "technique": self.technique,
+            "attack": self.attack_type, "technique": self.attack_subtype,
             "training_framework": self.training_framework, "model": self.model,
             "training_configuration": self.training_configuration,
             "test_portion": self.test_portion, "min_portion_to_poison": self.min_portion_to_poison,

@@ -27,23 +27,24 @@ def perform_action(args):
             return
 
         parameters = {k: v for k, v in kwargs.items() if k not in
-                      (commands.COMMAND, commands.ATTACK_TYPE, 'list', 'template')}
+                      (commands.COMMAND, commands.ATTACK_TYPE, commands.TECHNIQUE, 'list', 'template')}
 
         for key, value in parameters.items():
             type = BaseAttack.registry.get((attack_type, None)).TEMPLATE_PARAMETERS[key].get("type")
             parameters[key] = cast_parameter(value, type)
 
-        attack_subtype = kwargs.get('technique')
-        attack_runner.define_template(attack_type, attack_subtype, **parameters)
+        attack_runner.define_template(attack_type, **parameters)
 
     elif args.command == commands.ATTACK:
-        parameters = {k: v for k, v in kwargs.items() if k not in (commands.COMMAND, commands.ATTACK_TYPE, 'template')}
+        parameters = {k: v for k, v in kwargs.items() if k not in (commands.COMMAND, commands.ATTACK_TYPE, commands.TECHNIQUE, 'template')}
+        attack_subtype = kwargs.get(commands.TECHNIQUE)
+
         for key, value in parameters.items():
-            type = BaseAttack.registry.get((attack_type, None)).ATTACK_PARAMETERS[key].get("type")
+            type = BaseAttack.registry.get((attack_type, attack_subtype)).ATTACK_PARAMETERS[key].get("type")
             parameters[key] = cast_parameter(value, type)
 
         template_name = args.template
-        attack_runner.attack_runner(attack_type, template_name, **parameters)
+        attack_runner.attack_runner(attack_type, attack_subtype, template_name, **parameters)
 
     elif args.command == commands.VISUALIZE:
         parameters = {k: v for k, v in kwargs.items() if k not in (commands.COMMAND, commands.ATTACK_TYPE)}

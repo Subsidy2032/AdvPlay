@@ -12,7 +12,6 @@ from advplay import paths
 
 class EvasionAttack(BaseAttack, ABC, attack_type=available_attacks.EVASION, attack_subtype=None):
     TEMPLATE_PARAMETERS = {
-        "technique": BaseAttack.COMMON_TEMPLATE_PARAMETERS.get('technique')(available_attacks.EVASION),
         "training_framework": BaseAttack.COMMON_TEMPLATE_PARAMETERS.get('training_framework'),
         "model_path": {"type": str, "required": True, "default": None, "help": "Path for the model to load"},
         "model_configuration": {"type": dict, "required": True, "default": {},
@@ -31,7 +30,6 @@ class EvasionAttack(BaseAttack, ABC, attack_type=available_attacks.EVASION, atta
     ATTACK_PARAMETERS = {
         "template": BaseAttack.COMMON_ATTACK_PARAMETERS.get('template'),
         "samples": {"type": LoadedDataset, "required": True, "default": None, "help": "Samples to run evasions on"},
-        "eps": {"type": float, "required": False, "default": 0.01, "help": "Maximum perturbation allowed"},
         "theta": {"type": float, "required": False, "default": 0.1,
                   "help": "The amount of perturbation to introduce in each step"},
         "gamma": {"type": float, "required": False, "default": 0.1, "help": "Maximum fraction to effect"},

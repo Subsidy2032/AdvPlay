@@ -9,7 +9,6 @@ from advplay.variables import available_platforms, available_attacks, default_te
 @pytest.fixture
 def openai_template_data() -> dict:
     return {
-        "technique": "direct",
         "platform": available_platforms.OPENAI,
         "attack": available_attacks.PROMPT_INJECTION,
         "model": "gpt-4o",
@@ -29,7 +28,6 @@ def file_path(openai_template_data: dict, fake_templates_dir) -> str:
 @pytest.fixture
 def expected_json(openai_template_data: dict) -> dict:
     return {
-        "technique": openai_template_data["technique"],
         "platform": openai_template_data["platform"],
         "model": openai_template_data["model"],
         "custom_instructions": openai_template_data["custom_instructions"]
@@ -46,7 +44,6 @@ def cleanup_file(file_path):
 def test_template_building_with_file_name(openai_template_data, expected_json, file_path):
     define_template(
         openai_template_data["attack"],
-        openai_template_data["technique"],
         model=openai_template_data["model"],
         custom_instructions=openai_template_data["custom_instructions"],
         template_filename=openai_template_data["template_filename"]
@@ -65,7 +62,6 @@ def test_instructions_from_file(openai_template_data, expected_json, file_path, 
 
     define_template(
         openai_template_data["attack"],
-        openai_template_data["technique"],
         model=openai_template_data["model"],
         custom_instructions=str(instruction_file),
         template_filename=openai_template_data["template_filename"]
@@ -85,7 +81,6 @@ def test_default_filename_used(openai_template_data, expected_json):
 
     define_template(
         openai_template_data["attack"],
-        openai_template_data["technique"],
         model=openai_template_data["model"],
         custom_instructions=openai_template_data["custom_instructions"]
     )
@@ -102,7 +97,6 @@ def test_missing_instructions(openai_template_data, expected_json, file_path):
 
     define_template(
         openai_template_data["attack"],
-        openai_template_data["technique"],
         model=openai_template_data["model"],
         template_filename=openai_template_data["template_filename"]
     )
@@ -111,13 +105,3 @@ def test_missing_instructions(openai_template_data, expected_json, file_path):
     with open(file_path, "r") as f:
         data = json.load(f)
     assert data == expected_json
-
-def test_non_existent_platform(openai_template_data):
-    with pytest.raises(ValueError, match="Unsupported"):
-        define_template(
-            openai_template_data["attack"],
-            'WrongPlatform',
-            model=openai_template_data["model"],
-            custom_instructions=openai_template_data["custom_instructions"],
-            template_filename=openai_template_data["template_filename"]
-        )

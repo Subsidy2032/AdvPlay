@@ -6,6 +6,7 @@ class commands:
     VISUALIZE: str = 'visualize'
 
     ATTACK_TYPE: str = 'attack_type'
+    TECHNIQUE: str = 'technique'
 
 class available_platforms():
     OPENAI: str = 'openai'

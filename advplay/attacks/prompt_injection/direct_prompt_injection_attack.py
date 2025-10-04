@@ -52,7 +52,7 @@ class DirectPromptInjectionAttack(PromptInjectionAttack, attack_type=available_a
     def log_chat_history(self, conversation_history, log_file_path):
         log_entry = {
             "attack": self.attack_type,
-            "technique": self.technique,
+            "technique": self.attack_subtype,
             "timestamp": datetime.utcnow().isoformat() + "Z",
             "session_id": self.session_id,
             "model": self.model,

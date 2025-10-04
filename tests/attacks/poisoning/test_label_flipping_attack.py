@@ -58,7 +58,6 @@ def single_class_data():
 @pytest.fixture
 def valid_template():
     return {
-        "technique": poisoning_techniques.LABEL_FLIPPING,
         "training_framework": available_frameworks.SKLEARN,
         "model": available_models.LOGISTIC_REGRESSION,
         "training_configuration": None,
@@ -101,6 +100,7 @@ def model_path(fake_dataset_dir, attack_parameters, valid_template):
 def test_attack_runs_without_errors(attack_parameters, sample_dataset, valid_template, log_file_path, tmp_path, dataset_path, model_path):
     attack_runner(
         attack_type=attack_parameters['attack'],
+        attack_subtype=attack_parameters['technique'],
         template_name=valid_template,
         dataset=sample_dataset,
         poisoning_data=None,
@@ -136,6 +136,7 @@ def test_attack_runs_without_errors(attack_parameters, sample_dataset, valid_tem
 def test_two_log_entries(attack_parameters, sample_dataset, valid_template, log_file_path, dataset_path, model_path):
     attack_runner(
         attack_type=attack_parameters['attack'],
+        attack_subtype=attack_parameters['technique'],
         template_name=valid_template,
         dataset=sample_dataset,
         poisoning_data=None,
@@ -150,6 +151,7 @@ def test_two_log_entries(attack_parameters, sample_dataset, valid_template, log_
 
     attack_runner(
         attack_type=attack_parameters['attack'],
+        attack_subtype=attack_parameters['technique'],
         template_name=valid_template,
         dataset=sample_dataset,
         poisoning_data=None,
@@ -174,6 +176,7 @@ def test_override_false_appends_data(tmp_path, dataset_path, valid_template, att
     valid_template["override"] = False
     attack_runner(
         attack_type=available_attacks.POISONING,
+        attack_subtype=attack_parameters['technique'],
         template_name=valid_template,
         dataset=sample_dataset,
         poisoning_data=None,
@@ -206,6 +209,7 @@ def test_attack_invalid(attack_parameters, valid_template, bad_kwargs, expected_
 
     define_kwargs = {
         "attack_type": kwargs['attack'],
+        "attack_subtype": kwargs['technique'],
         "template_name": valid_template,
         "dataset": sample_dataset,
         "poisoning_data": None,
@@ -225,6 +229,7 @@ def test_invalid_attack_type(valid_template, attack_parameters, tmp_path, sample
     with pytest.raises(ValueError, match="Unsupported attack type"):
         attack_runner(
             attack_type="INVALID_ATTACK",
+            attack_subtype=attack_parameters['technique'],
             template_name=valid_template,
             dataset=sample_dataset,
             label_column=attack_parameters["label_column"]
@@ -234,6 +239,7 @@ def test_single_class_error(tmp_path, valid_template, attack_parameters, single_
     with pytest.raises(ValueError, match="Poisoning requires at least two classes"):
         attack_runner(
             attack_type=attack_parameters["attack"],
+            attack_subtype=attack_parameters['technique'],
             template_name=valid_template,
             dataset=single_class_data,
             label_column=attack_parameters["label_column"],
@@ -245,5 +251,6 @@ def test_invalid_template_type(tmp_path, attack_parameters):
         with pytest.raises(TypeError, match="template must be a JSON object"):
             attack_runner(
                 attack_type=available_attacks.POISONING,
+                attack_subtype=attack_parameters['technique'],
                 template_name="ignored"
             )

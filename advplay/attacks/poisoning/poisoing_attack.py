@@ -15,7 +15,6 @@ from advplay.model_ops.registry import load_dataset
 
 class PoisoningAttack(BaseAttack, ABC, attack_type=available_attacks.POISONING, attack_subtype=None):
     TEMPLATE_PARAMETERS = {
-        "technique": BaseAttack.COMMON_TEMPLATE_PARAMETERS.get('technique')(available_attacks.POISONING),
         "training_framework": BaseAttack.COMMON_TEMPLATE_PARAMETERS.get('training_framework'),
         "model": BaseAttack.COMMON_TEMPLATE_PARAMETERS.get('model'),
         "training_configuration": BaseAttack.COMMON_TEMPLATE_PARAMETERS.get('training_configuration'),

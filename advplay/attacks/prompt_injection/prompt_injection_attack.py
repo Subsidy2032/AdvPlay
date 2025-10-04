@@ -7,7 +7,6 @@ from advplay.model_ops.llms.base_platform import BasePlatform
 
 class PromptInjectionAttack(BaseAttack, attack_type=available_attacks.PROMPT_INJECTION, attack_subtype=None):
     TEMPLATE_PARAMETERS = {
-        "technique": BaseAttack.COMMON_TEMPLATE_PARAMETERS.get('technique')(available_attacks.PROMPT_INJECTION),
         "platform": {"type": str, "required": True, "default": available_platforms.OPENAI,
                      "help": 'The platform of the LLM', "choices": BasePlatform.registry.keys()},
         "model": {"type": str, "required": True, "default": None, "help": 'The name of the model'},

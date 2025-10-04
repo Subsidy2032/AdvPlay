@@ -1,7 +1,7 @@
 import json
 import pytest
 
-from advplay.variables import poisoning_techniques, available_attacks
+from advplay.variables import available_attacks
 from advplay.attacks.attack_runner import define_template
 from advplay import paths
 
@@ -22,7 +22,6 @@ def fake_training_config(tmp_path):
 def label_flipping_template_data(fake_training_config, tmp_path):
     return {
         "attack": available_attacks.POISONING,
-        "technique": poisoning_techniques.LABEL_FLIPPING,
         "training_framework": "sklearn",
         "model": "logistic_regression",
         "training_configuration": fake_training_config,
@@ -37,7 +36,6 @@ def label_flipping_template_data(fake_training_config, tmp_path):
 @pytest.fixture
 def expected_json(label_flipping_template_data):
     return {
-        "technique": label_flipping_template_data["technique"],
         "training_framework": label_flipping_template_data["training_framework"],
         "model": label_flipping_template_data["model"],
         "training_configuration": label_flipping_template_data["training_configuration"],
@@ -55,7 +53,6 @@ def file_path(label_flipping_template_data: dict, fake_templates_dir) -> str:
 def test_define_template_valid(label_flipping_template_data, file_path, expected_json):
     define_template(
         attack_type=label_flipping_template_data["attack"],
-        attack_subtype=label_flipping_template_data["technique"],
         training_framework=label_flipping_template_data["training_framework"],
         model=label_flipping_template_data["model"],
         training_configuration=label_flipping_template_data["training_configuration"],
@@ -88,7 +85,6 @@ def test_define_template_invalid(label_flipping_template_data, bad_kwargs, expec
 
     define_kwargs = {
         "attack_type": kwargs["attack"],
-        "attack_subtype": kwargs["technique"],
         "training_framework": kwargs["training_framework"],
         "model": kwargs["model"],
         "training_configuration": kwargs["training_configuration"],

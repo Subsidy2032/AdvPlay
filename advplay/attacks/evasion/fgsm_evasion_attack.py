@@ -6,6 +6,12 @@ from advplay.variables import available_attacks, evasion_techniques
 from advplay.model_ops import registry
 
 class FGSMEvasionAttack(EvasionAttack, attack_type=available_attacks.EVASION, attack_subtype=evasion_techniques.FGSM):
+    ATTACK_PARAMETERS = {
+        **EvasionAttack.ATTACK_PARAMETERS,
+        "eps": {"type": float, "required": False, "default": 0.01,
+                "help": "Maximum perturbation allowed"}
+    }
+
     def __init__(self, template, **kwargs):
         super().__init__(template, **kwargs)
 
@@ -29,7 +35,7 @@ class FGSMEvasionAttack(EvasionAttack, attack_type=available_attacks.EVASION, at
     def log_attack_results(self, results, log_file_path):
         log_entry = {
             "attack": self.attack_type,
-            "technique": self.technique,
+            "technique": self.attack_subtype,
             "original_dataset_path": results["original_dataset_path"],
             "perturbed_dataset_path": results["perturbed_dataset_path"]
         }

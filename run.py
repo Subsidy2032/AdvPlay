@@ -44,14 +44,22 @@ def main():
                                                  help=arguments["help"], choices=choices)
 
         attack_subparser = attack_subparsers.add_parser(attack, help=f"{attack} attack")
-        for parameter, arguments in cls.ATTACK_PARAMETERS.items():
-            choices = arguments.get("choices")
-            if callable(choices):
-                choices = choices()
+        technique_subparsers = attack_subparser.add_subparsers(dest=commands.TECHNIQUE, help='Specific attack technique')
+        techniques = [key[1] for key in BaseAttack.registry.keys() if key[0] == attack and key[1] is not None]
 
-            attack_subparser.add_argument(f"--{parameter.replace('_', '-')}",
-                                          required=arguments["required"], help=arguments["help"],
-                                          choices=choices)
+        for technique in techniques:
+            technique_class = BaseAttack.registry[(attack, technique)]
+            technique_parser = technique_subparsers.add_parser(technique, help=f"Run a {technique} attack")
+
+
+            for parameter, arguments in technique_class.ATTACK_PARAMETERS.items():
+                choices = arguments.get("choices")
+                if callable(choices):
+                    choices = choices()
+
+                technique_parser.add_argument(f"--{parameter.replace('_', '-')}",
+                                              required=arguments["required"], help=arguments["help"],
+                                              choices=choices)
 
     visualize_parser = subparsers.add_parser(commands.VISUALIZE, help='Visualize attack results')
     visualize_subparsers = visualize_parser.add_subparsers(dest=commands.ATTACK_TYPE, help='Type of attack')
