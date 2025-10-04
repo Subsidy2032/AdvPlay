@@ -4,7 +4,6 @@ from advplay.utils.append_log_entry import append_log_entry
 from advplay.attacks.evasion.evasion_attack import EvasionAttack
 from advplay.variables import available_attacks, evasion_techniques
 from advplay.model_ops import registry
-from advplay.utils import get_training_componenets
 
 class FGSMEvasionAttack(EvasionAttack, attack_type=available_attacks.EVASION, attack_subtype=evasion_techniques.FGSM):
     def __init__(self, template, **kwargs):

@@ -62,7 +62,7 @@ class LabelFlippingPoisoningAttack(PoisoningAttack,
         if not poisoned_models:
             raise RuntimeError("No poisoned models generated; check configuration")
 
-        results = self.evaluate(n_samples, X_test, y_test, labels_unique, base_model, poisoned_models)
+        results = self.evaluate(n_samples, X_test, y_test, base_model, poisoned_models)
         print(f"Most effective portion: {results['most_effective_portion']*100:.1f}%\n")
 
         try:
@@ -73,40 +73,7 @@ class LabelFlippingPoisoningAttack(PoisoningAttack,
             X_poisoned, y_poisoned = poisoned_datasets[results["most_effective_portion"]]
             y_poisoned_original = np.vectorize(reverse_label_map.get)(y_poisoned)
 
-            if self.split:
-                X_dataset_path = paths.DATASETS / 'poisoned_datasets' / f"{self.features_dataset_name}_poisoned"
-                y_dataset_path = paths.DATASETS / 'poisoned_datasets' / f"{self.labels_dataset_name}_poisoned"
-                os.makedirs(X_dataset_path.parent, exist_ok=True)
-                os.makedirs(y_dataset_path.parent, exist_ok=True)
-                X_poisoned, y_poisoned = poisoned_datasets[results["most_effective_portion"]]
-
-                X_loaded_dataset = LoadedDataset(
-                    X_poisoned,
-                    self.X_source_type,
-                    self.X_metadata
-                )
-
-                y_loaded_dataset = LoadedDataset(
-                    y_poisoned_original,
-                    self.y_source_type,
-                    self.y_metadata
-                )
-                registry.save_dataset(X_loaded_dataset, X_dataset_path)
-                registry.save_dataset(y_loaded_dataset, y_dataset_path)
-
-                print(f"Features dataset saved to {X_dataset_path}.{self.X_source_type}")
-                print(f"Labels dataset saved to {y_dataset_path}.{self.y_source_type}")
-
-            else:
-                dataset_path = paths.DATASETS / 'poisoned_datasets' / f"{self.dataset_name}_poisoned"
-                os.makedirs(dataset_path.parent, exist_ok=True)
-                X_poisoned, y_poisoned = poisoned_datasets[results["most_effective_portion"]]
-                poisoned_dataset = np.insert(X_poisoned, self.label_column, y_poisoned_original, axis=1)
-                loaded_dataset = LoadedDataset(poisoned_dataset,
-                                               self.source_type, self.metadata)
-                registry.save_dataset(loaded_dataset, dataset_path)
-
-                print(f"Dataset saved to {dataset_path}.{self.source_type}")
+            self.save_dataset(X_poisoned, y_poisoned_original)
 
         except Exception as e:
             raise RuntimeError(f"Failed to save model(s) or dataset: {e}")
@@ -121,7 +88,7 @@ class LabelFlippingPoisoningAttack(PoisoningAttack,
             poisoned[i] = rng.choice(labels[labels != poisoned[i]])
         return poisoned
 
-    def evaluate(self, n_samples, X_test, y_test, labels_unique, base_model, poisoned_models):
+    def evaluate(self, n_samples, X_test, y_test, base_model, poisoned_models):
         base_acc = registry.evaluate_model_accuracy(self.training_framework, base_model, X_test, y_test)
         print(f"Base model accuracy: {base_acc:.2f}\n")
         min_acc, best_portion = 1.1, None
@@ -149,6 +116,41 @@ class LabelFlippingPoisoningAttack(PoisoningAttack,
         evaluation_results["most_effective_portion"] = best_portion
         evaluation_results["min_accuracy"] = min_acc
         return evaluation_results
+
+    def save_dataset(self, X_poisoned, y_poisoned):
+        if self.split:
+            X_dataset_path = paths.DATASETS / 'poisoned_datasets' / f"{self.features_dataset_name}_poisoned"
+            y_dataset_path = paths.DATASETS / 'poisoned_datasets' / f"{self.labels_dataset_name}_poisoned"
+            os.makedirs(X_dataset_path.parent, exist_ok=True)
+            os.makedirs(y_dataset_path.parent, exist_ok=True)
+
+            X_loaded_dataset = LoadedDataset(
+                X_poisoned,
+                self.X_source_type,
+                self.X_metadata
+            )
+
+            y_loaded_dataset = LoadedDataset(
+                y_poisoned,
+                self.y_source_type,
+                self.y_metadata
+            )
+            registry.save_dataset(X_loaded_dataset, X_dataset_path)
+            registry.save_dataset(y_loaded_dataset, y_dataset_path)
+
+            print(f"Features dataset saved to {X_dataset_path}.{self.X_source_type}")
+            print(f"Labels dataset saved to {y_dataset_path}.{self.y_source_type}")
+
+        else:
+            dataset_path = paths.DATASETS / 'poisoned_datasets' / f"{self.dataset_name}_poisoned"
+            os.makedirs(dataset_path.parent, exist_ok=True)
+
+            poisoned_dataset = np.insert(X_poisoned, self.label_column, y_poisoned, axis=1)
+            loaded_dataset = LoadedDataset(poisoned_dataset,
+                                           self.source_type, self.metadata)
+            registry.save_dataset(loaded_dataset, dataset_path)
+
+            print(f"Dataset saved to {dataset_path}.{self.source_type}")
 
     def log_attack_results(self, labels, results, log_file_path):
         log_entry = {
