@@ -20,9 +20,6 @@ class EvasionAttack(BaseAttack, ABC, attack_type=available_attacks.EVASION, atta
         "data_type": {"type": str, "required": False, "default": "image", "help": "The data type",
                       "choices": lambda: ["image", "text"]},
         "learning_rate": {"type": float, "required": False, "default": 0.01, "help": "The learning rate"},
-        "eps_step": {"type": float, "required": False, "default": 0.001, "help": "Step size"},
-        "max_iter": {"type": int, "required": False, "default": 10, "help": "Maximum iterations"},
-        "batch_size": {"type": int, "required": False, "default": 1, "help": "Batch size"},
         "template_filename": {"type": str, "required": False,
                               "default": default_template_file_names.EVASION_ATTACK_TEMPLATE,
                               "help": "Template file name"}
@@ -31,9 +28,6 @@ class EvasionAttack(BaseAttack, ABC, attack_type=available_attacks.EVASION, atta
     ATTACK_PARAMETERS = {
         "template": BaseAttack.COMMON_ATTACK_PARAMETERS.get('template'),
         "samples": {"type": LoadedDataset, "required": True, "default": None, "help": "Samples to run evasions on"},
-        "theta": {"type": float, "required": False, "default": 0.1,
-                  "help": "The amount of perturbation to introduce in each step"},
-        "gamma": {"type": float, "required": False, "default": 0.1, "help": "Maximum fraction to effect"},
         "confidence": {"type": float, "required": False, "default": 0.1,
                        "help": "Higher value for more noticeable and robust perturbation"},
         "true_labels": {"type": LoadedDataset, "required": True, "default": None,

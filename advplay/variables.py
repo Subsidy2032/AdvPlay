@@ -25,6 +25,10 @@ class poisoning_techniques():
 
 class evasion_techniques():
     FGSM: str = 'fgsm'
+    BMI: str = 'bmi'
+    JSMA: str = 'jsma'
+    C_W: str = 'c_w'
+    PGD: str = 'pgd'
 
 class prompt_injection_techniques():
     DIRECT: str = 'direct'
