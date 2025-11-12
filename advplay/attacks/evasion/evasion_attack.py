@@ -9,6 +9,7 @@ from advplay.variables import available_attacks
 from advplay.model_ops.dataset_loaders.loaded_dataset import LoadedDataset
 from advplay.model_ops import registry
 from advplay import paths
+from advplay.utils.append_log_entry import append_log_entry
 
 class EvasionAttack(BaseAttack, ABC, attack_type=available_attacks.EVASION, attack_subtype=None):
     TEMPLATE_PARAMETERS = {
@@ -49,12 +50,14 @@ class EvasionAttack(BaseAttack, ABC, attack_type=available_attacks.EVASION, atta
         self.samples_data = self.samples.data
 
         if self.target_label is not None:
-            self.target_label = np.full_like(self.true_labels.data, self.target_label)
+            self.target_label = np.full(self.true_labels.shape, self.target_label, dtype=self.true_labels.dtype)
 
     def execute(self):
         self.validate_attack_inputs()
 
-    def art_evasion(self, attack_class, wrapper, **kwargs):
+    def art_evasion(self, attack_class, **kwargs):
+        wrapper = registry.load_classifier(self.training_framework, self.model_path, self.model_configuration)
+
         if self.target_label is not None:
             if "targeted" in inspect.signature(attack_class).parameters:
                 attack_instance = attack_class(wrapper, targeted=True, **kwargs)
@@ -103,3 +106,23 @@ class EvasionAttack(BaseAttack, ABC, attack_type=available_attacks.EVASION, atta
 
     def validate_template_inputs(self):
         pass
+
+    def log_art_attack_results(self, perturbed_samples):
+        dataset_path = self.save_perturbed_dataset(perturbed_samples)
+
+        results = {
+            "original_dataset_path": self.samples.metadata["dataset_path"],
+            "perturbed_dataset_path": str(dataset_path)
+        }
+
+        self.log_attack_results(results, self.log_file_path)
+
+    def log_attack_results(self, results, log_file_path):
+        log_entry = {
+            "attack": self.attack_type,
+            "technique": self.attack_subtype,
+            "original_dataset_path": results["original_dataset_path"],
+            "perturbed_dataset_path": results["perturbed_dataset_path"]
+        }
+
+        append_log_entry(log_file_path, log_entry)
