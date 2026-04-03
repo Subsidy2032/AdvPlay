@@ -9,7 +9,7 @@ from advplay.variables import available_attacks
 from advplay.model_ops.dataset_loaders.loaded_dataset import LoadedDataset
 from advplay.model_ops import registry
 from advplay import paths
-from advplay.utils.append_log_entry import append_log_entry
+from advplay.loggers.json_logger import JsonLogger
 
 class EvasionAttack(BaseAttack, ABC, attack_type=available_attacks.EVASION, attack_subtype=None):
     TEMPLATE_PARAMETERS = {
@@ -119,4 +119,5 @@ class EvasionAttack(BaseAttack, ABC, attack_type=available_attacks.EVASION, atta
             "perturbed_dataset_path": results["perturbed_dataset_path"]
         }
 
-        append_log_entry(log_file_path, log_entry)
+        logger = JsonLogger(log_file_path)
+        logger.log(log_entry)

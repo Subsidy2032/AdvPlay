@@ -1,6 +1,6 @@
 from datetime import datetime, UTC
 
-from advplay.utils.append_log_entry import append_log_entry
+from advplay.loggers.json_logger import JsonLogger
 from advplay.attacks.prompt_injection.prompt_injection_attack import PromptInjectionAttack
 from advplay.variables import available_attacks, prompt_injection_techniques
 from advplay.model_ops.llms.base_platform import BasePlatform
@@ -61,8 +61,8 @@ class DirectPromptInjectionAttack(PromptInjectionAttack, attack_type=available_a
             "conversation": conversation_history
         }
 
-        append_log_entry(log_file_path, log_entry)
+        logger = JsonLogger(log_file_path)
+        logger.log(log_entry)
 
     def build(self):
-        llm = BasePlatform.registry.get(self.platform)
         super().build()

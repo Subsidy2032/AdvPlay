@@ -6,7 +6,7 @@ from sklearn.metrics import confusion_matrix
 from advplay.model_ops import registry
 from advplay.utils import save_model
 from advplay import paths
-from advplay.utils.append_log_entry import append_log_entry
+from advplay.loggers.json_logger import JsonLogger
 from advplay.attacks.poisoning.poisoing_attack import PoisoningAttack
 from advplay.variables import available_attacks, poisoning_techniques
 from advplay.model_ops.dataset_loaders.loaded_dataset import LoadedDataset
@@ -164,4 +164,5 @@ class LabelFlippingPoisoningAttack(PoisoningAttack,
             "most_effective_portion": results["most_effective_portion"], "min_accuracy": results["min_accuracy"],
             "base_confusion_matrix": results["base_confusion_matrix"], "poisoning_results": results["poisoning_results"]
         }
-        append_log_entry(log_file_path, log_entry)
+        logger = JsonLogger(log_file_path)
+        logger.log(log_entry)
