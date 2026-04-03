@@ -41,6 +41,7 @@ class available_models():
 class default_template_file_names():
     CUSTOM_INSTRUCTIONS: str = 'custom_instructions'
     LABEL_FLIPPING: str = 'label_flipping'
+    POISONING_ATTACK_TEMPLATE: str = 'poisoning_attack_template'
     EVASION_ATTACK_TEMPLATE: str = 'evasion_attack_template'
 
 class dataset_formats():

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, UTC
 
 from advplay.utils.append_log_entry import append_log_entry
 from advplay.attacks.prompt_injection.prompt_injection_attack import PromptInjectionAttack
@@ -53,7 +53,7 @@ class DirectPromptInjectionAttack(PromptInjectionAttack, attack_type=available_a
         log_entry = {
             "attack": self.attack_type,
             "technique": self.attack_subtype,
-            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "timestamp": datetime.now(UTC).isoformat() + "Z",
             "session_id": self.session_id,
             "model": self.model,
             "instructions": self.custom_instructions,

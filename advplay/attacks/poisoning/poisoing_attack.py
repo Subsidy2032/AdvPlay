@@ -28,7 +28,7 @@ class PoisoningAttack(BaseAttack, ABC, attack_type=available_attacks.POISONING, 
         "override": {"type": bool, "required": False, "default": True,
                      "help": "Whether to override examples from the training dataset"},
         "template_filename": {"type": str, "required": False,
-                              "default": default_template_file_names.CUSTOM_INSTRUCTIONS,
+                              "default": default_template_file_names.POISONING_ATTACK_TEMPLATE,
                               "help": "Template file name"}
     }
 

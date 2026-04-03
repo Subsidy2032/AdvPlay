@@ -3,3 +3,9 @@ __pycache__/
 *.pyc
 datasets/
 .obsidian/
+models/
+training_configurations/
+results/
+templates/
+logs/
+.env
