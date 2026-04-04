@@ -48,3 +48,6 @@ class dataset_formats():
     CSV: str = 'csv'
     NPZ: str = 'npz'
     NPY: str = 'npy'
+
+class locations():
+    JSON: str = 'json'

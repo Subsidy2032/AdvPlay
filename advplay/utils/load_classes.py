@@ -25,4 +25,6 @@ def load_required_classes():
                 try:
                     importlib.import_module(module_name)
                 except Exception as e:
+                    print(e)
                     raise ImportError(f"Failed importing {module_name}") from e
+                

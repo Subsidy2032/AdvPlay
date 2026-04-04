@@ -1,15 +1,16 @@
 import numpy as np
 import os
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import confusion_matrix
 
-from advplay.model_ops import registry
 from advplay.utils import save_model
 from advplay import paths
 from advplay.loggers.json_logger import JsonLogger
 from advplay.attacks.poisoning.poisoing_attack import PoisoningAttack
 from advplay.variables import available_attacks, poisoning_techniques
 from advplay.model_ops.dataset_loaders.loaded_dataset import LoadedDataset
+from advplay.attack_evaluators.poisoning_evaluator import PoisoningEvaluator
+from advplay.attack_evaluators.contexts.poisoning_context import PoisoningContext
+from advplay.model_ops import registry
 
 class LabelFlippingPoisoningAttack(PoisoningAttack,
                                     attack_type=available_attacks.POISONING,
@@ -33,9 +34,6 @@ class LabelFlippingPoisoningAttack(PoisoningAttack,
 
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=self.test_portion, random_state=self.seed)
 
-        base_model = registry.train(self.training_framework, self.model, X_train, y_train,
-                                    config=self.training_configuration)
-
         source_mask = (
             (y_train == label_map[self.source]) if self.source else
             (y_train != label_map[self.target]) if self.target else
@@ -44,33 +42,39 @@ class LabelFlippingPoisoningAttack(PoisoningAttack,
         y_source = y_train[source_mask]
         n_samples = len(y_source)
 
-        poisoned_models, poisoned_datasets = {}, {}
+        poisoned_datasets = {}
         steps = max(1, int((self.max_portion_to_poison - self.min_portion_to_poison) / self.step) + 1)
         rng = np.random.default_rng(self.seed)
 
         for portion in np.linspace(self.min_portion_to_poison, self.max_portion_to_poison, steps):
             n_to_poison = int(n_samples * portion)
             idx = rng.choice(np.where(source_mask)[0], size=n_to_poison, replace=False)
+
             y_poisoned = y_train.copy() if self.override else np.concatenate([y_train, y_train[idx]])
             y_poisoned[idx] = self.poison(y_train[idx], np.unique(y), label_map, rng)
 
             X_poisoned = X_train.copy() if self.override else np.vstack([X_train, X_train[idx]])
-            poisoned_models[portion] = registry.train(self.training_framework, self.model, X_poisoned, y_poisoned,
-                                                      config=self.training_configuration)
-            poisoned_datasets[portion] = (X_poisoned, y_poisoned)
 
-        if not poisoned_models:
-            raise RuntimeError("No poisoned models generated; check configuration")
+            poisoned_datasets[portion] = {
+                "X_train": X_poisoned,
+                "y_train": y_poisoned,
+                "n_samples_poisoned": int(n_samples * portion)
+            }
 
-        results = self.evaluate(n_samples, X_test, y_test, base_model, poisoned_models)
-        print(f"Most effective portion: {results['most_effective_portion']*100:.1f}%\n")
+        clean_dataset = {
+            "X_train": X_train,
+            "y_train": y_train
+        }
+        poisoning_context = PoisoningContext(self.model, X_test, y_test, self.training_framework, self.training_configuration, clean_dataset, poisoned_datasets)
+        poisoning_evaluator = PoisoningEvaluator()
+        results = poisoning_evaluator.evaluate(poisoning_context)
 
         try:
-            save_model.save_model(self.training_framework, base_model, self.model_name)
-            save_model.save_model(self.training_framework, poisoned_models[results["most_effective_portion"]],
-                                  f"{self.model_name}_poisoned")
+            save_model.save_model(self.training_framework, results["base_model"], self.model_name)
+            save_model.save_model(self.training_framework, results["min_accuracy"]["model"], f"{self.model_name}_poisoned")
 
-            X_poisoned, y_poisoned = poisoned_datasets[results["most_effective_portion"]]
+            X_poisoned = results["min_accuracy"]["X_poisoned"]
+            y_poisoned = results["min_accuracy"]["y_poisoned"]
             y_poisoned_original = np.vectorize(reverse_label_map.get)(y_poisoned)
 
             self.save_dataset(X_poisoned, y_poisoned_original)
@@ -78,7 +82,29 @@ class LabelFlippingPoisoningAttack(PoisoningAttack,
         except Exception as e:
             raise RuntimeError(f"Failed to save model(s) or dataset: {e}")
 
-        self.log_attack_results(labels_unique, results, self.log_file_path)
+        sanitized_results = self.sanitize_results_for_logging(results)
+        self.log_attack_results(labels_unique, sanitized_results, self.log_file_path)
+
+    def sanitize_results_for_logging(self, results):
+        sanitized = {
+            "base_accuracy": results["base_accuracy"],
+            "base_confusion_matrix": results["base_confusion_matrix"],
+            "min_accuracy": {
+                "acc": results["min_accuracy"]["acc"],
+                "portion": results["min_accuracy"]["portion"]
+            },
+            "poisoning_results": []
+        }
+
+        for entry in results["poisoning_results"]:
+            sanitized["poisoning_results"].append({
+                "portion": entry["portion"],
+                "n_samples_poisoned": entry["n_samples_poisoned"],
+                "accuracy": entry["accuracy"],
+                "confusion_matrix": entry["confusion_matrix"]
+            })
+
+        return sanitized
 
     def poison(self, labels_to_poison, labels, label_map, rng):
         if self.target is not None:
@@ -87,35 +113,6 @@ class LabelFlippingPoisoningAttack(PoisoningAttack,
         for i in range(len(poisoned)):
             poisoned[i] = rng.choice(labels[labels != poisoned[i]])
         return poisoned
-
-    def evaluate(self, n_samples, X_test, y_test, base_model, poisoned_models):
-        base_acc = registry.evaluate_model_accuracy(self.training_framework, base_model, X_test, y_test)
-        print(f"Base model accuracy: {base_acc:.2f}\n")
-        min_acc, best_portion = 1.1, None
-        evaluation_results = {}
-
-        evaluation_results["base_accuracy"] = base_acc
-        evaluation_results["base_confusion_matrix"] = confusion_matrix(y_test, registry.predict(self.training_framework,
-                                                                                               base_model, X_test))
-        evaluation_results["poisoning_results"] = []
-
-        for portion, model in poisoned_models.items():
-            acc = registry.evaluate_model_accuracy(self.training_framework, model, X_test, y_test)
-            print(f"Model with {int(n_samples*portion)} poisoned samples ({portion*100:.1f}%): accuracy={acc:.2f}, "
-                  f"attack success={base_acc-acc:.2f}")
-
-
-            evaluation_results["poisoning_results"].append({"portion": portion,
-                                 "n_samples_poisoned": int(n_samples*portion),
-                                 "accuracy": acc,
-                                 "confusion_matrix": confusion_matrix(y_test, registry.predict(self.training_framework,
-                                                                                               model, X_test))})
-            if acc < min_acc:
-                min_acc, best_portion = acc, portion
-
-        evaluation_results["most_effective_portion"] = best_portion
-        evaluation_results["min_accuracy"] = min_acc
-        return evaluation_results
 
     def save_dataset(self, X_poisoned, y_poisoned):
         if self.split:
@@ -161,7 +158,7 @@ class LabelFlippingPoisoningAttack(PoisoningAttack,
             "max_portion_to_poison": self.max_portion_to_poison, "source": self.source, "target": self.target,
             "override": self.override, "seed": self.seed, "step": self.step, "model_name": self.model_name,
             "labels": labels, "base_accuracy": results["base_accuracy"],
-            "most_effective_portion": results["most_effective_portion"], "min_accuracy": results["min_accuracy"],
+            "most_effective_portion": results["min_accuracy"]["portion"], "min_accuracy": results["min_accuracy"]["acc"],
             "base_confusion_matrix": results["base_confusion_matrix"], "poisoning_results": results["poisoning_results"]
         }
         logger = JsonLogger(log_file_path)

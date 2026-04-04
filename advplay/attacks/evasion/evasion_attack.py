@@ -10,6 +10,8 @@ from advplay.model_ops.dataset_loaders.loaded_dataset import LoadedDataset
 from advplay.model_ops import registry
 from advplay import paths
 from advplay.loggers.json_logger import JsonLogger
+from advplay.attack_evaluators.contexts.evasion_context import EvasionContext
+from advplay.attack_evaluators.evasion_evaluator import EvasionEvaluator
 
 class EvasionAttack(BaseAttack, ABC, attack_type=available_attacks.EVASION, attack_subtype=None):
     TEMPLATE_PARAMETERS = {
@@ -65,24 +67,10 @@ class EvasionAttack(BaseAttack, ABC, attack_type=available_attacks.EVASION, atta
             attack_instance = attack_class(wrapper, **kwargs)
             perturbed_samples = attack_instance.generate(x=self.samples_data)
 
-        model = registry.load_model(self.training_framework, self.model_path)
-        original_predictions = registry.predict(self.training_framework, model, self.samples_data)
-        perturbed_predictions = registry.predict(self.training_framework, model, perturbed_samples)
-        print(f"Original prediction: {original_predictions}")
-        print(f"perturbed image prediction: {perturbed_predictions}")
-
-        num_mispredictions = sum(original != perturbed for original, perturbed in
-                                 zip(original_predictions, perturbed_predictions))
-        num_samples = len(original_predictions)
-
-        print(f"{(num_mispredictions / num_samples) * 100}% ({num_mispredictions}/{num_samples}) "
-              f"of the samples are misclassified after perturbations.")
-
-        if self.target_label is not None:
-            num_target_mispredictions = sum(original != 2 and perturbed == 2 for original, perturbed in
-                                            zip(original_predictions, perturbed_predictions))
-            print(f"{(num_target_mispredictions / num_samples) * 100}% ({num_target_mispredictions}/{num_samples}) "
-                  f"of the samples are incorrectly classified as target ({self.target_label}) after perturbations.")
+        context = EvasionContext(None, None, None, self.training_framework, None, self.model_path, self.samples_data, perturbed_samples, self.target_label)
+        evasion_evaluator = EvasionEvaluator()
+        results = evasion_evaluator.evaluate(context)
+        
         return perturbed_samples
 
     def save_perturbed_dataset(self, x_adv):
