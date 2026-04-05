@@ -68,44 +68,26 @@ class EvasionAttack(BaseAttack, ABC, attack_type=available_attacks.EVASION, atta
             perturbed_samples = attack_instance.generate(x=self.samples_data)
 
         context = EvasionContext(None, None, None, self.training_framework, None, self.model_path, self.samples_data, perturbed_samples, self.target_label)
-        evasion_evaluator = EvasionEvaluator()
-        results = evasion_evaluator.evaluate(context)
-        
-        return perturbed_samples
 
-    def save_perturbed_dataset(self, x_adv):
         dataset_name = self.samples.metadata["dataset_name"]
-        dataset_path = paths.DATASETS / 'perturbed_datasets' / f"{dataset_name}_perturbed"
+        dataset_path = paths.DATASETS / 'perturbed_datasets' / dataset_name
+        perturbed_dataset_path = paths.DATASETS / 'perturbed_datasets' / f"{dataset_name}_perturbed"
         os.makedirs(dataset_path.parent, exist_ok=True)
 
-        loaded_dataset = LoadedDataset(x_adv, self.samples.source_type, self.samples.metadata)
-        registry.save_dataset(loaded_dataset, dataset_path)
+        loaded_dataset = LoadedDataset(perturbed_samples, self.samples.source_type, self.samples.metadata)
+        datasets = [(loaded_dataset, str(perturbed_dataset_path))]
 
-        return dataset_path.with_suffix(os.path.splitext(self.samples.metadata["dataset_path"])[1])
+        attack_results = {
+            "attack": self.attack_type,
+            "technique": self.attack_subtype,
+            "original_dataset_path": dataset_path,
+            "perturbed_dataset_path": str(perturbed_dataset_path)
+        }
+        
+        return attack_results, context, datasets
 
     def validate_attack_inputs(self):
         pass
 
     def validate_template_inputs(self):
         pass
-
-    def log_art_attack_results(self, perturbed_samples):
-        dataset_path = self.save_perturbed_dataset(perturbed_samples)
-
-        results = {
-            "original_dataset_path": self.samples.metadata["dataset_path"],
-            "perturbed_dataset_path": str(dataset_path)
-        }
-
-        self.log_attack_results(results, self.log_file_path)
-
-    def log_attack_results(self, results, log_file_path):
-        log_entry = {
-            "attack": self.attack_type,
-            "technique": self.attack_subtype,
-            "original_dataset_path": results["original_dataset_path"],
-            "perturbed_dataset_path": results["perturbed_dataset_path"]
-        }
-
-        logger = JsonLogger(log_file_path)
-        logger.log(log_entry)

@@ -34,4 +34,4 @@ def attack_runner(attack_type: str, attack_subtype, template_name, **kwargs):
 
     print(f"Running attack '{attack_type}' with template '{template_name}'")
     attack = attack_cls(template, **kwargs)
-    attack.execute()
+    return attack.execute()

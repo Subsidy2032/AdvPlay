@@ -21,36 +21,31 @@ class DirectPromptInjectionAttack(PromptInjectionAttack, attack_type=available_a
                 print(f"Response: {response.content}\n")
 
             conversation_history = llm.get_conversation_history()
-            self.log_chat_history(conversation_history, self.log_file_path)
-            print(f"Chat history saved to {self.log_file_path}. Exiting...")
-            return
 
-        print("Start trying different prompts. Type 'clear' to clear conversation history, and 'exit' to exit")
+        else:
+            print("Start trying different prompts. Type 'clear' to clear conversation history, and 'exit' to exit")
 
-        c = 0
-        while True:
-            user_input = input("> ")
+            c = 0
+            while True:
+                user_input = input("> ")
 
-            if user_input.lower() == "clear":
-                llm.clear_chat_history()
-                print("Chat history cleared!")
-                continue
+                if user_input.lower() == "clear":
+                    llm.clear_chat_history()
+                    print("Chat history cleared!")
+                    continue
 
-            if user_input.lower() == "exit":
-                if c == 0:
-                    return
+                if user_input.lower() == "exit":
+                    if c == 0:
+                        return
 
-                conversation_history = llm.get_conversation_history()
-                self.log_chat_history(conversation_history, self.log_file_path)
-                print(f"Chat history saved to {self.log_file_path}. Exiting...")
-                break
+                    conversation_history = llm.get_conversation_history()
+                    break
 
-            response = llm.query_llm(user_input)
-            print(f"Response: {response.content}")
-            c += 1
+                response = llm.query_llm(user_input)
+                print(f"Response: {response.content}")
+                c += 1
 
-    def log_chat_history(self, conversation_history, log_file_path):
-        log_entry = {
+        results = {
             "attack": self.attack_type,
             "technique": self.attack_subtype,
             "timestamp": datetime.now(UTC).isoformat() + "Z",
@@ -61,8 +56,4 @@ class DirectPromptInjectionAttack(PromptInjectionAttack, attack_type=available_a
             "conversation": conversation_history
         }
 
-        logger = JsonLogger(log_file_path)
-        logger.log(log_entry)
-
-    def build(self):
-        super().build()
+        return results, None, []

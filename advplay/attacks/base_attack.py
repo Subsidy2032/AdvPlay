@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 import json
 import os
-
 import numpy as np
 import pandas as pd
 

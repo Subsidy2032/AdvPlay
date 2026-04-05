@@ -3,9 +3,10 @@ import os
 import pytest
 from unittest.mock import patch
 
-from advplay.attacks.attack_runner import attack_runner
+from advplay.orchestrators.full_pipeline_orchestrator import FullPipelineOrchestrator
+from advplay.loggers.json_logger import JsonLogger
 from advplay.attacks.prompt_injection.prompt_injection_attack import PromptInjectionAttack
-from advplay.variables import available_attacks, available_platforms
+from advplay.variables import available_attacks
 
 
 @pytest.fixture
@@ -16,50 +17,85 @@ def valid_template(tmp_path):
         "custom_instructions": "test instructions"
     }
 
+
 @pytest.fixture
 def attack_parameters():
     return {
         "attack": available_attacks.PROMPT_INJECTION,
         "technique": "direct",
         "prompt_list": ["test prompt"],
-        "session_id": "test"
+        "session_id": "test",
+        "log_filename": "test_log"
     }
 
-def test_attack_runner_success(attack_parameters, valid_template, tmp_path):
+
+@pytest.fixture
+def orchestrator(tmp_path, attack_parameters):
+    log_path = tmp_path / f"{attack_parameters['log_filename']}.log"
+    logger = JsonLogger(log_path)
+    return FullPipelineOrchestrator(evaluator=None, logger=logger)
+
+
+def run_attack(orchestrator, attack_parameters, valid_template, **overrides):
+    kwargs = {
+        "prompt_list": attack_parameters["prompt_list"],
+        "session_id": attack_parameters["session_id"],
+        "log_filename": attack_parameters["log_filename"]
+    }
+    kwargs.update(overrides)
+
+    orchestrator.run(
+        attack_type=attack_parameters['attack'],
+        attack_subtype=attack_parameters['technique'],
+        template_name=valid_template,
+        **kwargs
+    )
+
+
+def test_attack_runner_success(orchestrator, attack_parameters, valid_template, tmp_path):
     with patch("advplay.attacks.attack_runner.paths.TEMPLATES", tmp_path):
         with patch.object(PromptInjectionAttack, "execute") as mock_execute:
-            attack_runner(
-                attack_type=attack_parameters['attack'],
-                attack_subtype=attack_parameters['technique'],
-                template_name=valid_template,
-                prompt_list=attack_parameters['prompt_list'],
-                session_id=attack_parameters['session_id']
-            )
+            run_attack(orchestrator, attack_parameters, valid_template)
             mock_execute.assert_called_once()
 
 
-def test_attack_runner_unsupported_attack(tmp_path, attack_parameters, valid_template):
+def test_attack_runner_unsupported_attack(orchestrator, attack_parameters, valid_template, tmp_path):
     with patch("advplay.attacks.attack_runner.paths.TEMPLATES", tmp_path):
         with pytest.raises(ValueError, match="Unsupported attack type"):
-            attack_runner("nonexistent_attack", attack_parameters['technique'], valid_template)
+            orchestrator.run(
+                attack_type="nonexistent_attack",
+                attack_subtype=attack_parameters['technique'],
+                template_name=valid_template
+            )
 
 
-def test_attack_runner_missing_template(tmp_path, attack_parameters, valid_template):
+def test_attack_runner_missing_template(orchestrator, attack_parameters, tmp_path):
     attack_dir = tmp_path / attack_parameters["attack"]
     attack_dir.mkdir(parents=True)
+
     with patch("advplay.attacks.attack_runner.paths.TEMPLATES", tmp_path):
         with pytest.raises(FileNotFoundError, match="file not found"):
-            attack_runner(attack_parameters["attack"], attack_parameters['technique'], "missing_template")
+            orchestrator.run(
+                attack_type=attack_parameters["attack"],
+                attack_subtype=attack_parameters['technique'],
+                template_name="missing_template"
+            )
 
 
-def test_attack_runner_invalid_json(tmp_path, attack_parameters, valid_template):
+def test_attack_runner_invalid_json(orchestrator, attack_parameters, tmp_path):
     attack_dir = tmp_path / attack_parameters["attack"]
     attack_dir.mkdir(parents=True)
+
     bad_file = attack_dir / "bad_template.json"
     bad_file.write_text("{invalid json")
+
     with patch("advplay.attacks.attack_runner.paths.TEMPLATES", tmp_path):
         with pytest.raises(ValueError, match="not a valid json"):
-            attack_runner(attack_parameters["attack"], attack_parameters['technique'], "bad_template")
+            orchestrator.run(
+                attack_type=attack_parameters["attack"],
+                attack_subtype=attack_parameters['technique'],
+                template_name="bad_template"
+            )
 
 
 def test_prompt_injection_attack_init_and_execute(tmp_path, attack_parameters, valid_template):
@@ -78,14 +114,9 @@ def test_prompt_injection_attack_init_and_execute(tmp_path, attack_parameters, v
         mock_execute.assert_called_once()
 
 
-def test_prompt_injection_attack_unsupported_platform(valid_template, attack_parameters):
+def test_prompt_injection_attack_unsupported_platform(orchestrator, valid_template, attack_parameters, tmp_path):
     attack_parameters["technique"] = "unsupported_technique"
 
-    with pytest.raises(ValueError, match="Unsupported attack"):
-        attack_runner(
-            attack_type=attack_parameters['attack'],
-            attack_subtype=attack_parameters['technique'],
-            template_name=valid_template,
-            prompt_list=attack_parameters['prompt_list'],
-            session_id=attack_parameters['session_id']
-        )
+    with patch("advplay.attacks.attack_runner.paths.TEMPLATES", tmp_path):
+        with pytest.raises(ValueError, match="Unsupported attack"):
+            run_attack(orchestrator, attack_parameters, valid_template)

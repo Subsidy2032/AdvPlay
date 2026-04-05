@@ -3,6 +3,7 @@ import pandas as pd
 from pathlib import Path
 import os
 import json
+from datetime import datetime
 
 from advplay.variables import commands, available_attacks
 from advplay import paths
@@ -13,6 +14,9 @@ from advplay.attacks.base_attack import BaseAttack
 from advplay.model_ops.registry import load_dataset
 from advplay.utils.list_templates import list_template_names, list_template_contents
 from advplay.model_ops.dataset_loaders.loaded_dataset import LoadedDataset
+from advplay.orchestrators.full_pipeline_orchestrator import FullPipelineOrchestrator
+from advplay.attack_evaluators.base_attack_evaluator import BaseAttackEvaluator
+from advplay.loggers.json_logger import JsonLogger
 
 def perform_action(args):
     kwargs = vars(args)
@@ -44,6 +48,13 @@ def perform_action(args):
             parameters[key] = cast_parameter(value, type)
 
         template_name = args.template
+
+        evaluator = BaseAttackEvaluator.registry[attack_type]
+
+        log_location = paths.ATTACK_LOGS + attack_type + datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        logger = JsonLogger(log_location)
+
+        orchestarot = FullPipelineOrchestrator()
         attack_runner.attack_runner(attack_type, attack_subtype, template_name, **parameters)
 
     elif args.command == commands.VISUALIZE:

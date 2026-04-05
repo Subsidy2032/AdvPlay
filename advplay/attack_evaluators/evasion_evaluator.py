@@ -34,4 +34,4 @@ class EvasionEvaluator(BaseAttackEvaluator, attack_type="evasion"):
             evaluation_results["num_target_mispredictions"] = num_target_mispredictions
             evaluation_results["percentage_target_mispredictions"] = percentage_target_mispredictions
 
-        return evaluation_results
+        return evaluation_results, []

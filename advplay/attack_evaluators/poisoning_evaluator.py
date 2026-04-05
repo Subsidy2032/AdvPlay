@@ -9,6 +9,8 @@ class PoisoningEvaluator(BaseAttackEvaluator, attack_type="poisoning"):
         X_test = context.X_test
         y_test = context.y_test
 
+        models = []
+
         base_model = registry.train(
             context.training_framework,
             context.model,
@@ -17,12 +19,13 @@ class PoisoningEvaluator(BaseAttackEvaluator, attack_type="poisoning"):
             config=context.training_configuration
         )
 
+        models.append((context.training_framework, base_model, context.model_name))
+
         base_acc = registry.evaluate_model_accuracy(context.training_framework, base_model, X_test, y_test)
 
         evaluation_results = {}
         evaluation_results["base_accuracy"] = base_acc
         evaluation_results["base_confusion_matrix"] = confusion_matrix(y_test, registry.predict(context.training_framework, base_model, X_test))
-        evaluation_results["base_model"] = base_model
         evaluation_results["poisoning_results"] = []
 
         min_acc = {"acc": 1.1, "portion": None, "model": None, "X_poisoned": None, "y_poisoned": None}
@@ -41,10 +44,12 @@ class PoisoningEvaluator(BaseAttackEvaluator, attack_type="poisoning"):
                                                             "n_samples_poisoned": data["n_samples_poisoned"],
                                                             "accuracy": acc,
                                                             "confusion_matrix": confusion_matrix(y_test, registry.predict(context.training_framework, 
-                                                                                                                          model, X_test)),
-                                                            "poisoned_model": model})
+                                                                                                                          model, X_test))})
             if acc < min_acc["acc"]:
-                min_acc = {"acc": acc, "portion": portion, "model": model, "X_poisoned": data["X_train"], "y_poisoned": data["y_train"]}
+                min_acc = {"acc": acc, "portion": portion}
+                min_acc_model = model
+
+            models.append((context.training_framework, min_acc_model, f"{context.model_name}_poisoned"))
 
         evaluation_results["min_accuracy"] = min_acc
-        return evaluation_results
+        return evaluation_results, models
