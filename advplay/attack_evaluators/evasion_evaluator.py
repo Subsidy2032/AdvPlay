@@ -28,7 +28,7 @@ class EvasionEvaluator(BaseAttackEvaluator, attack_type="evasion"):
         
         evaluation_results["num_target_mispredictions"] = None
         evaluation_results["percentage_target_mispredictions"] = None
-        if self.target_label is not None:
+        if target_label is not None:
             num_target_mispredictions = sum(original != 2 and perturbed == 2 for original, perturbed in zip(original_predictions, perturbed_predictions))
             percentage_target_mispredictions = (num_target_mispredictions / num_samples) * 100
             evaluation_results["num_target_mispredictions"] = num_target_mispredictions

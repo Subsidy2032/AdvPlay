@@ -49,13 +49,15 @@ def perform_action(args):
 
         template_name = args.template
 
-        evaluator = BaseAttackEvaluator.registry[attack_type]
+        evaluator = None
+        if attack_type in BaseAttackEvaluator.registry:
+            evaluator = BaseAttackEvaluator.registry[attack_type]()
 
-        log_location = paths.ATTACK_LOGS + attack_type + datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        logger = JsonLogger(log_location)
+        log_location = paths.ATTACK_LOGS / attack_type / datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        logger = JsonLogger(str(log_location))
 
-        orchestarot = FullPipelineOrchestrator()
-        attack_runner.attack_runner(attack_type, attack_subtype, template_name, **parameters)
+        orchestrator = FullPipelineOrchestrator(evaluator, logger)
+        orchestrator.run(attack_type, attack_subtype, template_name, **parameters)
 
     elif args.command == commands.VISUALIZE:
         parameters = {k: v for k, v in kwargs.items() if k not in (commands.COMMAND, commands.ATTACK_TYPE)}

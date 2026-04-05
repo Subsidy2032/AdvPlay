@@ -42,8 +42,11 @@ class EvasionAttack(BaseAttack, ABC, attack_type=available_attacks.EVASION, atta
     def __init__(self, template, **kwargs):
         super().__init__(template, **kwargs)
 
-        self.true_labels = self.true_labels.data.ravel()
-        self.samples_data = self.samples.data
+        if self.true_labels:
+            self.true_labels = self.true_labels.data.ravel()
+
+        if self.samples:
+            self.samples_data = self.samples.data
 
         if self.target_label is not None:
             self.target_label = np.full(self.true_labels.shape, self.target_label, dtype=self.true_labels.dtype)
@@ -80,7 +83,7 @@ class EvasionAttack(BaseAttack, ABC, attack_type=available_attacks.EVASION, atta
         attack_results = {
             "attack": self.attack_type,
             "technique": self.attack_subtype,
-            "original_dataset_path": dataset_path,
+            "original_dataset_path": str(dataset_path),
             "perturbed_dataset_path": str(perturbed_dataset_path)
         }
         

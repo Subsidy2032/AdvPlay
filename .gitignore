@@ -5,6 +5,7 @@ datasets/
 .obsidian/
 models/
 training_configurations/
+resources/
 results/
 templates/
 logs/

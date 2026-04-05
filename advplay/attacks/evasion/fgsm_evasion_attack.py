@@ -15,7 +15,4 @@ class FGSMEvasionAttack(EvasionAttack, attack_type=available_attacks.EVASION, at
 
     def execute(self):
         super().execute()
-        perturbed_samples = self.art_evasion(FastGradientMethod, eps=self.eps)
-
-        self.log_art_attack_results(perturbed_samples)
-        return perturbed_samples
+        return self.art_evasion(FastGradientMethod, eps=self.eps)

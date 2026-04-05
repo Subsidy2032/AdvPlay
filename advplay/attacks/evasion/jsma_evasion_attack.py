@@ -17,8 +17,5 @@ class FGSMEvasionAttack(EvasionAttack, attack_type=available_attacks.EVASION, at
 
     def execute(self):
         super().execute()
-        perturbed_samples = self.art_evasion(SaliencyMapMethod, theta=self.theta, gamma=self.gamma,
+        return self.art_evasion(SaliencyMapMethod, theta=self.theta, gamma=self.gamma,
                                              batch_size=self.batch_size)
-
-        self.log_art_attack_results(perturbed_samples)
-        return perturbed_samples

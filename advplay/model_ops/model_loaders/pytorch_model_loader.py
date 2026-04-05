@@ -15,7 +15,7 @@ class TorchModelLoader(BaseModelLoader, framework=available_frameworks.PYTORCH):
             raise FileNotFoundError(f"Model file not found: {self.model_path}")
 
         try:
-            model = torch.load(self.model_path, map_location=self.map_location)
+            model = torch.load(self.model_path, map_location=self.map_location, weights_only=False)
         except Exception as e:
             raise AttributeError(f"Failed loading model: {self.model_path}. Error: {e}")
 
