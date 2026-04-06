@@ -115,7 +115,7 @@ def model_path(fake_models_dir, attack_parameters, valid_template):
 def orchestrator(log_file_path):
     logger = JsonLogger(log_file_path)
     evaluator = PoisoningEvaluator()
-    return FullPipelineOrchestrator(evaluator, logger)
+    return FullPipelineOrchestrator(evaluator, logger, visualizer_cls=None)
 
 
 def run_attack(orchestrator, attack_parameters, valid_template, sample_dataset, **overrides):
@@ -136,6 +136,7 @@ def run_attack(orchestrator, attack_parameters, valid_template, sample_dataset, 
         attack_type=attack_parameters['attack'],
         attack_subtype=attack_parameters['technique'],
         template_name=valid_template,
+        command="",
         **kwargs
     )
 
@@ -206,6 +207,7 @@ def test_invalid_attack_type(orchestrator, valid_template, attack_parameters, sa
             attack_type="INVALID_ATTACK",
             attack_subtype=attack_parameters['technique'],
             template_name=valid_template,
+            command="",
             dataset=sample_dataset,
             label_column=attack_parameters["label_column"]
         )

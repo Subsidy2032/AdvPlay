@@ -17,8 +17,9 @@ from advplay.model_ops.dataset_loaders.loaded_dataset import LoadedDataset
 from advplay.orchestrators.full_pipeline_orchestrator import FullPipelineOrchestrator
 from advplay.attack_evaluators.base_attack_evaluator import BaseAttackEvaluator
 from advplay.loggers.json_logger import JsonLogger
+from advplay.visualization.base_visualizer import BaseVisualizer
 
-def perform_action(args):
+def perform_action(args, command):
     kwargs = vars(args)
     attack_type = kwargs.get(commands.ATTACK_TYPE)
 
@@ -57,12 +58,11 @@ def perform_action(args):
         log_location = paths.ATTACK_LOGS / attack_type / log_filename
         logger = JsonLogger(str(log_location))
 
-        orchestrator = FullPipelineOrchestrator(evaluator, logger)
-        orchestrator.run(attack_type, attack_subtype, template_name, **parameters)
+        key = (attack_type, attack_subtype)
+        visualizer_cls = BaseVisualizer.registry.get(key)
 
-    elif args.command == commands.VISUALIZE:
-        parameters = {k: v for k, v in kwargs.items() if k not in (commands.COMMAND, commands.ATTACK_TYPE)}
-        visualizer(attack_type, **parameters)
+        orchestrator = FullPipelineOrchestrator(evaluator, logger, visualizer_cls)
+        orchestrator.run(attack_type, attack_subtype, template_name, command, **parameters)
 
 def cast_parameter(parameter, type):
     if parameter is None or type is None:

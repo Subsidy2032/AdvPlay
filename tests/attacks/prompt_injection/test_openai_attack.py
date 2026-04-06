@@ -33,7 +33,7 @@ def attack_parameters():
 def orchestrator(tmp_path, attack_parameters):
     log_path = tmp_path / f"{attack_parameters['log_filename']}.log"
     logger = JsonLogger(log_path)
-    return FullPipelineOrchestrator(evaluator=None, logger=logger)
+    return FullPipelineOrchestrator(evaluator=None, logger=logger, visualizer_cls=None)
 
 
 def run_attack(orchestrator, attack_parameters, valid_template, **overrides):
@@ -48,6 +48,7 @@ def run_attack(orchestrator, attack_parameters, valid_template, **overrides):
         attack_type=attack_parameters['attack'],
         attack_subtype=attack_parameters['technique'],
         template_name=valid_template,
+        command="",
         **kwargs
     )
 
@@ -65,7 +66,8 @@ def test_attack_runner_unsupported_attack(orchestrator, attack_parameters, valid
             orchestrator.run(
                 attack_type="nonexistent_attack",
                 attack_subtype=attack_parameters['technique'],
-                template_name=valid_template
+                template_name=valid_template,
+                command=""
             )
 
 
@@ -78,7 +80,8 @@ def test_attack_runner_missing_template(orchestrator, attack_parameters, tmp_pat
             orchestrator.run(
                 attack_type=attack_parameters["attack"],
                 attack_subtype=attack_parameters['technique'],
-                template_name="missing_template"
+                template_name="missing_template",
+                command=""
             )
 
 
@@ -94,9 +97,9 @@ def test_attack_runner_invalid_json(orchestrator, attack_parameters, tmp_path):
             orchestrator.run(
                 attack_type=attack_parameters["attack"],
                 attack_subtype=attack_parameters['technique'],
-                template_name="bad_template"
+                template_name="bad_template",
+                command=""
             )
-
 
 def test_prompt_injection_attack_init_and_execute(tmp_path, attack_parameters, valid_template):
     prompt_file = tmp_path / "prompts.txt"

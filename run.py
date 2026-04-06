@@ -14,6 +14,7 @@ from advplay.visualization.base_visualizer import BaseVisualizer
 
 def main():
     load_required_classes()
+    command = " ".join(sys.argv)
 
     attacks = BaseAttack.registry.keys()
     unique_attack_categories = list({x[0] for x in attacks})
@@ -61,19 +62,7 @@ def main():
                                               required=arguments["required"], help=arguments["help"],
                                               choices=choices)
 
-    visualize_parser = subparsers.add_parser(commands.VISUALIZE, help='Visualize attack results')
-    visualize_subparsers = visualize_parser.add_subparsers(dest=commands.ATTACK_TYPE, help='Type of attack')
-
-    visualizers = BaseVisualizer.registry.keys()
-    unique_visualizers = list({x[0] for x in attacks})
-
-    for visualizer in unique_visualizers:
-        visualize_subparser = visualize_subparsers.add_parser(visualizer, help=f"Visualize {visualizer} attack")
-        visualize_subparser.add_argument('--log-filename', required=True, help='Attack log file')
-        visualize_subparser.add_argument('--directory', required=False,
-                                      help='Name of the directory the results will be saved to')
-
-    perform_action(parser.parse_args())
+    perform_action(parser.parse_args(), command)
 
 if __name__ == "__main__":
     main()
