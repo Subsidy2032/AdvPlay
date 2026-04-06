@@ -14,21 +14,23 @@ class PoisoningVisualizer(BaseVisualizer, ABC, attack_type=available_attacks.POI
     def __init__(self, log_file: dict, **kwargs):
         super().__init__(log_file, **kwargs)
 
-        self.base_accuracy = log_file.get('base_accuracy')
-        self.base_confusion_matrix = log_file.get('base_confusion_matrix')
-        self.source_class = log_file.get('source')
-        self.target_class = log_file.get('target')
-        self.labels = log_file.get('labels')
+        evaluation_results = log_file.get('evaluation')
 
-        self.poisoning_results = log_file.get('poisoning_results')
+        self.base_accuracy = evaluation_results.get('base_accuracy')
+        self.base_confusion_matrix = evaluation_results.get('base_confusion_matrix')
+        self.source_class = evaluation_results.get('source')
+        self.target_class = evaluation_results.get('target')
+        self.labels = log_file.get('result').get('labels')
+
+        self.poisoning_results = evaluation_results.get('poisoning_results')
         self.portions_poisoned = [0.0] + [poisoning_result['portion'] for poisoning_result in self.poisoning_results]
         self.percentages_poisoned = [portion * 100 for portion in self.portions_poisoned]
         self.n_samples_poisoned = [0] + [poisoning_result['n_samples_poisoned'] for poisoning_result in self.poisoning_results]
         self.accuracies = [self.base_accuracy] + [poisoning_result['accuracy'] for poisoning_result in self.poisoning_results]
         self.confusion_matrices = [self.base_confusion_matrix] + [poisoning_result['confusion_matrix'] for poisoning_result in self.poisoning_results]
 
-        self.directory_name = (paths.VISUALIZATIONS_RESULTS / available_attacks.POISONING /
-                               kwargs.get('directory', datetime.now().strftime("%Y-%m-%d_%H-%M-%S")))
+        directory = kwargs.get("directory") or datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        self.directory_name = paths.VISUALIZATIONS_RESULTS / available_attacks.POISONING / directory
         self.directory_name.mkdir(parents=True, exist_ok=True)
 
     def save_confusion_matrices(self):

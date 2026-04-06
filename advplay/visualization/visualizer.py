@@ -14,7 +14,7 @@ def visualizer(attack_type, **kwargs):
     if not isinstance(log_file[0], dict):
         raise TypeError(f"log file must be a JSON object (dict), got {type(log_file).__name__}")
 
-    technique = log_file[0].get("technique")
+    technique = log_file[0].get("result").get("technique")
     key = (attack_type, technique)
     visualizer_cls = BaseVisualizer.registry.get(key)
     if visualizer_cls is None:

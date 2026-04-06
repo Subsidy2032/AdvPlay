@@ -8,6 +8,9 @@ class JsonLogger(BaseLogger):
         self.append_log_entry(self.location, results)
 
     def append_log_entry(self, log_file_path, log_entry):
+        if not str(log_file_path).endswith(".log"):
+            log_file_path += ".log"
+            
         try:
             with open(log_file_path, 'r', encoding='utf-8') as f:
                 existing_logs = json.load(f)

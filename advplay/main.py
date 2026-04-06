@@ -53,7 +53,8 @@ def perform_action(args):
         if attack_type in BaseAttackEvaluator.registry:
             evaluator = BaseAttackEvaluator.registry[attack_type]()
 
-        log_location = paths.ATTACK_LOGS / attack_type / datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        log_filename = parameters.get('log_filename') or datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        log_location = paths.ATTACK_LOGS / attack_type / log_filename
         logger = JsonLogger(str(log_location))
 
         orchestrator = FullPipelineOrchestrator(evaluator, logger)
