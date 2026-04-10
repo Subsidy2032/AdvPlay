@@ -2,7 +2,7 @@ import json
 import pytest
 
 from advplay.variables import available_attacks
-from advplay.attacks.attack_runner import define_template
+from advplay.attacks.base_attack import BaseAttack
 from advplay import paths
 
 @pytest.fixture(autouse=True)
@@ -51,18 +51,20 @@ def file_path(label_flipping_template_data: dict, fake_templates_dir) -> str:
     return paths.TEMPLATES / label_flipping_template_data["attack"] / f"{label_flipping_template_data['template_filename']}.json"
 
 def test_define_template_valid(label_flipping_template_data, file_path, expected_json):
-    define_template(
-        attack_type=label_flipping_template_data["attack"],
-        training_framework=label_flipping_template_data["training_framework"],
-        model=label_flipping_template_data["model"],
-        training_configuration=label_flipping_template_data["training_configuration"],
-        test_portion=label_flipping_template_data["test_portion"],
-        min_portion_to_poison=label_flipping_template_data["min_portion_to_poison"],
-        max_portion_to_poison=label_flipping_template_data["max_portion_to_poison"],
-        trigger_pattern=label_flipping_template_data["trigger_pattern"],
-        override=label_flipping_template_data["override"],
-        template_filename=label_flipping_template_data["template_filename"],
-    )
+    params = {
+        "training_framework": label_flipping_template_data["training_framework"],
+        "model": label_flipping_template_data["model"],
+        "training_configuration": label_flipping_template_data["training_configuration"],
+        "test_portion": label_flipping_template_data["test_portion"],
+        "min_portion_to_poison": label_flipping_template_data["min_portion_to_poison"],
+        "max_portion_to_poison": label_flipping_template_data["max_portion_to_poison"],
+        "trigger_pattern": label_flipping_template_data["trigger_pattern"],
+        "override": label_flipping_template_data["override"],
+        "template_filename": label_flipping_template_data["template_filename"]
+    }
+    key = (label_flipping_template_data["attack"], None)
+    builder = BaseAttack.registry.get(key)(label_flipping_template_data)
+    builder.build()
 
     assert file_path.exists(), f"{file_path} was not created"
 
@@ -83,8 +85,8 @@ def test_define_template_invalid(label_flipping_template_data, bad_kwargs, expec
     kwargs = label_flipping_template_data.copy()
     kwargs.update(bad_kwargs)
 
-    define_kwargs = {
-        "attack_type": kwargs["attack"],
+    params = {
+        "attack": kwargs["attack"],
         "training_framework": kwargs["training_framework"],
         "model": kwargs["model"],
         "training_configuration": kwargs["training_configuration"],
@@ -93,8 +95,11 @@ def test_define_template_invalid(label_flipping_template_data, bad_kwargs, expec
         "max_portion_to_poison": kwargs["max_portion_to_poison"],
         "trigger_pattern": kwargs["trigger_pattern"],
         "override": kwargs["override"],
-        "template_filename": kwargs["template_filename"],
+        "template_filename": kwargs["template_filename"]
     }
+    key = (kwargs["attack"], None)
 
     with pytest.raises(expected_error):
-        define_template(**define_kwargs)
+        builder = BaseAttack.registry.get(key)(params)
+        builder.build()
+

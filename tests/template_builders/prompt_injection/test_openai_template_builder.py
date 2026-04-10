@@ -3,7 +3,7 @@ import os
 import pytest
 
 from advplay import paths
-from advplay.attacks.attack_runner import define_template
+from advplay.attacks.base_attack import BaseAttack
 from advplay.variables import available_platforms, available_attacks, default_template_file_names
 
 @pytest.fixture
@@ -42,12 +42,9 @@ def cleanup_file(file_path):
         os.remove(file_path)
 
 def test_template_building_with_file_name(openai_template_data, expected_json, file_path):
-    define_template(
-        openai_template_data["attack"],
-        model=openai_template_data["model"],
-        custom_instructions=openai_template_data["custom_instructions"],
-        template_filename=openai_template_data["template_filename"]
-    )
+    key = (openai_template_data["attack"], None)
+    builder = BaseAttack.registry.get(key)(openai_template_data)
+    builder.build()
 
     assert file_path.exists(), f"{file_path} was not created"
 
@@ -60,12 +57,14 @@ def test_instructions_from_file(openai_template_data, expected_json, file_path, 
     instruction_file = tmp_path / "temp_instructions.txt"
     instruction_file.write_text(openai_template_data["custom_instructions"])
 
-    define_template(
-        openai_template_data["attack"],
-        model=openai_template_data["model"],
-        custom_instructions=str(instruction_file),
-        template_filename=openai_template_data["template_filename"]
-    )
+    params = {
+        "model": openai_template_data["model"],
+        "custom_instructions": str(instruction_file),
+        "template_filename": openai_template_data["template_filename"],
+    }
+    key = (openai_template_data["attack"], None)
+    builder = BaseAttack.registry.get(key)(params)
+    builder.build()
 
     assert file_path.exists(), f"{file_path} was not created"
 
@@ -79,11 +78,13 @@ def test_default_filename_used(openai_template_data, expected_json):
     if default_file.exists():
         os.remove(default_file)
 
-    define_template(
-        openai_template_data["attack"],
-        model=openai_template_data["model"],
-        custom_instructions=openai_template_data["custom_instructions"]
-    )
+    params = {
+        "model": openai_template_data["model"],
+        "custom_instructions": openai_template_data["custom_instructions"]
+    }
+    key = (openai_template_data["attack"], None)
+    builder = BaseAttack.registry.get(key)(params)
+    builder.build()
 
     assert default_file.exists()
 
@@ -95,11 +96,14 @@ def test_default_filename_used(openai_template_data, expected_json):
 def test_missing_instructions(openai_template_data, expected_json, file_path):
     expected_json["custom_instructions"] = None
 
-    define_template(
-        openai_template_data["attack"],
-        model=openai_template_data["model"],
-        template_filename=openai_template_data["template_filename"]
-    )
+    params = {
+        "attack": openai_template_data["attack"],
+        "model": openai_template_data["model"],
+        "template_filename": openai_template_data["template_filename"],
+    }
+    key = (openai_template_data["attack"], None)
+    builder = BaseAttack.registry.get(key)(params)
+    builder.build()
 
     assert file_path.exists()
     with open(file_path, "r") as f:

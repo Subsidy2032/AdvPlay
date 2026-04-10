@@ -37,7 +37,9 @@ def perform_action(args, command):
             type = BaseAttack.registry.get((attack_type, None)).TEMPLATE_PARAMETERS[key].get("type")
             parameters[key] = cast_parameter(value, type)
 
-        attack_runner.define_template(attack_type, **parameters)
+        key = (attack_type, None)
+        builder = BaseAttack.registry.get(key)(parameters)
+        builder.build()
 
     elif args.command == commands.ATTACK:
         parameters = {k: v for k, v in kwargs.items() if k not in (commands.COMMAND, commands.ATTACK_TYPE, commands.TECHNIQUE, 'template')}
