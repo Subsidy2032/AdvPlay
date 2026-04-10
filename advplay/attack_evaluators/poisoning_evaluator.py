@@ -49,7 +49,11 @@ class PoisoningEvaluator(BaseAttackEvaluator, attack_type="poisoning"):
                 min_acc = {"acc": acc, "portion": portion}
                 min_acc_model = model
 
-            models.append((context.training_framework, min_acc_model, f"{context.model_name}_poisoned"))
-
+        models.append((context.training_framework, min_acc_model, f"{context.model_name}_poisoned"))
         evaluation_results["min_accuracy"] = min_acc
+
+        print("Evaluation results summary:")
+        print(f"Base accuracy: {base_acc:.2f}")
+        print(f"Lowest poisoned accuracy: {min_acc['acc']:.2f} ({min_acc['portion'] * 100:.1f}% poisoned)")
+        print(f"Accuracy reduction: {base_acc - min_acc['acc']:.2f}\n")
         return evaluation_results, models

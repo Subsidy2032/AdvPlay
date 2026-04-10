@@ -34,7 +34,7 @@ def save_dataset(loaded_dataset: LoadedDataset, path):
     saver.save()
 
 def build_trainer_cls(framework: str, model: str, X_train, y_train, config: dict = None):
-    default_path = paths.TRAINING_CONFIGURATIONS / framework
+    default_path = paths.CONFIGS / framework
     if isinstance(config, str):
         config = load_files.load_json(default_path, config)
 
@@ -51,7 +51,6 @@ def build_trainer_cls(framework: str, model: str, X_train, y_train, config: dict
 
 def train(framework: str, model: str, X_train, y_train, config: dict = None):
     trainer = build_trainer_cls(framework, model, X_train, y_train, config)
-    print(f"Training a {model} model")
     return trainer.train()
 
 def load_model(framework: str, model_path: str):
@@ -68,7 +67,6 @@ def load_model(framework: str, model_path: str):
         raise ValueError(f"Unsupported framework: {framework}")
 
     loader = loader_cls(model_path)
-    print(f"Loading model: {model_path}")
     return loader.load()
 
 def load_classifier(framework, model_path, config: dict):
@@ -85,8 +83,6 @@ def load_classifier(framework, model_path, config: dict):
         raise ValueError(f"Unsupported framework: {framework}")
 
     loader = loader_cls(model_path)
-    print(f"Loading classifier: {model_path}")
-
     loss = config.get("loss")
     input_shape = config.get("input_shape")
     nb_classes = config.get("nb_classes")
@@ -101,7 +97,6 @@ def evaluate_model_accuracy(framework: str, model, X, y):
         raise ValueError(f"Unsupported framework: {framework}")
 
     evaluator = evaluator_cls(model)
-    print(f"Evaluating model accuracy")
     accuracy = evaluator.accuracy(X, y)
     return accuracy
 
@@ -113,5 +108,4 @@ def predict(framework: str, model, X):
 
     evaluator = evaluator_cls(model)
 
-    print(f"Getting model predictions")
     return evaluator.predict(X)

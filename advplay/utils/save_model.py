@@ -11,7 +11,6 @@ def save_sklearn_model(model, model_name):
 
     joblib.dump(model, model_path)
 
-    print(f"Model saved to {model_path}")
     return model_path
 
 def save_pytorch_model(model, model_name):
@@ -20,7 +19,6 @@ def save_pytorch_model(model, model_name):
 
     torch.save(model, model_path)
 
-    print(f"Model saved to {model_path}")
     return model_path
 
 def save_model(framework, model, model_name):

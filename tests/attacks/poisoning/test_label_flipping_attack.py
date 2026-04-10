@@ -94,7 +94,7 @@ def attack_parameters():
 
 @pytest.fixture
 def log_file_path(fake_log_dir, attack_parameters):
-    return paths.ATTACK_LOGS / attack_parameters["attack"] / f"{attack_parameters['log_filename']}.log"
+    return paths.LOGS / attack_parameters["attack"] / f"{attack_parameters['log_filename']}.log"
 
 @pytest.fixture
 def poisoned_dir(fake_dataset_dir):

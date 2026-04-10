@@ -11,8 +11,6 @@ def define_template(attack_type: str, **kwargs):
     if attack_cls is None:
         raise ValueError(f"Unsupported attack: {attack_type}")
 
-    print(f"Creating a template for {attack_type} attack")
-
     builder = attack_cls(kwargs)
     builder.build()
 
@@ -32,6 +30,5 @@ def attack_runner(attack_type: str, attack_subtype, template_name, **kwargs):
     if attack_cls is None:
         raise ValueError(f"Unsupported attack type and platform: {key}")
 
-    print(f"Running attack '{attack_type}' with template '{template_name}'")
     attack = attack_cls(template, **kwargs)
     return attack.execute()

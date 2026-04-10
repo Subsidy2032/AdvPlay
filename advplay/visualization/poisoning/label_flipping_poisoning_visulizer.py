@@ -11,4 +11,4 @@ class LabelFlippingPoisoningVisualizer(PoisoningVisualizer, attack_type=availabl
         self.save_accuracy_graph()
         self.save_confusion_matrices()
 
-        print(f"Results are saved to {self.directory_name}")
+        print(f"Visualization results are saved to the {self.directory_name} directory\n")

@@ -9,7 +9,6 @@ from advplay.variables import commands, available_attacks
 from advplay import paths
 from advplay.utils import load_files
 from advplay.attacks import attack_runner
-from advplay.visualization.visualizer import visualizer
 from advplay.attacks.base_attack import BaseAttack
 from advplay.model_ops.registry import load_dataset
 from advplay.utils.list_templates import list_template_names, list_template_contents
@@ -55,7 +54,7 @@ def perform_action(args, command):
             evaluator = BaseAttackEvaluator.registry[attack_type]()
 
         log_filename = parameters.get('log_filename') or datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        log_location = paths.ATTACK_LOGS / attack_type / log_filename
+        log_location = paths.LOGS / attack_type / log_filename
         logger = JsonLogger(str(log_location))
 
         key = (attack_type, attack_subtype)

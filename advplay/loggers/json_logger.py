@@ -6,6 +6,7 @@ from advplay.loggers.base_logger import BaseLogger
 class JsonLogger(BaseLogger):
     def log(self, results: dict):
         self.append_log_entry(self.location, results)
+        print(f"Log results are saved to the {self.location}.log file\n")
 
     def append_log_entry(self, log_file_path, log_entry):
         if not str(log_file_path).endswith(".log"):

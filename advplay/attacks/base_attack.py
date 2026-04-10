@@ -80,7 +80,7 @@ class BaseAttack(ABC):
 
     def setup_logging(self):
         filename = getattr(self, "log_filename", datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
-        self.log_file_path = paths.ATTACK_LOGS / f"{self.attack_type}" / f"{filename}.log"
+        self.log_file_path = paths.LOGS / f"{self.attack_type}" / f"{filename}.log"
         self.log_file_path.parent.mkdir(parents=True, exist_ok=True)
 
     def build(self):
