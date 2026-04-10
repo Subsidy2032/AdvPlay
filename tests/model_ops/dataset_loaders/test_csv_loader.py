@@ -5,7 +5,6 @@ import pytest
 from pathlib import Path
 from advplay.model_ops.dataset_loaders.base_dataset_loader import BaseDatasetLoader
 from advplay.model_ops.dataset_loaders.csv_dataset_loader import CSVDatasetLoader
-from advplay.model_ops.registry import load_dataset
 from advplay.model_ops.dataset_loaders.loaded_dataset import LoadedDataset
 
 # --- Fixtures ---
@@ -33,11 +32,9 @@ def test_csv_loader_loads(temp_csv):
     assert len(loaded_dataset.data) == 3
 
 def test_registry_load_dataset(source, temp_csv):
-    loaded_dataset = load_dataset(source, temp_csv)
+    loader_cls = BaseDatasetLoader.registry.get(source)
+    loader = loader_cls(temp_csv)
+    loaded_dataset = loader.load()
     assert isinstance(loaded_dataset, LoadedDataset)
     assert "label" in list(loaded_dataset.metadata.get("columns"))
     assert len(loaded_dataset.data) == 3
-
-def test_file_not_found(source, tmp_path):
-    with pytest.raises(FileNotFoundError):
-        load_dataset(source, tmp_path / "nonexistent.csv")

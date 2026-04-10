@@ -1,8 +1,10 @@
-from sklearn.metrics import confusion_matrix
+from pathlib import Path
 
 from advplay.attack_evaluators.base_attack_evaluator import BaseAttackEvaluator
 from advplay.attack_evaluators.contexts.evasion_context import EvasionContext
-from advplay.model_ops import registry
+from advplay.model_ops.evaluators.base_evaluator import BaseEvaluator
+from advplay import paths
+from advplay.model_ops.model_loaders.base_model_loader import BaseModelLoader
 
 class EvasionEvaluator(BaseAttackEvaluator, attack_type="evasion"):
     def evaluate(self, context: EvasionContext):
@@ -12,10 +14,18 @@ class EvasionEvaluator(BaseAttackEvaluator, attack_type="evasion"):
         perturbed_samples = context.perturbed_samples
         target_label = context.target_label
 
+        evaluator_cls = BaseEvaluator.registry.get(context.training_framework)
         evaluation_results = {}
-        model = registry.load_model(training_framework, model_path)
-        original_predictions = registry.predict(training_framework, model, samples_data)
-        perturbed_predictions = registry.predict(training_framework, model, perturbed_samples)
+
+        default_path = paths.MODELS
+        if not Path(model_path).is_file():
+            model_path = default_path / model_path
+        loader_cls = BaseModelLoader.registry.get(training_framework)
+        loader = loader_cls(model_path)
+        model = loader.load()
+        evaluator = evaluator_cls(model)
+        original_predictions = evaluator.predict(samples_data)
+        perturbed_predictions = evaluator.predict(perturbed_samples)
         evaluation_results["original_predictions"] = original_predictions
         evaluation_results["perturbed_predictions"] = perturbed_predictions
 

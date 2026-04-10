@@ -1,12 +1,14 @@
+from pathlib import Path
+
 from advplay.orchestrators.base_orchestrator import BaseOrchestrator
 from advplay.attacks.base_attack import BaseAttack
 from advplay.attack_evaluators.base_attack_evaluator import BaseAttackEvaluator
 from advplay.loggers.base_logger import BaseLogger
-from advplay.model_ops import registry
 from advplay.utils import save_model
 from advplay import paths
 from advplay.visualization.base_visualizer import BaseVisualizer
 from advplay.utils import load_files
+from advplay.model_ops.dataset_savers.base_dataset_saver import BaseDatasetSaver
 
 class FullPipelineOrchestrator(BaseOrchestrator):
     def __init__(self, evaluator: BaseAttackEvaluator, logger: BaseLogger, visualizer_cls: BaseVisualizer):
@@ -40,7 +42,9 @@ class FullPipelineOrchestrator(BaseOrchestrator):
         self.logger.log(log_entry)
 
         for loaded_dataset, dataset_path in datasets:
-            registry.save_dataset(loaded_dataset, dataset_path)
+            saver_cls = BaseDatasetSaver.registry.get(loaded_dataset.source_type)
+            saver = saver_cls(loaded_dataset.data, loaded_dataset.metadata, Path(dataset_path))
+            saver.save()
 
         for training_framework, model, model_name in models:
             save_model.save_model(training_framework, model, model_name)

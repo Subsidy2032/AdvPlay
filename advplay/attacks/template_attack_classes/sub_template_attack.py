@@ -1,5 +1,4 @@
 # TEMPLATE FILE
-from advplay.utils.append_log_entry import append_log_entry
 from advplay.attacks.template_attack_classes.template_attack import TemplateAttack
 
 class SubTemplateAttack(TemplateAttack, attack_type='template', attack_subtype='sub'):
@@ -21,5 +20,3 @@ class SubTemplateAttack(TemplateAttack, attack_type='template', attack_subtype='
             "technique": self.technique,
             # Additional attack parameters and results
         }
-
-        append_log_entry(log_file_path, log_entry)

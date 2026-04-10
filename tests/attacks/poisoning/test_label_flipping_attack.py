@@ -7,11 +7,11 @@ from pathlib import Path
 
 from advplay.variables import available_attacks, poisoning_techniques, available_frameworks, available_models
 from advplay import paths
-from advplay.model_ops.registry import load_dataset
 from advplay.model_ops.dataset_loaders.loaded_dataset import LoadedDataset
 from advplay.orchestrators.full_pipeline_orchestrator import FullPipelineOrchestrator
 from advplay.attack_evaluators.poisoning_evaluator import PoisoningEvaluator
 from advplay.loggers.json_logger import JsonLogger
+from advplay.model_ops.dataset_loaders.base_dataset_loader import BaseDatasetLoader
 
 
 @pytest.fixture(autouse=True)
@@ -154,7 +154,9 @@ def test_attack_runs_without_errors(orchestrator, attack_parameters, sample_data
 
     file_path = files[0]
     ext = sample_dataset.source_type
-    dataset = load_dataset(ext, file_path)
+    loader_cls = BaseDatasetLoader.registry.get(ext)
+    loader = loader_cls(file_path)
+    dataset = loader.load()
 
     expected = (1 - valid_template['test_portion']) * sample_dataset.data.shape[0]
     assert dataset.data.shape[0] == expected
@@ -185,7 +187,9 @@ def test_override_false_appends_data(orchestrator, dataset_path, valid_template,
 
     file_path = files[0]
     ext = sample_dataset.source_type
-    dataset = load_dataset(ext, file_path)
+    loader_cls = BaseDatasetLoader.registry.get(ext)
+    loader = loader_cls(file_path)
+    dataset = loader.load()
 
     original_rows = (1 - valid_template['test_portion']) * sample_dataset.data.shape[0]
     assert dataset.data.shape[0] > original_rows

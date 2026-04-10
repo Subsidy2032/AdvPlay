@@ -5,11 +5,11 @@ import tempfile
 import joblib
 
 from advplay.model_ops.trainers import base_trainer
-from advplay.model_ops import registry
 from advplay.variables import available_frameworks, available_models
 from advplay.model_ops.trainers.sklearn.logistic_regression_trainer import LogisticRegressionTrainer
 from advplay.utils import save_model
 from advplay import paths
+from advplay.model_ops.trainers.base_trainer import BaseTrainer
 
 DATASETS = paths.DATASETS
 SYNTHETIC_CSV = DATASETS / "synthetic_data.csv"
@@ -94,25 +94,17 @@ def test_init_empty_X(config):
 
 def test_build_cls_returns_correct_instance(train_test, config, framework, model):
     X, y = train_test
-    trainer = registry.build_trainer_cls(
-        framework=framework,
-        model=model,
-        X_train=X,
-        y_train=y,
-        config=config
-    )
+    trainer_cls = BaseTrainer.registry.get((framework, model))
+    trainer = trainer_cls(X, y, config)
+
     assert isinstance(trainer, base_trainer.BaseTrainer)
 
 def test_train_flow(train_test, config, framework, model):
     X, y = train_test
-    trainer = registry.build_trainer_cls(
-        framework=framework,
-        model=model,
-        X_train=X,
-        y_train=y,
-        config=config
-    )
+    trainer_cls = BaseTrainer.registry.get((framework, model))
+    trainer = trainer_cls(X, y, config)
     model = trainer.train()
+
     assert model is not None
 
 # ------------------- Utils Save Model Tests -------------------

@@ -10,7 +10,6 @@ from advplay.variables import available_attacks, poisoning_techniques
 from advplay.model_ops.dataset_loaders.loaded_dataset import LoadedDataset
 from advplay.attack_evaluators.poisoning_evaluator import PoisoningEvaluator
 from advplay.attack_evaluators.contexts.poisoning_context import PoisoningContext
-from advplay.model_ops import registry
 
 class LabelFlippingPoisoningAttack(PoisoningAttack,
                                     attack_type=available_attacks.POISONING,

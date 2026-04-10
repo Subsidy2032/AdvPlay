@@ -2,13 +2,15 @@ from abc import ABC
 import inspect
 import numpy as np
 import os
+from pathlib import Path
 
 from advplay.attacks.base_attack import BaseAttack
 from advplay.variables import default_template_file_names
 from advplay.variables import available_attacks
 from advplay.model_ops.dataset_loaders.loaded_dataset import LoadedDataset
-from advplay.model_ops import registry
 from advplay import paths
+from advplay.utils import get_training_componenets
+from advplay.model_ops.model_loaders.base_model_loader import BaseModelLoader
 from advplay.loggers.json_logger import JsonLogger
 from advplay.attack_evaluators.contexts.evasion_context import EvasionContext
 from advplay.attack_evaluators.evasion_evaluator import EvasionEvaluator
@@ -55,7 +57,16 @@ class EvasionAttack(BaseAttack, ABC, attack_type=available_attacks.EVASION, atta
         self.validate_attack_inputs()
 
     def art_evasion(self, attack_class, **kwargs):
-        wrapper = registry.load_classifier(self.training_framework, self.model_path, self.model_configuration)
+        default_path = paths.MODELS
+        if not Path(self.model_path).is_file():
+            self.model_path = default_path / self.model_path
+        loader_cls = BaseModelLoader.registry.get(self.training_framework)
+        loader = loader_cls(self.model_path)
+        loss = self.model_configuration.get("loss")
+        input_shape = self.model_configuration.get("input_shape")
+        nb_classes = self.model_configuration.get("nb_classes")
+        loss_fn = get_training_componenets.get_loss_function(self.training_framework, loss)
+        wrapper = loader.load_art_classifier(loss_fn, input_shape, nb_classes)
 
         if self.target_label is not None:
             if "targeted" in inspect.signature(attack_class).parameters:

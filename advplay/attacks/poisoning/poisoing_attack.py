@@ -11,7 +11,6 @@ from advplay import paths
 from advplay.model_ops.trainers.base_trainer import BaseTrainer
 from advplay.variables import dataset_formats
 from advplay.model_ops.dataset_loaders.loaded_dataset import LoadedDataset
-from advplay.model_ops.registry import load_dataset
 
 class PoisoningAttack(BaseAttack, ABC, attack_type=available_attacks.POISONING, attack_subtype=None):
     TEMPLATE_PARAMETERS = {

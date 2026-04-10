@@ -8,13 +8,13 @@ from datetime import datetime
 from advplay.variables import commands, available_attacks
 from advplay import paths
 from advplay.attacks.base_attack import BaseAttack
-from advplay.model_ops.registry import load_dataset
 from advplay.utils.list_templates import list_template_names, list_template_contents
 from advplay.model_ops.dataset_loaders.loaded_dataset import LoadedDataset
 from advplay.orchestrators.full_pipeline_orchestrator import FullPipelineOrchestrator
 from advplay.attack_evaluators.base_attack_evaluator import BaseAttackEvaluator
 from advplay.loggers.json_logger import JsonLogger
 from advplay.visualization.base_visualizer import BaseVisualizer
+from advplay.model_ops.dataset_loaders.base_dataset_loader import BaseDatasetLoader
 
 def perform_action(args, command):
     kwargs = vars(args)
@@ -68,7 +68,12 @@ def cast_parameter(parameter, type):
         return parameter
 
     if type == LoadedDataset:
-        return load_dataset(os.path.splitext(parameter)[1][1:], parameter) if parameter is not None else None
+        if not Path(parameter).is_file():
+            parameter = paths.DATASETS / f"{parameter}"
+        loader_cls = BaseDatasetLoader.registry.get(os.path.splitext(parameter)[1][1:])
+        loader = loader_cls(parameter)
+        dataset = loader.load()
+        return dataset
 
     elif isinstance(type, tuple):
         for t in type:

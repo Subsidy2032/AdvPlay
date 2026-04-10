@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 
 from sklearn.linear_model import LogisticRegression
-from advplay.model_ops import registry
 from advplay.model_ops.evaluators.base_evaluator import BaseEvaluator
 from advplay.model_ops.evaluators.sklearn_evaluator import SklearnEvaluator
 from advplay.variables import available_frameworks
@@ -59,6 +58,9 @@ def test_registry_contains_sklearn(framework):
 
 def test_evaluate_model_accuracy_function(train_test, trained_model, framework):
     X, y = train_test
-    acc = registry.evaluate_model_accuracy(framework, trained_model, X, y)
+
+    evaluator_cls = BaseEvaluator.registry.get(framework)
+    evaluator = evaluator_cls(trained_model)
+    acc = evaluator.accuracy(X, y)
     assert isinstance(acc, float)
     assert 0.0 <= acc <= 1.0
