@@ -1,5 +1,5 @@
 import pytest
-from advplay.visualization.visualizer import visualizer
+from advplay.visualization.base_visualizer import BaseVisualizer
 from advplay.variables import available_attacks, poisoning_techniques
 
 @pytest.fixture
@@ -32,8 +32,7 @@ def attack_info():
     }
 
 def test_label_flipping_visualizer(valid_log_data, attack_info):
-    visualizer(
-        attack_type=attack_info["attack_type"],
-        log_filename=[valid_log_data],
-        directory=attack_info["directory"]
-    )
+    key = (attack_info["attack_type"], attack_info["technique"])
+    visualizer_cls = BaseVisualizer.registry.get(key)
+    visualizer = visualizer_cls(valid_log_data, directory=attack_info["directory"])
+    visualizer.visualize()

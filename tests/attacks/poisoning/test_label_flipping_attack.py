@@ -16,7 +16,7 @@ from advplay.loggers.json_logger import JsonLogger
 
 @pytest.fixture(autouse=True)
 def fake_log_dir(tmp_path, monkeypatch):
-    monkeypatch.setattr("advplay.paths.ATTACK_LOGS", tmp_path)
+    monkeypatch.setattr("advplay.paths.LOGS", tmp_path)
     return tmp_path
 
 
