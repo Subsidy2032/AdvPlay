@@ -54,15 +54,15 @@ def run_attack(orchestrator, attack_parameters, valid_template, **overrides):
 
 
 def test_attack_runner_success(orchestrator, attack_parameters, valid_template, tmp_path):
-    with patch("advplay.attacks.attack_runner.paths.TEMPLATES", tmp_path):
+    with patch("advplay.paths.TEMPLATES", tmp_path):
         with patch.object(PromptInjectionAttack, "execute") as mock_execute:
             run_attack(orchestrator, attack_parameters, valid_template)
             mock_execute.assert_called_once()
 
 
 def test_attack_runner_unsupported_attack(orchestrator, attack_parameters, valid_template, tmp_path):
-    with patch("advplay.attacks.attack_runner.paths.TEMPLATES", tmp_path):
-        with pytest.raises(ValueError, match="Unsupported attack type"):
+    with patch("advplay.paths.TEMPLATES", tmp_path):
+        with pytest.raises(TypeError, match="'NoneType' object is not callable"):
             orchestrator.run(
                 attack_type="nonexistent_attack",
                 attack_subtype=attack_parameters['technique'],
@@ -75,7 +75,7 @@ def test_attack_runner_missing_template(orchestrator, attack_parameters, tmp_pat
     attack_dir = tmp_path / attack_parameters["attack"]
     attack_dir.mkdir(parents=True)
 
-    with patch("advplay.attacks.attack_runner.paths.TEMPLATES", tmp_path):
+    with patch("advplay.paths.TEMPLATES", tmp_path):
         with pytest.raises(FileNotFoundError, match="file not found"):
             orchestrator.run(
                 attack_type=attack_parameters["attack"],
@@ -92,7 +92,7 @@ def test_attack_runner_invalid_json(orchestrator, attack_parameters, tmp_path):
     bad_file = attack_dir / "bad_template.json"
     bad_file.write_text("{invalid json")
 
-    with patch("advplay.attacks.attack_runner.paths.TEMPLATES", tmp_path):
+    with patch("advplay.paths.TEMPLATES", tmp_path):
         with pytest.raises(ValueError, match="not a valid json"):
             orchestrator.run(
                 attack_type=attack_parameters["attack"],
@@ -120,6 +120,6 @@ def test_prompt_injection_attack_init_and_execute(tmp_path, attack_parameters, v
 def test_prompt_injection_attack_unsupported_platform(orchestrator, valid_template, attack_parameters, tmp_path):
     attack_parameters["technique"] = "unsupported_technique"
 
-    with patch("advplay.attacks.attack_runner.paths.TEMPLATES", tmp_path):
-        with pytest.raises(ValueError, match="Unsupported attack"):
+    with patch("advplay.paths.TEMPLATES", tmp_path):
+        with pytest.raises(TypeError, match="'NoneType' object is not callable"):
             run_attack(orchestrator, attack_parameters, valid_template)

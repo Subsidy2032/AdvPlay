@@ -7,8 +7,6 @@ from datetime import datetime
 
 from advplay.variables import commands, available_attacks
 from advplay import paths
-from advplay.utils import load_files
-from advplay.attacks import attack_runner
 from advplay.attacks.base_attack import BaseAttack
 from advplay.model_ops.registry import load_dataset
 from advplay.utils.list_templates import list_template_names, list_template_contents

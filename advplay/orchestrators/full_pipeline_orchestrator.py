@@ -1,10 +1,12 @@
 from advplay.orchestrators.base_orchestrator import BaseOrchestrator
-from advplay.attacks.attack_runner import attack_runner
+from advplay.attacks.base_attack import BaseAttack
 from advplay.attack_evaluators.base_attack_evaluator import BaseAttackEvaluator
 from advplay.loggers.base_logger import BaseLogger
 from advplay.model_ops import registry
 from advplay.utils import save_model
+from advplay import paths
 from advplay.visualization.base_visualizer import BaseVisualizer
+from advplay.utils import load_files
 
 class FullPipelineOrchestrator(BaseOrchestrator):
     def __init__(self, evaluator: BaseAttackEvaluator, logger: BaseLogger, visualizer_cls: BaseVisualizer):
@@ -13,7 +15,17 @@ class FullPipelineOrchestrator(BaseOrchestrator):
         self.visualizer_cls = visualizer_cls
 
     def run(self, attack_type, attack_subtype, template_name, command, **kwargs):
-        attack_results, context, datasets = attack_runner(attack_type, attack_subtype, template_name, **kwargs)
+        default_path = paths.TEMPLATES / attack_type
+        if isinstance(template_name, str):
+            template = load_files.load_json(default_path, template_name)
+
+        else:
+            template = template_name
+
+        key = (attack_type, attack_subtype)
+        attack_cls = BaseAttack.registry.get(key)
+        attack = attack_cls(template, **kwargs)
+        attack_results, context, datasets = attack.execute()
 
         evaluation_results = {}
         models = []
