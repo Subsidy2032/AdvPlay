@@ -4,12 +4,12 @@ import numpy as np
 import tempfile
 import joblib
 
-from advplay.model_ops.trainers import base_trainer
+from advplay.ml.ops.trainers import base_trainer
 from advplay.variables import available_frameworks, available_models
-from advplay.model_ops.trainers.sklearn.logistic_regression_trainer import LogisticRegressionTrainer
+from advplay.ml.ops.trainers.sklearn.logistic_regression_trainer import LogisticRegressionTrainer
 from advplay.utils import save_model
 from advplay import paths
-from advplay.model_ops.trainers.base_trainer import BaseTrainer
+from advplay.ml.ops.trainers.base_trainer import BaseTrainer
 
 DATASETS = paths.DATASETS
 SYNTHETIC_CSV = DATASETS / "synthetic_data.csv"

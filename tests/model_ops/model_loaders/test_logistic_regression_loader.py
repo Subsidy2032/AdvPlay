@@ -3,9 +3,9 @@ import joblib
 import tempfile
 import os
 
-from advplay.model_ops.model_loaders.sklearn_model_loader import SklearnModelLoader
+from advplay.ml.models.model_loaders.sklearn_model_loader import SklearnModelLoader
 from advplay.variables import available_frameworks
-from advplay.model_ops.model_loaders.base_model_loader import BaseModelLoader
+from advplay.ml.models.model_loaders.base_model_loader import BaseModelLoader
 from advplay import paths
 from sklearn.linear_model import LogisticRegression
 import numpy as np

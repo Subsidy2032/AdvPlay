@@ -3,7 +3,7 @@ import numpy as np
 import os
 from abc import ABC, abstractmethod
 
-from advplay.model_ops.dataset_loaders.loaded_dataset import LoadedDataset
+from advplay.ml.data.dataset_loaders.loaded_dataset import LoadedDataset
 
 class BaseDatasetLoader(ABC):
     registry = {}

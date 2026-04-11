@@ -2,8 +2,8 @@ import pandas as pd
 import numpy as np
 import os
 
-from advplay.model_ops.dataset_loaders.base_dataset_loader import BaseDatasetLoader
-from advplay.model_ops.dataset_loaders.loaded_dataset import LoadedDataset
+from advplay.ml.data.dataset_loaders.base_dataset_loader import BaseDatasetLoader
+from advplay.ml.data.dataset_loaders.loaded_dataset import LoadedDataset
 from advplay.variables import dataset_formats
 
 class CSVDatasetLoader(BaseDatasetLoader, source_type=dataset_formats.CSV):

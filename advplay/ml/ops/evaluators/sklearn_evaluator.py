@@ -1,7 +1,7 @@
 import pandas as pd
 from sklearn.metrics import accuracy_score
 
-from advplay.model_ops.evaluators.base_evaluator import BaseEvaluator
+from advplay.ml.ops.evaluators.base_evaluator import BaseEvaluator
 from advplay.variables import available_frameworks
 
 class SklearnEvaluator(BaseEvaluator, framework=available_frameworks.SKLEARN):

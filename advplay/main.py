@@ -9,12 +9,12 @@ from advplay.variables import commands, available_attacks
 from advplay import paths
 from advplay.attacks.base_attack import BaseAttack
 from advplay.utils.list_templates import list_template_names, list_template_contents
-from advplay.model_ops.dataset_loaders.loaded_dataset import LoadedDataset
+from advplay.ml.data.dataset_loaders.loaded_dataset import LoadedDataset
 from advplay.orchestrators.full_pipeline_orchestrator import FullPipelineOrchestrator
 from advplay.attack_evaluators.base_attack_evaluator import BaseAttackEvaluator
 from advplay.loggers.json_logger import JsonLogger
 from advplay.visualization.base_visualizer import BaseVisualizer
-from advplay.model_ops.dataset_loaders.base_dataset_loader import BaseDatasetLoader
+from advplay.ml.data.dataset_loaders.base_dataset_loader import BaseDatasetLoader
 
 def perform_action(args, command):
     kwargs = vars(args)

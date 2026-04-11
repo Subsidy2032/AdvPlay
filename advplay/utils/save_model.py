@@ -17,7 +17,7 @@ def save_pytorch_model(model, model_name):
     model_path = paths.MODELS / available_frameworks.PYTORCH / f"{model_name}.pth"
     os.makedirs(model_path.parent, exist_ok=True)
 
-    torch.save(model, model_path)
+    torch.save(model.state_dict(), model_path)
 
     return model_path
 

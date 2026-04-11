@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
 
-from advplay.model_ops.trainers.base_trainer import BaseTrainer
+from advplay.ml.ops.trainers.base_trainer import BaseTrainer
 from advplay.variables import available_frameworks
 
 class PyTorchTrainer(BaseTrainer, framework=available_frameworks.PYTORCH, model=None):

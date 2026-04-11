@@ -3,8 +3,8 @@ import pandas as pd
 import numpy as np
 
 from sklearn.linear_model import LogisticRegression
-from advplay.model_ops.evaluators.base_evaluator import BaseEvaluator
-from advplay.model_ops.evaluators.sklearn_evaluator import SklearnEvaluator
+from advplay.ml.ops.evaluators.base_evaluator import BaseEvaluator
+from advplay.ml.ops.evaluators.sklearn_evaluator import SklearnEvaluator
 from advplay.variables import available_frameworks
 
 # ------------------- Fixtures -------------------

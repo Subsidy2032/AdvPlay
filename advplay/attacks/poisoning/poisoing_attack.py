@@ -8,9 +8,9 @@ import os
 from advplay.attacks.base_attack import BaseAttack
 from advplay.variables import available_attacks, poisoning_techniques, default_template_file_names
 from advplay import paths
-from advplay.model_ops.trainers.base_trainer import BaseTrainer
+from advplay.ml.ops.trainers.base_trainer import BaseTrainer
 from advplay.variables import dataset_formats
-from advplay.model_ops.dataset_loaders.loaded_dataset import LoadedDataset
+from advplay.ml.data.dataset_loaders.loaded_dataset import LoadedDataset
 
 class PoisoningAttack(BaseAttack, ABC, attack_type=available_attacks.POISONING, attack_subtype=None):
     TEMPLATE_PARAMETERS = {

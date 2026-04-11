@@ -3,7 +3,7 @@ from datetime import datetime, UTC
 from advplay.loggers.json_logger import JsonLogger
 from advplay.attacks.prompt_injection.prompt_injection_attack import PromptInjectionAttack
 from advplay.variables import available_attacks, prompt_injection_techniques
-from advplay.model_ops.llms.base_platform import BasePlatform
+from advplay.ml.models.llms.base_platform import BasePlatform
 
 class DirectPromptInjectionAttack(PromptInjectionAttack, attack_type=available_attacks.PROMPT_INJECTION,
                                   attack_subtype=prompt_injection_techniques.DIRECT):

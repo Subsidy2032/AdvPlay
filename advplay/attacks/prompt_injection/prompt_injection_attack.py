@@ -3,7 +3,7 @@ from pathlib import Path
 from advplay.attacks.base_attack import BaseAttack
 from advplay.variables import available_attacks, available_platforms
 from advplay.variables import default_template_file_names
-from advplay.model_ops.llms.base_platform import BasePlatform
+from advplay.ml.models.llms.base_platform import BasePlatform
 
 class PromptInjectionAttack(BaseAttack, attack_type=available_attacks.PROMPT_INJECTION, attack_subtype=None):
     TEMPLATE_PARAMETERS = {

@@ -8,7 +8,7 @@ import argparse
 from advplay.main import perform_action
 from advplay.variables import commands, available_attacks
 from advplay.utils.load_classes import load_required_classes
-from advplay.model_ops.trainers.base_trainer import BaseTrainer
+from advplay.ml.ops.trainers.base_trainer import BaseTrainer
 from advplay.attacks.base_attack import BaseAttack
 from advplay.visualization.base_visualizer import BaseVisualizer
 

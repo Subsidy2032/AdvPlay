@@ -7,11 +7,11 @@ from pathlib import Path
 
 from advplay.variables import available_attacks, poisoning_techniques, available_frameworks, available_models
 from advplay import paths
-from advplay.model_ops.dataset_loaders.loaded_dataset import LoadedDataset
+from advplay.ml.data.dataset_loaders.loaded_dataset import LoadedDataset
 from advplay.orchestrators.full_pipeline_orchestrator import FullPipelineOrchestrator
 from advplay.attack_evaluators.poisoning_evaluator import PoisoningEvaluator
 from advplay.loggers.json_logger import JsonLogger
-from advplay.model_ops.dataset_loaders.base_dataset_loader import BaseDatasetLoader
+from advplay.ml.data.dataset_loaders.base_dataset_loader import BaseDatasetLoader
 
 
 @pytest.fixture(autouse=True)

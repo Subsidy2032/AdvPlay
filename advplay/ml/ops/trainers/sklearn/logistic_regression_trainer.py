@@ -4,7 +4,7 @@ from sklearn.metrics import accuracy_score, classification_report
 import os
 import joblib
 
-from advplay.model_ops.trainers.sklearn.sklearn_trainer import SKLearnTrainer
+from advplay.ml.ops.trainers.sklearn.sklearn_trainer import SKLearnTrainer
 from advplay.variables import available_models, available_frameworks
 from advplay import paths
 

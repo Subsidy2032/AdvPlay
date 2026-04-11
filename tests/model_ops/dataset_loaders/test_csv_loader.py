@@ -3,9 +3,9 @@ import os
 import pandas as pd
 import pytest
 from pathlib import Path
-from advplay.model_ops.dataset_loaders.base_dataset_loader import BaseDatasetLoader
-from advplay.model_ops.dataset_loaders.csv_dataset_loader import CSVDatasetLoader
-from advplay.model_ops.dataset_loaders.loaded_dataset import LoadedDataset
+from advplay.ml.data.dataset_loaders.base_dataset_loader import BaseDatasetLoader
+from advplay.ml.data.dataset_loaders.csv_dataset_loader import CSVDatasetLoader
+from advplay.ml.data.dataset_loaders.loaded_dataset import LoadedDataset
 
 # --- Fixtures ---
 @pytest.fixture

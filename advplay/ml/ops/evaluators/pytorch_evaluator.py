@@ -2,7 +2,7 @@ import torch
 import numpy as np
 from sklearn.metrics import accuracy_score
 
-from advplay.model_ops.evaluators.base_evaluator import BaseEvaluator
+from advplay.ml.ops.evaluators.base_evaluator import BaseEvaluator
 from advplay.variables import available_frameworks
 
 class PyTorchEvaluator(BaseEvaluator, framework=available_frameworks.PYTORCH):

@@ -2,12 +2,14 @@ from pathlib import Path
 
 from advplay.attack_evaluators.base_attack_evaluator import BaseAttackEvaluator
 from advplay.attack_evaluators.contexts.evasion_context import EvasionContext
-from advplay.model_ops.evaluators.base_evaluator import BaseEvaluator
+from advplay.ml.ops.evaluators.base_evaluator import BaseEvaluator
 from advplay import paths
-from advplay.model_ops.model_loaders.base_model_loader import BaseModelLoader
+from advplay.ml.models.model_loaders.base_model_loader import BaseModelLoader
 
 class EvasionEvaluator(BaseAttackEvaluator, attack_type="evasion"):
     def evaluate(self, context: EvasionContext):
+        model_name = context.model
+        training_configuration = context.training_configuration
         training_framework = context.training_framework
         model_path = context.model_path
         samples_data = context.samples_data
@@ -21,7 +23,7 @@ class EvasionEvaluator(BaseAttackEvaluator, attack_type="evasion"):
         if not Path(model_path).is_file():
             model_path = default_path / model_path
         loader_cls = BaseModelLoader.registry.get(training_framework)
-        loader = loader_cls(model_path)
+        loader = loader_cls(model_path, model_name, training_configuration)
         model = loader.load()
         evaluator = evaluator_cls(model)
         original_predictions = evaluator.predict(samples_data)

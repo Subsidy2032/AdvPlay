@@ -8,7 +8,7 @@ from advplay.utils import save_model
 from advplay import paths
 from advplay.visualization.base_visualizer import BaseVisualizer
 from advplay.utils import load_files
-from advplay.model_ops.dataset_savers.base_dataset_saver import BaseDatasetSaver
+from advplay.ml.data.dataset_savers.base_dataset_saver import BaseDatasetSaver
 
 class FullPipelineOrchestrator(BaseOrchestrator):
     def __init__(self, evaluator: BaseAttackEvaluator, logger: BaseLogger, visualizer_cls: BaseVisualizer):

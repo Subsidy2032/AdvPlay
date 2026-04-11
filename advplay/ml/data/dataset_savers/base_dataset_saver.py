@@ -4,7 +4,7 @@ import os
 from abc import ABC, abstractmethod
 from pathlib import Path
 
-from advplay.model_ops.dataset_loaders.loaded_dataset import LoadedDataset
+from advplay.ml.data.dataset_loaders.loaded_dataset import LoadedDataset
 
 class BaseDatasetSaver(ABC):
     registry = {}

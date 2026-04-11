@@ -1,7 +1,7 @@
 from sklearn.linear_model import LogisticRegression
 from sklearn.multiclass import OneVsRestClassifier
 
-from advplay.model_ops.trainers.sklearn.sklearn_trainer import SKLearnTrainer
+from advplay.ml.ops.trainers.sklearn.sklearn_trainer import SKLearnTrainer
 from advplay.variables import available_models, available_frameworks
 
 class OneVsRestTrainer(SKLearnTrainer, framework=available_frameworks.SKLEARN,

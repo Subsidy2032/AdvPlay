@@ -6,8 +6,8 @@ import numpy as np
 import pandas as pd
 
 from advplay import paths
-from advplay.model_ops.trainers.base_trainer import BaseTrainer
-from advplay.model_ops.dataset_loaders.loaded_dataset import LoadedDataset
+from advplay.ml.ops.trainers.base_trainer import BaseTrainer
+from advplay.ml.data.dataset_loaders.loaded_dataset import LoadedDataset
 
 class BaseAttack(ABC):
     registry = {}

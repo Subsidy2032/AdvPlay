@@ -2,8 +2,8 @@ from sklearn.metrics import confusion_matrix
 
 from advplay.attack_evaluators.base_attack_evaluator import BaseAttackEvaluator
 from advplay.attack_evaluators.contexts.poisoning_context import PoisoningContext
-from advplay.model_ops.evaluators.base_evaluator import BaseEvaluator
-from advplay.model_ops.trainers.base_trainer import BaseTrainer
+from advplay.ml.ops.evaluators.base_evaluator import BaseEvaluator
+from advplay.ml.ops.trainers.base_trainer import BaseTrainer
 from advplay import paths
 from advplay.utils import load_files
 
