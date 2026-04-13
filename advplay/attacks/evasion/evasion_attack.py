@@ -9,12 +9,12 @@ from advplay.variables import default_template_file_names
 from advplay.variables import available_attacks
 from advplay.ml.data.dataset_loaders.loaded_dataset import LoadedDataset
 from advplay import paths
-from advplay.utils import get_training_componenets
 from advplay.ml.models.model_loaders.base_model_loader import BaseModelLoader
 from advplay.loggers.json_logger import JsonLogger
 from advplay.attack_evaluators.contexts.evasion_context import EvasionContext
 from advplay.attack_evaluators.evasion_evaluator import EvasionEvaluator
 from advplay.ml.models.architecture.registry import MODEL_REGISTRY
+from advplay.ml.models.loss_functions.registry import LOSS_FUNCTION_REGISTRY
 
 class EvasionAttack(BaseAttack, ABC, attack_type=available_attacks.EVASION, attack_subtype=None):
     TEMPLATE_PARAMETERS = {
@@ -69,7 +69,8 @@ class EvasionAttack(BaseAttack, ABC, attack_type=available_attacks.EVASION, atta
         loss = self.model_configuration.get("loss")
         input_shape = self.model_configuration.get("input_shape")
         nb_classes = self.model_configuration.get("nb_classes")
-        loss_fn = get_training_componenets.get_loss_function(self.training_framework, loss)
+
+        loss_fn = LOSS_FUNCTION_REGISTRY[self.training_framework](loss)
         wrapper = loader.load_art_classifier(loss_fn, input_shape, nb_classes)
 
         if self.target_label is not None:

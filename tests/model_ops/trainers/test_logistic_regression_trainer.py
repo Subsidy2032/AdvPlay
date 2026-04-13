@@ -7,9 +7,9 @@ import joblib
 from advplay.ml.ops.trainers import base_trainer
 from advplay.variables import available_frameworks, available_models
 from advplay.ml.ops.trainers.sklearn.logistic_regression_trainer import LogisticRegressionTrainer
-from advplay.utils import save_model
 from advplay import paths
 from advplay.ml.ops.trainers.base_trainer import BaseTrainer
+from advplay.ml.models.model_savers.base_model_saver import BaseModelSaver
 
 DATASETS = paths.DATASETS
 SYNTHETIC_CSV = DATASETS / "synthetic_data.csv"
@@ -118,7 +118,8 @@ def test_utils_save_model_creates_file(train_test, tmp_path, framework):
     paths.MODELS = tmp_path
 
     try:
-        file_path = save_model.save_model(framework, model, "test_model")
+        saver = BaseModelSaver.registry.get(framework)()
+        file_path = saver.save(model, "test_model")
         assert file_path.exists(), "Model file should be created"
 
         loaded_model = joblib.load(file_path)
@@ -136,7 +137,8 @@ def test_utils_save_model_creates_directory(train_test, tmp_path, framework):
     paths.MODELS = tmp_path / "nested_models"
 
     try:
-        file_path = save_model.save_model( framework,model, "test_model_nested")
+        saver = BaseModelSaver.registry.get(framework)()
+        file_path = saver.save(model, "test_model_nested")
         assert file_path.is_file()
         assert file_path.parent.is_dir()
     finally:

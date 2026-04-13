@@ -2,7 +2,6 @@ import numpy as np
 import os
 from sklearn.model_selection import train_test_split
 
-from advplay.utils import save_model
 from advplay import paths
 from advplay.loggers.json_logger import JsonLogger
 from advplay.attacks.poisoning.poisoing_attack import PoisoningAttack

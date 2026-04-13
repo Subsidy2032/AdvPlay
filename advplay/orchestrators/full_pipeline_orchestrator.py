@@ -4,11 +4,11 @@ from advplay.orchestrators.base_orchestrator import BaseOrchestrator
 from advplay.attacks.base_attack import BaseAttack
 from advplay.attack_evaluators.base_attack_evaluator import BaseAttackEvaluator
 from advplay.loggers.base_logger import BaseLogger
-from advplay.utils import save_model
 from advplay import paths
 from advplay.visualization.base_visualizer import BaseVisualizer
 from advplay.utils import load_files
 from advplay.ml.data.dataset_savers.base_dataset_saver import BaseDatasetSaver
+from advplay.ml.models.model_savers.base_model_saver import BaseModelSaver
 
 class FullPipelineOrchestrator(BaseOrchestrator):
     def __init__(self, evaluator: BaseAttackEvaluator, logger: BaseLogger, visualizer_cls: BaseVisualizer):
@@ -47,7 +47,8 @@ class FullPipelineOrchestrator(BaseOrchestrator):
             saver.save()
 
         for training_framework, model, model_name in models:
-            save_model.save_model(training_framework, model, model_name)
+            saver = BaseModelSaver.registry.get(training_framework)()
+            saver.save(model, model_name)
 
         if self.visualizer_cls:
             visualizer = self.visualizer_cls(log_entry)
