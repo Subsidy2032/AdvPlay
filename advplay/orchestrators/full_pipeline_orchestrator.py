@@ -11,10 +11,10 @@ from advplay.ml.data.dataset_savers.base_dataset_saver import BaseDatasetSaver
 from advplay.ml.models.model_savers.base_model_saver import BaseModelSaver
 
 class FullPipelineOrchestrator(BaseOrchestrator):
-    def __init__(self, evaluator: BaseAttackEvaluator, logger: BaseLogger, visualizer_cls: BaseVisualizer):
+    def __init__(self, evaluator: BaseAttackEvaluator, logger: BaseLogger, visualizer: BaseVisualizer):
         self.evaluator = evaluator
         self.logger = logger
-        self.visualizer_cls = visualizer_cls
+        self.visualizer = visualizer
 
     def run(self, attack_type, attack_subtype, template_name, command, **kwargs):
         default_path = paths.TEMPLATES / attack_type
@@ -32,7 +32,7 @@ class FullPipelineOrchestrator(BaseOrchestrator):
         evaluation_results = {}
         models = []
         if self.evaluator:
-            evaluation_results, models = self.evaluator.evaluate(context)
+            evaluation_results, models, visualization_context = self.evaluator.evaluate(context)
 
         log_entry = {
             "command": command,
@@ -50,7 +50,6 @@ class FullPipelineOrchestrator(BaseOrchestrator):
             saver = BaseModelSaver.registry.get(training_framework)()
             saver.save(model, model_name)
 
-        if self.visualizer_cls:
-            visualizer = self.visualizer_cls(log_entry)
-            visualizer.visualize()
+        if self.visualizer:
+            self.visualizer.visualize(visualization_context)
             

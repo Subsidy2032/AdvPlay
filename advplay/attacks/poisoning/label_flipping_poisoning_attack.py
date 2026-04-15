@@ -8,7 +8,7 @@ from advplay.attacks.poisoning.poisoing_attack import PoisoningAttack
 from advplay.variables import available_attacks, poisoning_techniques
 from advplay.ml.data.dataset_loaders.loaded_dataset import LoadedDataset
 from advplay.attack_evaluators.poisoning_evaluator import PoisoningEvaluator
-from advplay.attack_evaluators.contexts.poisoning_context import PoisoningContext
+from advplay.attack_evaluators.contexts.poisoning_evaluation_context import PoisoningEvaluationContext
 
 class LabelFlippingPoisoningAttack(PoisoningAttack,
                                     attack_type=available_attacks.POISONING,
@@ -98,7 +98,7 @@ class LabelFlippingPoisoningAttack(PoisoningAttack,
             "X_train": X_train,
             "y_train": y_train
         }
-        poisoning_context = PoisoningContext(self.model, X_test, y_test, self.training_framework, self.training_configuration, clean_dataset, poisoned_datasets, self.model_name)
+        poisoning_context = PoisoningEvaluationContext(self.model, X_test, y_test, self.training_framework, self.training_configuration, clean_dataset, poisoned_datasets, self.model_name, self.source, self.target, labels_unique)
          
         attack_results = {
             "attack": self.attack_type, "technique": self.attack_subtype,

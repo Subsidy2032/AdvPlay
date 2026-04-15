@@ -11,7 +11,7 @@ from advplay.ml.data.dataset_loaders.loaded_dataset import LoadedDataset
 from advplay import paths
 from advplay.ml.models.model_loaders.base_model_loader import BaseModelLoader
 from advplay.loggers.json_logger import JsonLogger
-from advplay.attack_evaluators.contexts.evasion_context import EvasionContext
+from advplay.attack_evaluators.contexts.evasion_evaluation_context import EvasionEvaluationContext
 from advplay.attack_evaluators.evasion_evaluator import EvasionEvaluator
 from advplay.ml.models.architecture.registry import MODEL_REGISTRY
 from advplay.ml.models.loss_functions.registry import LOSS_FUNCTION_REGISTRY
@@ -86,7 +86,7 @@ class EvasionAttack(BaseAttack, ABC, attack_type=available_attacks.EVASION, atta
             attack_instance = attack_class(wrapper, **kwargs)
             perturbed_samples = attack_instance.generate(x=self.samples_data)
 
-        context = EvasionContext(self.model, None, None, self.training_framework, self.training_configuration, self.model_path, self.samples_data, perturbed_samples, self.target_label)
+        context = EvasionEvaluationContext(self.model, None, None, self.training_framework, self.training_configuration, self.model_path, self.samples_data, perturbed_samples, self.target_label)
 
         dataset_name = self.samples.metadata["dataset_name"]
         dataset_path = paths.DATASETS / 'perturbed_datasets' / dataset_name

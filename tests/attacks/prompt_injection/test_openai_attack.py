@@ -33,7 +33,7 @@ def attack_parameters():
 def orchestrator(tmp_path, attack_parameters):
     log_path = tmp_path / f"{attack_parameters['log_filename']}.log"
     logger = JsonLogger(log_path)
-    return FullPipelineOrchestrator(evaluator=None, logger=logger, visualizer_cls=None)
+    return FullPipelineOrchestrator(evaluator=None, logger=logger, visualizer=None)
 
 
 def run_attack(orchestrator, attack_parameters, valid_template, **overrides):

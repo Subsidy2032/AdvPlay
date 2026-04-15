@@ -57,10 +57,11 @@ def perform_action(args, command):
         log_location = paths.LOGS / attack_type / log_filename
         logger = JsonLogger(str(log_location))
 
-        key = (attack_type, attack_subtype)
-        visualizer_cls = BaseVisualizer.registry.get(key)
+        visualizer = None
+        if attack_type in BaseVisualizer.registry:
+            visualizer = BaseVisualizer.registry.get(attack_type)()
 
-        orchestrator = FullPipelineOrchestrator(evaluator, logger, visualizer_cls)
+        orchestrator = FullPipelineOrchestrator(evaluator, logger, visualizer)
         orchestrator.run(attack_type, attack_subtype, template_name, command, **parameters)
 
 def cast_parameter(parameter, type):

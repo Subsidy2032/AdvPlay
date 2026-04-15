@@ -115,7 +115,7 @@ def model_path(fake_models_dir, attack_parameters, valid_template):
 def orchestrator(log_file_path):
     logger = JsonLogger(log_file_path)
     evaluator = PoisoningEvaluator()
-    return FullPipelineOrchestrator(evaluator, logger, visualizer_cls=None)
+    return FullPipelineOrchestrator(evaluator, logger, visualizer=None)
 
 
 def run_attack(orchestrator, attack_parameters, valid_template, sample_dataset, **overrides):

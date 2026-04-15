@@ -1,13 +1,13 @@
 from pathlib import Path
 
 from advplay.attack_evaluators.base_attack_evaluator import BaseAttackEvaluator
-from advplay.attack_evaluators.contexts.evasion_context import EvasionContext
+from advplay.attack_evaluators.contexts.evasion_evaluation_context import EvasionEvaluationContext
 from advplay.ml.ops.evaluators.base_evaluator import BaseEvaluator
 from advplay import paths
 from advplay.ml.models.model_loaders.base_model_loader import BaseModelLoader
 
 class EvasionEvaluator(BaseAttackEvaluator, attack_type="evasion"):
-    def evaluate(self, context: EvasionContext):
+    def evaluate(self, context: EvasionEvaluationContext):
         model_name = context.model
         training_configuration = context.training_configuration
         training_framework = context.training_framework
@@ -46,4 +46,4 @@ class EvasionEvaluator(BaseAttackEvaluator, attack_type="evasion"):
             evaluation_results["num_target_mispredictions"] = num_target_mispredictions
             evaluation_results["percentage_target_mispredictions"] = percentage_target_mispredictions
 
-        return evaluation_results, []
+        return evaluation_results, [], None

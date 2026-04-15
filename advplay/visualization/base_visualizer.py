@@ -1,17 +1,13 @@
 from abc import ABC, abstractmethod
 
+from advplay.visualization.contexts.base_visualization_context import BaseVisualizationContext
+
 class BaseVisualizer(ABC):
     registry = {}
 
-    def __init_subclass__(cls, attack_type: str, attack_subtype, **kwargs):
-        super().__init_subclass__(**kwargs)
-        key = (attack_type, attack_subtype)
-        BaseVisualizer.registry[key] = cls
-
-    def __init__(self, log_file, **kwargs):
-        self.log_file = log_file
-        self.kwargs = kwargs
+    def __init_subclass__(cls, attack_type: str):
+        BaseVisualizer.registry[attack_type] = cls
 
     @abstractmethod
-    def visualize(self):
+    def visualize(self, context: BaseVisualizationContext):
         raise NotImplementedError("Subclasses must implement the visualize method.")
