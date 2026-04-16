@@ -33,7 +33,7 @@ AdvPlay is entirely CLI-driven through `run.py`.
 1. Create a template (e.g., prompt injection attack):
 
 ```
-$ python3 run.py save_template prompt_injection --technique direct --platform openai --model gpt-4o-mini --custom-instructions "Never say banana" --template-filename banana
+$ python3 run.py save_template prompt_injection --platform openai --model gpt-4o-mini --custom-instructions "Never say banana" --template-filename banana
 ```
 
 This saves a reusable template called `banana`.
@@ -54,10 +54,10 @@ Available templates:
 3. Run an attack using the template:
 
 ```
-$ python3 run.py attack prompt_injection --template banana --prompt-list ~/prompts
+$ python3 run.py attack prompt_injection direct --template banana --prompt-list ~/prompts
 ```
 
-Logs are saved to `advplay/attacks/logs...`
+Logs are saved under `outputs/logs/<attack_type>/`.
 
 ### Help Menu
 
