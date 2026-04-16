@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
+from typing import get_args, get_type_hints
 import json
 import os
-import numpy as np
-import pandas as pd
 
 from advplay import paths
+from advplay.attacks.attack_param import AttackParam, TemplateParam
 from advplay.ml.ops.trainers.base_trainer import BaseTrainer
 from advplay.ml.data.dataset_loaders.loaded_dataset import LoadedDataset
 
@@ -14,33 +14,36 @@ class BaseAttack(ABC):
     techniques_per_attack = {}
 
     COMMON_TEMPLATE_PARAMETERS = {
-        "technique": lambda attack: {"type": str, "required": True, "default": None,
-                                     "help": "The poisoning technique",
-                                     "choices": lambda: BaseAttack.techniques_per_attack.get(attack, [])},
-        "training_framework": {"type": str, "required": True, "default": "sklearn",
-                               "help": 'Framework for training the model',
-                               "choices": lambda: list(
-                                   {k[0] for k in BaseTrainer.registry.keys() if k[0] is not None})},
-        "model": {"type": str, "required": True, "default": "logistic_regression",
-                               "help": 'The training algorithm',
-                               "choices": lambda: list(
-                                   {k[1] for k in BaseTrainer.registry.keys() if k[1] is not None})},
-        "training_configuration": {"type": dict, "required": False, "default": None,
-                                   "help": 'Path to a training configuration file'}
+        "technique": lambda attack: TemplateParam(type=str, required=True, default=None,
+                                                  help="The poisoning technique",
+                                                  choices=lambda: BaseAttack.techniques_per_attack.get(attack, [])),
+        "training_framework": TemplateParam(type=str, required=True, default="sklearn",
+                                            help='Framework for training the model',
+                                            choices=lambda: list(
+                                                {k[0] for k in BaseTrainer.registry.keys() if k[0] is not None})),
+        "model": TemplateParam(type=str, required=True, default="logistic_regression",
+                               help='The training algorithm',
+                               choices=lambda: list(
+                                   {k[1] for k in BaseTrainer.registry.keys() if k[1] is not None})),
+        "training_configuration": TemplateParam(type=dict, required=False, default=None,
+                                                help='Path to a training configuration file')
     }
 
     COMMON_ATTACK_PARAMETERS = {
-        "template": {"type": str, "required": True, "default": None, "help": "The name of the template for the attack"},
-        "dataset": {"type": LoadedDataset, "required": False, "default": None, "help": 'Dataset to poison'},
-        "features_dataset": {"type": LoadedDataset, "required": False, "default": None, "help": 'Examples dataset'},
-        "labels_array": {"type": LoadedDataset, "required": False, "default": None, "help": 'Dataset to poison'},
-        "label_column": {"type": (int, str), "required": False, "default": None, "help": 'The name of the label column'},
-        "seed": {"type": int, "required": False, "default": None, "help": 'Seed for reproduction'},
-        "model_name": {"type": str, "required": False, "default": datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
-                       "help": 'The name of the model that will be saved'},
-        "log_filename": {"type": str, "required": False, "default": datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
-                         "help": "Log file name to save attack results to"}
-
+        "template": AttackParam(type=str, required=True, default=None,
+                                help="The name of the template for the attack"),
+        "dataset": AttackParam(type=LoadedDataset, required=False, default=None, help='Dataset to poison'),
+        "features_dataset": AttackParam(type=LoadedDataset, required=False, default=None, help='Examples dataset'),
+        "labels_array": AttackParam(type=LoadedDataset, required=False, default=None, help='Dataset to poison'),
+        "label_column": AttackParam(type=(int, str), required=False, default=None,
+                                    help='The name of the label column'),
+        "seed": AttackParam(type=int, required=False, default=None, help='Seed for reproduction'),
+        "model_name": AttackParam(type=str, required=False,
+                                  default=datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
+                                  help='The name of the model that will be saved'),
+        "log_filename": AttackParam(type=str, required=False,
+                                    default=datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
+                                    help="Log file name to save attack results to")
     }
 
     def __init_subclass__(cls, attack_type: str, attack_subtype, **kwargs):
@@ -57,22 +60,29 @@ class BaseAttack(ABC):
         if attack_subtype is not None and attack_subtype not in BaseAttack.techniques_per_attack[attack_type]:
             BaseAttack.techniques_per_attack[attack_type].append(attack_subtype)
 
-    def __init__(self, template: dict, **kwargs):
-        template_params = getattr(self.__class__, "TEMPLATE_PARAMETERS", {})
-        attack_params = getattr(self.__class__, "ATTACK_PARAMETERS", {})
+        template_params = {}
+        attack_params = {}
+        for name, annotation in get_type_hints(cls, include_extras=True).items():
+            for meta in get_args(annotation):
+                if isinstance(meta, TemplateParam):
+                    template_params[name] = meta
+                elif isinstance(meta, AttackParam):
+                    attack_params[name] = meta
+        cls.TEMPLATE_PARAMETERS = template_params
+        cls.ATTACK_PARAMETERS = attack_params
 
-        for key, meta in template_params.items():
+    def __init__(self, template: dict, **kwargs):
+        for key, meta in self.TEMPLATE_PARAMETERS.items():
             value = template.get(key)
             if value is None:
-                value = meta.get("default")
+                value = meta.default
             setattr(self, key, value)
 
-        for key, meta in attack_params.items():
+        for key, meta in self.ATTACK_PARAMETERS.items():
             value = kwargs.get(key)
             if value is None:
-                value = meta.get("default")
+                value = meta.default
             setattr(self, key, value)
-
 
         self.log_file_path = None
         self.setup_logging()

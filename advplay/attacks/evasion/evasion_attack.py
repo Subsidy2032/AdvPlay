@@ -1,49 +1,49 @@
 from abc import ABC
 import inspect
+from typing import Annotated
 import numpy as np
 import os
 from pathlib import Path
 
+from advplay.attacks.attack_param import AttackParam, TemplateParam
 from advplay.attacks.base_attack import BaseAttack
 from advplay.variables import default_template_file_names
 from advplay.variables import available_attacks
 from advplay.ml.data.dataset_loaders.loaded_dataset import LoadedDataset
 from advplay import paths
 from advplay.ml.models.model_loaders.base_model_loader import BaseModelLoader
-from advplay.loggers.json_logger import JsonLogger
 from advplay.attack_evaluators.contexts.evasion_evaluation_context import EvasionEvaluationContext
-from advplay.attack_evaluators.evasion_evaluator import EvasionEvaluator
 from advplay.ml.models.architecture.registry import MODEL_REGISTRY
 from advplay.ml.models.loss_functions.registry import LOSS_FUNCTION_REGISTRY
 
 class EvasionAttack(BaseAttack, ABC, attack_type=available_attacks.EVASION, attack_subtype=None):
-    TEMPLATE_PARAMETERS = {
-        "training_framework": BaseAttack.COMMON_TEMPLATE_PARAMETERS.get('training_framework'),
-        "model_path": {"type": str, "required": True, "default": None, "help": "Path for the model to load"},
-        "model": {"type": str, "required": True, "help": 'The training algorithm', 
-                  "choices": lambda: list({k for k in MODEL_REGISTRY.keys() if k is not None})},
-        "training_configuration": BaseAttack.COMMON_TEMPLATE_PARAMETERS.get('training_configuration'),
-        "model_configuration": {"type": dict, "required": True, "default": {},
-                                "help": "The configurations of the model"},
-        "data_type": {"type": str, "required": False, "default": "image", "help": "The data type",
-                      "choices": lambda: ["image", "text"]},
-        "learning_rate": {"type": float, "required": False, "default": 0.01, "help": "The learning rate"},
-        "template_filename": {"type": str, "required": False,
-                              "default": default_template_file_names.EVASION_ATTACK_TEMPLATE,
-                              "help": "Template file name"}
-    }
+    training_framework: Annotated[str, BaseAttack.COMMON_TEMPLATE_PARAMETERS['training_framework']]
+    model_path: Annotated[str, TemplateParam(type=str, required=True, default=None,
+                                             help="Path for the model to load")]
+    model: Annotated[str, TemplateParam(type=str, required=True,
+                                        help='The training algorithm',
+                                        choices=lambda: list({k for k in MODEL_REGISTRY.keys() if k is not None}))]
+    training_configuration: Annotated[dict, BaseAttack.COMMON_TEMPLATE_PARAMETERS['training_configuration']]
+    model_configuration: Annotated[dict, TemplateParam(type=dict, required=True, default={},
+                                                       help="The configurations of the model")]
+    data_type: Annotated[str, TemplateParam(type=str, required=False, default="image", help="The data type",
+                                            choices=lambda: ["image", "text"])]
+    learning_rate: Annotated[float, TemplateParam(type=float, required=False, default=0.01,
+                                                  help="The learning rate")]
+    template_filename: Annotated[str, TemplateParam(type=str, required=False,
+                                                    default=default_template_file_names.EVASION_ATTACK_TEMPLATE,
+                                                    help="Template file name")]
 
-    ATTACK_PARAMETERS = {
-        "template": BaseAttack.COMMON_ATTACK_PARAMETERS.get('template'),
-        "samples": {"type": LoadedDataset, "required": True, "default": None, "help": "Samples to run evasions on"},
-        "confidence": {"type": float, "required": False, "default": 0.1,
-                       "help": "Higher value for more noticeable and robust perturbation"},
-        "true_labels": {"type": LoadedDataset, "required": True, "default": None,
-                        "help": "The truelabels of the provided samples"},
-        "target_label": {"type": int, "required": False, "default": None,
-                         "help": "Target labels for misclassification"},
-        "log_filename": BaseAttack.COMMON_ATTACK_PARAMETERS.get('log_filename')
-    }
+    template: Annotated[str, BaseAttack.COMMON_ATTACK_PARAMETERS['template']]
+    samples: Annotated[LoadedDataset, AttackParam(type=LoadedDataset, required=True, default=None,
+                                                  help="Samples to run evasions on")]
+    confidence: Annotated[float, AttackParam(type=float, required=False, default=0.1,
+                                             help="Higher value for more noticeable and robust perturbation")]
+    true_labels: Annotated[LoadedDataset, AttackParam(type=LoadedDataset, required=True, default=None,
+                                                      help="The true labels of the provided samples")]
+    target_label: Annotated[int, AttackParam(type=int, required=False, default=None,
+                                             help="Target labels for misclassification")]
+    log_filename: Annotated[str, BaseAttack.COMMON_ATTACK_PARAMETERS['log_filename']]
 
     def __init__(self, template, **kwargs):
         super().__init__(template, **kwargs)

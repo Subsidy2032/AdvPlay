@@ -32,7 +32,7 @@ def perform_action(args, command):
                       (commands.COMMAND, commands.ATTACK_TYPE, commands.TECHNIQUE, 'list', 'template')}
 
         for key, value in parameters.items():
-            type = BaseAttack.registry.get((attack_type, None)).TEMPLATE_PARAMETERS[key].get("type")
+            type = BaseAttack.registry.get((attack_type, None)).TEMPLATE_PARAMETERS[key].type
             parameters[key] = cast_parameter(value, type)
 
         key = (attack_type, None)
@@ -44,7 +44,7 @@ def perform_action(args, command):
         attack_subtype = kwargs.get(commands.TECHNIQUE)
 
         for key, value in parameters.items():
-            type = BaseAttack.registry.get((attack_type, attack_subtype)).ATTACK_PARAMETERS[key].get("type")
+            type = BaseAttack.registry.get((attack_type, attack_subtype)).ATTACK_PARAMETERS[key].type
             parameters[key] = cast_parameter(value, type)
 
         template_name = args.template

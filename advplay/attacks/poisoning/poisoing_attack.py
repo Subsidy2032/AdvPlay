@@ -1,52 +1,49 @@
-from datetime import datetime
-from pathlib import Path
+from typing import Annotated, Union
 import pandas as pd
 import numpy as np
-from abc import ABC, abstractmethod
-import os
+from abc import ABC
 
+from advplay.attacks.attack_param import AttackParam, TemplateParam
 from advplay.attacks.base_attack import BaseAttack
-from advplay.variables import available_attacks, poisoning_techniques, default_template_file_names
-from advplay import paths
+from advplay.variables import available_attacks, default_template_file_names
 from advplay.ml.ops.trainers.base_trainer import BaseTrainer
 from advplay.variables import dataset_formats
 from advplay.ml.data.dataset_loaders.loaded_dataset import LoadedDataset
 
 class PoisoningAttack(BaseAttack, ABC, attack_type=available_attacks.POISONING, attack_subtype=None):
-    TEMPLATE_PARAMETERS = {
-        "training_framework": BaseAttack.COMMON_TEMPLATE_PARAMETERS.get('training_framework'),
-        "model": BaseAttack.COMMON_TEMPLATE_PARAMETERS.get('model'),
-        "training_configuration": BaseAttack.COMMON_TEMPLATE_PARAMETERS.get('training_configuration'),
-        "test_portion": {"type": float, "required": True, "default": 0.2,
-                         "help": 'Portion of the dataset to be used for testing'},
-        "min_portion_to_poison": {"type": float, "required": True, "default": 0.1,
-                                  "help": 'Minimum portion of the dataset to poison'},
-        "max_portion_to_poison": {"type": float, "required": False, "default": None,
-                                  "help": 'Maximum portion of the dataset to poison'},
-        "trigger_pattern": {"required": False, "default": None, "help": "A trigger to be used for poisoning"},
-        "override": {"type": bool, "required": False, "default": True,
-                     "help": "Whether to override examples from the training dataset"},
-        "template_filename": {"type": str, "required": False,
-                              "default": default_template_file_names.POISONING_ATTACK_TEMPLATE,
-                              "help": "Template file name"}
-    }
+    training_framework: Annotated[str, BaseAttack.COMMON_TEMPLATE_PARAMETERS['training_framework']]
+    model: Annotated[str, BaseAttack.COMMON_TEMPLATE_PARAMETERS['model']]
+    training_configuration: Annotated[dict, BaseAttack.COMMON_TEMPLATE_PARAMETERS['training_configuration']]
+    test_portion: Annotated[float, TemplateParam(type=float, required=True, default=0.2,
+                                                 help='Portion of the dataset to be used for testing')]
+    min_portion_to_poison: Annotated[float, TemplateParam(type=float, required=True, default=0.1,
+                                                          help='Minimum portion of the dataset to poison')]
+    max_portion_to_poison: Annotated[float, TemplateParam(type=float, required=False, default=None,
+                                                          help='Maximum portion of the dataset to poison')]
+    trigger_pattern: Annotated[object, TemplateParam(required=False, default=None,
+                                                     help="A trigger to be used for poisoning")]
+    override: Annotated[bool, TemplateParam(type=bool, required=False, default=True,
+                                            help="Whether to override examples from the training dataset")]
+    template_filename: Annotated[str, TemplateParam(type=str, required=False,
+                                                    default=default_template_file_names.POISONING_ATTACK_TEMPLATE,
+                                                    help="Template file name")]
 
-    ATTACK_PARAMETERS = {
-        "template": BaseAttack.COMMON_ATTACK_PARAMETERS.get('template'),
-        "dataset": BaseAttack.COMMON_ATTACK_PARAMETERS.get('dataset'),
-        "features_dataset": BaseAttack.COMMON_ATTACK_PARAMETERS.get('features_dataset'),
-        "labels_array": BaseAttack.COMMON_ATTACK_PARAMETERS.get('labels_array'),
-        "label_column": BaseAttack.COMMON_ATTACK_PARAMETERS.get('label_column'),
-        "source": {"type": (int, str), "required": False, "default": None, "help": 'Source class to poison'},
-        "target": {"type": (int, str), "required": False, "default": None, "help": 'Target class'},
-        "poisoning_dataset": {"type": pd.DataFrame, "required": False, "default": None,
-                              "help": 'Poisoned samples to add to the training dataset'},
-        "seed": BaseAttack.COMMON_ATTACK_PARAMETERS.get('seed'),
-        "step": {"type": float, "required": False, "default": 0.1,
-                 "help": 'Incrementing steps to take for poisoning portions'},
-        "model_name": BaseAttack.COMMON_ATTACK_PARAMETERS.get('model_name'),
-        "log_filename": BaseAttack.COMMON_ATTACK_PARAMETERS.get('log_filename')
-    }
+    template: Annotated[str, BaseAttack.COMMON_ATTACK_PARAMETERS['template']]
+    dataset: Annotated[LoadedDataset, BaseAttack.COMMON_ATTACK_PARAMETERS['dataset']]
+    features_dataset: Annotated[LoadedDataset, BaseAttack.COMMON_ATTACK_PARAMETERS['features_dataset']]
+    labels_array: Annotated[LoadedDataset, BaseAttack.COMMON_ATTACK_PARAMETERS['labels_array']]
+    label_column: Annotated[Union[int, str], BaseAttack.COMMON_ATTACK_PARAMETERS['label_column']]
+    source: Annotated[Union[int, str], AttackParam(type=(int, str), required=False, default=None,
+                                                   help='Source class to poison')]
+    target: Annotated[Union[int, str], AttackParam(type=(int, str), required=False, default=None,
+                                                   help='Target class')]
+    poisoning_dataset: Annotated[pd.DataFrame, AttackParam(type=pd.DataFrame, required=False, default=None,
+                                                           help='Poisoned samples to add to the training dataset')]
+    seed: Annotated[int, BaseAttack.COMMON_ATTACK_PARAMETERS['seed']]
+    step: Annotated[float, AttackParam(type=float, required=False, default=0.1,
+                                       help='Incrementing steps to take for poisoning portions')]
+    model_name: Annotated[str, BaseAttack.COMMON_ATTACK_PARAMETERS['model_name']]
+    log_filename: Annotated[str, BaseAttack.COMMON_ATTACK_PARAMETERS['log_filename']]
 
     def __init__(self, template, **kwargs):
         super().__init__(template, **kwargs)

@@ -1,28 +1,29 @@
 from pathlib import Path
+from typing import Annotated
 
+from advplay.attacks.attack_param import AttackParam, TemplateParam
 from advplay.attacks.base_attack import BaseAttack
 from advplay.variables import available_attacks, available_platforms
 from advplay.variables import default_template_file_names
 from advplay.ml.models.llms.base_platform import BasePlatform
 
 class PromptInjectionAttack(BaseAttack, attack_type=available_attacks.PROMPT_INJECTION, attack_subtype=None):
-    TEMPLATE_PARAMETERS = {
-        "platform": {"type": str, "required": True, "default": available_platforms.OPENAI,
-                     "help": 'The platform of the LLM', "choices": BasePlatform.registry.keys()},
-        "model": {"type": str, "required": True, "default": None, "help": 'The name of the model'},
-        "custom_instructions": {"type": str, "required": False, "default": None,
-                                "help": 'Custom instructions for the model'},
-        "template_filename": {"type": str, "required": False, "default": default_template_file_names.CUSTOM_INSTRUCTIONS,
-                              "help": "Template file name"}
-    }
+    platform: Annotated[str, TemplateParam(type=str, required=True, default=available_platforms.OPENAI,
+                                           help='The platform of the LLM',
+                                           choices=BasePlatform.registry.keys())]
+    model: Annotated[str, TemplateParam(type=str, required=True, default=None, help='The name of the model')]
+    custom_instructions: Annotated[str, TemplateParam(type=str, required=False, default=None,
+                                                      help='Custom instructions for the model')]
+    template_filename: Annotated[str, TemplateParam(type=str, required=False,
+                                                    default=default_template_file_names.CUSTOM_INSTRUCTIONS,
+                                                    help="Template file name")]
 
-    ATTACK_PARAMETERS = {
-        "template": BaseAttack.COMMON_ATTACK_PARAMETERS.get('template'),
-        "prompt_list": {"type": list, "required": False, "default": None,
-                        "help": 'A list or file of prompts to run'},
-        "session_id": {"type": str, "required": False, "default": "default_session", "help": 'The session ID'},
-        "log_filename": BaseAttack.COMMON_ATTACK_PARAMETERS.get('log_filename')
-    }
+    template: Annotated[str, BaseAttack.COMMON_ATTACK_PARAMETERS['template']]
+    prompt_list: Annotated[list, AttackParam(type=list, required=False, default=None,
+                                             help='A list or file of prompts to run')]
+    session_id: Annotated[str, AttackParam(type=str, required=False, default="default_session",
+                                           help='The session ID')]
+    log_filename: Annotated[str, BaseAttack.COMMON_ATTACK_PARAMETERS['log_filename']]
 
     def execute(self):
         if self.prompt_list is not None and Path(self.prompt_list[0]).exists():

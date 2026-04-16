@@ -36,13 +36,13 @@ def main():
         save_template_subparser.add_argument('--template', required=False,
                                              help='List specific template contents')
         for parameter, arguments in cls.TEMPLATE_PARAMETERS.items():
-            choices = arguments.get("choices")
+            choices = arguments.choices
             if callable(choices):
                 choices = choices()
 
             save_template_subparser.add_argument(f"--{parameter.replace('_', '-')}",
-                                                 required=arguments["required"] and not ('--list' in sys.argv),
-                                                 help=arguments["help"], choices=choices)
+                                                 required=arguments.required and not ('--list' in sys.argv),
+                                                 help=arguments.help, choices=choices)
 
         attack_subparser = attack_subparsers.add_parser(attack, help=f"{attack} attack")
         technique_subparsers = attack_subparser.add_subparsers(dest=commands.TECHNIQUE, help='Specific attack technique')
@@ -52,14 +52,13 @@ def main():
             technique_class = BaseAttack.registry[(attack, technique)]
             technique_parser = technique_subparsers.add_parser(technique, help=f"Run a {technique} attack")
 
-
             for parameter, arguments in technique_class.ATTACK_PARAMETERS.items():
-                choices = arguments.get("choices")
+                choices = arguments.choices
                 if callable(choices):
                     choices = choices()
 
                 technique_parser.add_argument(f"--{parameter.replace('_', '-')}",
-                                              required=arguments["required"], help=arguments["help"],
+                                              required=arguments.required, help=arguments.help,
                                               choices=choices)
 
     perform_action(parser.parse_args(), command)

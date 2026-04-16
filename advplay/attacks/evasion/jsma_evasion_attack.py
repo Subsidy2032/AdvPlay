@@ -1,19 +1,17 @@
+from typing import Annotated
+
 from art.attacks.evasion import SaliencyMapMethod
 
+from advplay.attacks.attack_param import AttackParam
 from advplay.attacks.evasion.evasion_attack import EvasionAttack
 from advplay.variables import available_attacks, evasion_techniques
 
-class FGSMEvasionAttack(EvasionAttack, attack_type=available_attacks.EVASION, attack_subtype=evasion_techniques.JSMA):
-    ATTACK_PARAMETERS = {
-        **EvasionAttack.ATTACK_PARAMETERS,
-        "theta": {"type": float, "required": False, "default": 0.1,
-                  "help": "The amount of perturbation to introduce in each step"},
-        "gamma": {"type": float, "required": False, "default": 0.1, "help": "Maximum fraction to effect"},
-        "batch_size": {"type": int, "required": False, "default": 1, "help": "Batch size"}
-    }
-
-    def __init__(self, template, **kwargs):
-        super().__init__(template, **kwargs)
+class JSMAEvasionAttack(EvasionAttack, attack_type=available_attacks.EVASION, attack_subtype=evasion_techniques.JSMA):
+    theta: Annotated[float, AttackParam(type=float, required=False, default=0.1,
+                                        help="The amount of perturbation to introduce in each step")]
+    gamma: Annotated[float, AttackParam(type=float, required=False, default=0.1,
+                                        help="Maximum fraction to effect")]
+    batch_size: Annotated[int, AttackParam(type=int, required=False, default=1, help="Batch size")]
 
     def execute(self):
         super().execute()
