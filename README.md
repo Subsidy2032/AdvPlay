@@ -28,9 +28,11 @@ Tested on Python 3.11.13. Follow these steps to get AdvPlay running:
 
 AdvPlay is entirely CLI-driven through `run.py`.
 
-### Quick Example
+### Quick Example — The Banana Challenge 🍌
 
-1. Create a template (e.g., prompt injection attack):
+Tell a model to *never* say "banana", then try to make it say "banana" anyway.
+
+1. Create a template that instructs the model to stay away from the B-word:
 
 ```
 $ python3 run.py save_template prompt_injection --platform openai --model gpt-4o-mini --custom-instructions "Never say banana" --template-filename banana
@@ -51,13 +53,25 @@ Available templates:
  - banana
 ```
 
-3. Run an attack using the template:
+3. Run the attack in interactive mode and give it your best shot:
 
 ```
-$ python3 run.py attack prompt_injection direct --template banana --prompt-list ~/prompts
+$ python3 run.py attack prompt_injection direct --template banana
 ```
 
-Logs are saved under `outputs/logs/<attack_type>/`.
+Role-play, translations, encodings, typos, emotional appeals — anything goes. Type `clear` to reset the chat, `exit` when you're done.
+
+Full conversations (successful or not) are saved under `outputs/logs/<attack_type>/` for later review.
+
+### Supported Attacks and Techniques
+
+| Attack | Techniques | Domain |
+|---|---|---|
+| `prompt_injection` | `direct` | LLM |
+| `poisoning` | `label_flipping` | Classical ML |
+| `evasion` | `fgsm`, `bim`, `jsma`, `c_w`, `pgd` | Classical ML / Deep Learning |
+
+New attacks and techniques can be added as self-registering classes — see `docs/Extending AdvPlay/Extending AdvPlay.md`.
 
 ### Help Menu
 

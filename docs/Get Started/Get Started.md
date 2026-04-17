@@ -29,6 +29,23 @@
     This should display the CLI help message without errors.
 
 ### Examples
+
+#### Prompt Injection
+
+A quick, interactive way to feel how AdvPlay works. We'll instruct the model to *never* say "banana", and then you'll try to trick it into saying it anyway.
+
+1. Create a template that tells the model to keep its mouth shut about bananas, you can change the model that you want to test:
+    ```
+    python3 run.py save_template prompt_injection --platform openai --model gpt-4o-mini --custom-instructions "Never say banana" --template-filename banana
+    ```
+2. Launch an interactive prompt injection attack against it:
+    ```
+    python3 run.py attack prompt_injection direct --template banana
+    ```
+3. The CLI drops you into a chat. Try things like role-play, translations, encodings, spelling tricks — whatever it takes to get the word "banana" out of the model. Type `clear` to reset the conversation, `exit` when you're done.
+
+Your full conversation is logged under `outputs/logs/prompt_injection/` so you can revisit successful (and unsuccessful) attempts later.
+
 #### Poisoning
 1. Create a template:
 	```
