@@ -44,6 +44,6 @@ def attack_info():
     }
 
 def test_label_flipping_visualizer(context, attack_info):
-    visualizer_cls = BaseVisualizer.registry.get(attack_info["attack_type"])
+    visualizer_cls = BaseVisualizer.get(attack_info["attack_type"], attack_info["technique"])
     visualizer = visualizer_cls()
     visualizer.visualize(context)

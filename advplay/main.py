@@ -49,17 +49,15 @@ def perform_action(args, command):
 
         template_name = args.template
 
-        evaluator = None
-        if attack_type in BaseAttackEvaluator.registry:
-            evaluator = BaseAttackEvaluator.registry[attack_type]()
+        evaluator_cls = BaseAttackEvaluator.get(attack_type, attack_subtype)
+        evaluator = evaluator_cls() if evaluator_cls else None
 
         log_filename = parameters.get('log_filename') or datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         log_location = paths.LOGS / attack_type / log_filename
         logger = JsonLogger(str(log_location))
 
-        visualizer = None
-        if attack_type in BaseVisualizer.registry:
-            visualizer = BaseVisualizer.registry.get(attack_type)()
+        visualizer_cls = BaseVisualizer.get(attack_type, attack_subtype)
+        visualizer = visualizer_cls() if visualizer_cls else None
 
         orchestrator = FullPipelineOrchestrator(evaluator, logger, visualizer)
         orchestrator.run(attack_type, attack_subtype, template_name, command, **parameters)

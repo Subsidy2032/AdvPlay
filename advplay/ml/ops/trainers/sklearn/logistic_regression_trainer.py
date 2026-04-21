@@ -12,4 +12,9 @@ class LogisticRegressionTrainer(SKLearnTrainer, framework=available_frameworks.S
                                 model=available_models.LOGISTIC_REGRESSION):
     def __init__(self, X_train, y_train, config: dict = None):
         super().__init__(X_train, y_train, config)
-        self.model = LogisticRegression()
+
+        if config and config.get("solver") is not None:
+            self.model = LogisticRegression(solver=config["solver"])
+
+        else:
+            self.model = LogisticRegression()

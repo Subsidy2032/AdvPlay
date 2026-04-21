@@ -5,8 +5,9 @@ from advplay.attack_evaluators.contexts.evasion_evaluation_context import Evasio
 from advplay.ml.ops.evaluators.base_evaluator import BaseEvaluator
 from advplay import paths
 from advplay.ml.models.model_loaders.base_model_loader import BaseModelLoader
+from advplay.variables import available_attacks
 
-class EvasionEvaluator(BaseAttackEvaluator, attack_type="evasion"):
+class EvasionEvaluator(BaseAttackEvaluator, attack_type=available_attacks.EVASION, attack_subtype=None):
     def evaluate(self, context: EvasionEvaluationContext):
         model_name = context.model
         training_configuration = context.training_configuration
@@ -37,7 +38,7 @@ class EvasionEvaluator(BaseAttackEvaluator, attack_type="evasion"):
         evaluation_results["num_mispredictions"] = num_mispredictions
         evaluation_results["num_samples"] = num_samples
         evaluation_results["percentage_mispredicted"] = percentage_mispredicted
-        
+
         evaluation_results["num_target_mispredictions"] = None
         evaluation_results["percentage_target_mispredictions"] = None
         if target_label is not None:

@@ -7,7 +7,6 @@ from advplay.loggers.json_logger import JsonLogger
 from advplay.attacks.poisoning.poisoing_attack import PoisoningAttack
 from advplay.variables import available_attacks, poisoning_techniques
 from advplay.ml.data.dataset_loaders.loaded_dataset import LoadedDataset
-from advplay.attack_evaluators.poisoning_evaluator import PoisoningEvaluator
 from advplay.attack_evaluators.contexts.poisoning_evaluation_context import PoisoningEvaluationContext
 
 class LabelFlippingPoisoningAttack(PoisoningAttack,

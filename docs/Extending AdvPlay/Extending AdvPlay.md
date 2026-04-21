@@ -26,27 +26,35 @@ Save it under `advplay/attacks/my_attack/` and it's instantly available as `pyth
 
 ### Add an attack evaluator
 
-Subclass `BaseAttackEvaluator` and bind it to an attack type. If an evaluator is registered for the attack, the orchestrator picks it up after `execute`.
+Subclass `BaseAttackEvaluator` and bind it with `attack_type` (and optionally `attack_subtype`). The orchestrator looks up `(attack_type, attack_subtype)` and falls back to `(attack_type, None)` when no technique-specific evaluator is registered.
 
 ```python
 from advplay.attack_evaluators.base_attack_evaluator import BaseAttackEvaluator
 
-class MyAttackEvaluator(BaseAttackEvaluator, attack_type="my_attack"):
+class MyAttackEvaluator(BaseAttackEvaluator, attack_type="my_attack", attack_subtype=None):
     def evaluate(self, context):
         ...
         return results, artifacts, extras
+
+class MyAttackNaiveEvaluator(BaseAttackEvaluator, attack_type="my_attack", attack_subtype="naive"):
+    def evaluate(self, context):
+        ...
 ```
 
 Define a matching `BaseEvaluationContext` subclass under `attack_evaluators/contexts/` so the orchestrator knows what to pass in.
 
 ### Add a visualizer
 
-Same idea — subclass `BaseVisualizer`, bind to an attack type, and render whatever you want from the context (plots, tables, dashboards).
+Same idea — subclass `BaseVisualizer`, bind with `attack_type` (and optionally `attack_subtype`), and render whatever you want from the context (plots, tables, dashboards). Technique-specific visualizers override the default; if none is registered for a technique, the `(attack_type, None)` visualizer is used.
 
 ```python
 from advplay.visualization.base_visualizer import BaseVisualizer
 
-class MyAttackVisualizer(BaseVisualizer, attack_type="my_attack"):
+class MyAttackVisualizer(BaseVisualizer, attack_type="my_attack", attack_subtype=None):
+    def visualize(self, context):
+        ...
+
+class MyAttackNaiveVisualizer(BaseVisualizer, attack_type="my_attack", attack_subtype="naive"):
     def visualize(self, context):
         ...
 ```

@@ -5,10 +5,11 @@ from advplay.attack_evaluators.contexts.poisoning_evaluation_context import Pois
 from advplay.ml.ops.evaluators.base_evaluator import BaseEvaluator
 from advplay.ml.ops.trainers.base_trainer import BaseTrainer
 from advplay.visualization.contexts.poisoning_visualization_context import PoisoningVisualizationContext
+from advplay.variables import available_attacks
 from advplay import paths
 from advplay.utils import load_files
 
-class PoisoningEvaluator(BaseAttackEvaluator, attack_type="poisoning"):
+class PoisoningEvaluator(BaseAttackEvaluator, attack_type=available_attacks.POISONING, attack_subtype=None):
     def evaluate(self, context: PoisoningEvaluationContext):
         evaluator_cls = BaseEvaluator.registry.get(context.training_framework)
         X_test = context.X_test

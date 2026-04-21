@@ -10,7 +10,7 @@ from advplay.visualization.contexts.poisoning_visualization_context import Poiso
 from advplay.variables import available_attacks
 from advplay import paths
 
-class PoisoningVisulizer(BaseVisualizer, attack_type="poisoning"):
+class PoisoningVisualizer(BaseVisualizer, attack_type=available_attacks.POISONING, attack_subtype=None):
     def visualize(self, context: PoisoningVisualizationContext):
         for confusion_matrix, percentage_poisoned in zip(context.confusion_matrices, context.percentages_poisoned):
             confusion_matrix = np.array(confusion_matrix)

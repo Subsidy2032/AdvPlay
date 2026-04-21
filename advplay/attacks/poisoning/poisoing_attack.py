@@ -60,7 +60,16 @@ class PoisoningAttack(BaseAttack, ABC, attack_type=available_attacks.POISONING, 
 
             elif self.source_type == dataset_formats.NPZ:
                 if isinstance(self.label_column, str):
-                    self.label_column = self.metadata["keys"].index(self.label_column)
+                    key_columns = self.metadata.get("key_columns", {})
+                    if self.label_column in key_columns:
+                        cols = key_columns[self.label_column]
+                        if len(cols) != 1:
+                            raise ValueError(
+                                f"label_column '{self.label_column}' maps to multiple columns: {cols}"
+                            )
+                        self.label_column = cols[0]
+                    else:
+                        self.label_column = self.metadata["keys"].index(self.label_column)
 
             elif isinstance(self.label_column, str):
                 raise TypeError("string column names are only supported for CSV and NPZ formats")
@@ -104,9 +113,6 @@ class PoisoningAttack(BaseAttack, ABC, attack_type=available_attacks.POISONING, 
             raise TypeError("seed must be an integer or None")
 
     def validate_template_inputs(self):
-        if self.max_portion_to_poison == self.min_portion_to_poison and self.step > 0:
-            raise ValueError("Can't use the step parameter if max_portion_to_poison is equal to min_portion_to_poison or not set")
-
         if (self.training_framework, self.model) not in BaseTrainer.registry.keys():
             raise ValueError(
                 f"Invalid framework and training algorithm configuration: ({self.training_framework}, {self.model})")
