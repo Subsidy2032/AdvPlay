@@ -31,6 +31,7 @@ class FullPipelineOrchestrator(BaseOrchestrator):
 
         evaluation_results = {}
         models = []
+        visualization_context = None
         if self.evaluator:
             evaluation_results, models, visualization_context = self.evaluator.evaluate(context)
 
@@ -50,6 +51,6 @@ class FullPipelineOrchestrator(BaseOrchestrator):
             saver = BaseModelSaver.registry.get(training_framework)()
             saver.save(model, model_name)
 
-        if self.visualizer:
+        if self.visualizer and visualization_context is not None:
             self.visualizer.visualize(visualization_context)
             

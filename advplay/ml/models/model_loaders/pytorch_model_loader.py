@@ -25,6 +25,6 @@ class TorchModelLoader(BaseModelLoader, framework=available_frameworks.PYTORCH):
 
         return model
 
-    def load_art_classifier(self, loss, input_shape, nb_classes):
+    def load_art_classifier(self, loss, input_shape, nb_classes, clip_values):
         model = self.load()
-        return PyTorchClassifier(model, loss=loss, input_shape=input_shape, nb_classes=nb_classes)
+        return PyTorchClassifier(model, loss=loss, input_shape=input_shape, nb_classes=nb_classes, clip_values=clip_values)

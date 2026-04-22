@@ -8,6 +8,7 @@ from advplay import paths
 from advplay.attacks.attack_param import AttackParam, TemplateParam
 from advplay.ml.ops.trainers.base_trainer import BaseTrainer
 from advplay.ml.data.dataset_loaders.loaded_dataset import LoadedDataset
+from advplay.ml.models.architecture.registry import MODEL_REGISTRY
 
 class BaseAttack(ABC):
     registry = {}
@@ -24,7 +25,7 @@ class BaseAttack(ABC):
         "model": TemplateParam(type=str, required=True, default="logistic_regression",
                                help='The training algorithm',
                                choices=lambda: list(
-                                   {k[1] for k in BaseTrainer.registry.keys() if k[1] is not None})),
+                                   {k[1] for k in BaseTrainer.registry.keys() if k[1] is not None}) + list({k for k in MODEL_REGISTRY.keys() if k is not None})),
         "training_configuration": TemplateParam(type=dict, required=False, default=None,
                                                 help='Path to a training configuration file')
     }

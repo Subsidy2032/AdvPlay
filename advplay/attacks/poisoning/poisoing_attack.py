@@ -24,6 +24,10 @@ class PoisoningAttack(BaseAttack, ABC, attack_type=available_attacks.POISONING, 
                                                      help="A trigger to be used for poisoning")]
     override: Annotated[bool, TemplateParam(type=bool, required=False, default=True,
                                             help="Whether to override examples from the training dataset")]
+    model_path: Annotated[str, TemplateParam(type=str, required=False, default=None,
+                                             help="Path for the model to load")]
+    model_configuration: Annotated[dict, TemplateParam(type=dict, required=False, default={},
+                                                    help="The configurations of the model")]
     template_filename: Annotated[str, TemplateParam(type=str, required=False,
                                                     default=default_template_file_names.POISONING_ATTACK_TEMPLATE,
                                                     help="Template file name")]
@@ -113,10 +117,6 @@ class PoisoningAttack(BaseAttack, ABC, attack_type=available_attacks.POISONING, 
             raise TypeError("seed must be an integer or None")
 
     def validate_template_inputs(self):
-        if (self.training_framework, self.model) not in BaseTrainer.registry.keys():
-            raise ValueError(
-                f"Invalid framework and training algorithm configuration: ({self.training_framework}, {self.model})")
-
         for name, val in [
             ("test_portion", self.test_portion),
             ("min_portion_to_poison", self.min_portion_to_poison),

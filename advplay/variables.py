@@ -22,6 +22,7 @@ class available_attacks():
 
 class poisoning_techniques():
     LABEL_FLIPPING: str = 'label_flipping'
+    CLEAN_LABEL: str = 'clean_label'
 
 class evasion_techniques():
     FGSM: str = 'fgsm'
@@ -37,6 +38,7 @@ class available_models():
     LOGISTIC_REGRESSION: str = 'logistic_regression'
     ONE_VS_REST: str = 'one_vs_rest'
     CNN: str = 'cnn'
+    MNIST_CNN: str = 'mnist_cnn'
 
 class default_template_file_names():
     CUSTOM_INSTRUCTIONS: str = 'custom_instructions'

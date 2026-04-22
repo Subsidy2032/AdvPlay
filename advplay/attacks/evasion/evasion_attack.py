@@ -69,9 +69,10 @@ class EvasionAttack(BaseAttack, ABC, attack_type=available_attacks.EVASION, atta
         loss = self.model_configuration.get("loss")
         input_shape = self.model_configuration.get("input_shape")
         nb_classes = self.model_configuration.get("nb_classes")
+        clip_values = self.model_configuration.get("clip_values")
 
         loss_fn = LOSS_FUNCTION_REGISTRY[self.training_framework](loss)
-        wrapper = loader.load_art_classifier(loss_fn, input_shape, nb_classes)
+        wrapper = loader.load_art_classifier(loss_fn, input_shape, nb_classes, clip_values)
 
         if self.target_label is not None:
             if "targeted" in inspect.signature(attack_class).parameters:

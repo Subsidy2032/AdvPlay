@@ -3,7 +3,6 @@ import os
 from sklearn.model_selection import train_test_split
 
 from advplay import paths
-from advplay.loggers.json_logger import JsonLogger
 from advplay.attacks.poisoning.poisoing_attack import PoisoningAttack
 from advplay.variables import available_attacks, poisoning_techniques
 from advplay.ml.data.dataset_loaders.loaded_dataset import LoadedDataset
