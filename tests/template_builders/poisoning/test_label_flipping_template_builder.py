@@ -43,7 +43,9 @@ def expected_json(label_flipping_template_data):
         "min_portion_to_poison": label_flipping_template_data["min_portion_to_poison"],
         "max_portion_to_poison": label_flipping_template_data["max_portion_to_poison"],
         "trigger_pattern": label_flipping_template_data["trigger_pattern"],
-        "override": label_flipping_template_data["override"]
+        "override": label_flipping_template_data["override"],
+        'model_configuration': {},
+        'model_path': None
 }
 
 @pytest.fixture
