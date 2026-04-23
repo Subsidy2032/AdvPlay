@@ -23,6 +23,7 @@ class available_attacks():
 class poisoning_techniques():
     LABEL_FLIPPING: str = 'label_flipping'
     CLEAN_LABEL: str = 'clean_label'
+    BACKDOOR: str = 'backdoor'
 
 class evasion_techniques():
     FGSM: str = 'fgsm'

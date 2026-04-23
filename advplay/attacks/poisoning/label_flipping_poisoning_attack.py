@@ -17,18 +17,27 @@ class LabelFlippingPoisoningAttack(PoisoningAttack,
     def execute(self):
         super().execute()
 
-        X = np.delete(self.dataset.data, self.label_column, axis=1) if self.dataset else self.features_dataset.data
-        y_raw = self.dataset.data[:, self.label_column] if self.dataset else self.labels_array.data
-        labels_unique = np.unique(y_raw)
+        X_train_raw, y_train_raw = self.load_train_arrays()
+        X_test_raw, y_test_raw = self.load_test_arrays()
+        combined_labels = (np.concatenate([y_train_raw, y_test_raw])
+                           if y_test_raw is not None else y_train_raw)
+        labels_unique = np.unique(combined_labels)
         label_map = {lbl: i for i, lbl in enumerate(labels_unique)}
         reverse_label_map = {i: lbl for lbl, i in label_map.items()}
 
-        y = np.vectorize(label_map.get)(y_raw).astype(int)
-
-        if len(np.unique(y)) <= 1:
+        if len(labels_unique) <= 1:
             raise ValueError("Poisoning requires at least two classes")
 
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=self.test_portion, random_state=self.seed)
+        y_train_mapped = np.vectorize(label_map.get)(y_train_raw).astype(int)
+        if self.pre_split:
+            X_train, y_train = X_train_raw, y_train_mapped
+            X_test = X_test_raw
+            y_test = np.vectorize(label_map.get)(y_test_raw).astype(int)
+        else:
+            X_train, X_test, y_train, y_test = train_test_split(
+                X_train_raw, y_train_mapped, test_size=self.test_portion, random_state=self.seed
+            )
+        y = y_train_mapped
 
         source_mask = (
             (y_train == label_map[self.source]) if self.source else
@@ -39,7 +48,7 @@ class LabelFlippingPoisoningAttack(PoisoningAttack,
         n_samples = len(y_source)
 
         poisoned_datasets = {}
-        steps = max(1, int((self.max_portion_to_poison - self.min_portion_to_poison) / self.step) + 1)
+        steps = max(1, int(round((self.max_portion_to_poison - self.min_portion_to_poison) / self.step)) + 1)
         rng = np.random.default_rng(self.seed)
 
         if self.split:

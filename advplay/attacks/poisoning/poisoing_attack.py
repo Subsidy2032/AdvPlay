@@ -36,6 +36,18 @@ class PoisoningAttack(BaseAttack, ABC, attack_type=available_attacks.POISONING, 
     dataset: Annotated[LoadedDataset, BaseAttack.COMMON_ATTACK_PARAMETERS['dataset']]
     features_dataset: Annotated[LoadedDataset, BaseAttack.COMMON_ATTACK_PARAMETERS['features_dataset']]
     labels_array: Annotated[LoadedDataset, BaseAttack.COMMON_ATTACK_PARAMETERS['labels_array']]
+    train_dataset: Annotated[LoadedDataset, AttackParam(type=LoadedDataset, required=False, default=None,
+                                                        help='Pre-split training dataset (combined with labels). Pairs with --test-dataset.')]
+    test_dataset: Annotated[LoadedDataset, AttackParam(type=LoadedDataset, required=False, default=None,
+                                                       help='Pre-split test dataset (combined with labels). Pairs with --train-dataset.')]
+    train_features_dataset: Annotated[LoadedDataset, AttackParam(type=LoadedDataset, required=False, default=None,
+                                                                  help='Pre-split training features. Pairs with --train-labels-array and matching test datasets.')]
+    train_labels_array: Annotated[LoadedDataset, AttackParam(type=LoadedDataset, required=False, default=None,
+                                                              help='Pre-split training labels. Pairs with --train-features-dataset.')]
+    test_features_dataset: Annotated[LoadedDataset, AttackParam(type=LoadedDataset, required=False, default=None,
+                                                                 help='Pre-split test features. Pairs with --test-labels-array.')]
+    test_labels_array: Annotated[LoadedDataset, AttackParam(type=LoadedDataset, required=False, default=None,
+                                                             help='Pre-split test labels. Pairs with --test-features-dataset.')]
     label_column: Annotated[Union[int, str], BaseAttack.COMMON_ATTACK_PARAMETERS['label_column']]
     source: Annotated[Union[int, str], AttackParam(type=(int, str), required=False, default=None,
                                                    help='Source class to poison')]
@@ -52,10 +64,32 @@ class PoisoningAttack(BaseAttack, ABC, attack_type=available_attacks.POISONING, 
     def __init__(self, template, **kwargs):
         super().__init__(template, **kwargs)
         self.split = False
+        self.pre_split = False
 
-        if self.dataset is not None:
-            self.source_type = self.dataset.source_type
-            self.metadata = self.dataset.metadata
+        combined = self.dataset
+        if self.train_dataset is not None or self.test_dataset is not None:
+            if self.train_dataset is None or self.test_dataset is None:
+                raise ValueError("train_dataset and test_dataset must be provided together.")
+            self.pre_split = True
+            combined = self.train_dataset
+
+        features = self.features_dataset
+        labels = self.labels_array
+        pre_split_members = (self.train_features_dataset, self.train_labels_array,
+                             self.test_features_dataset, self.test_labels_array)
+        if any(m is not None for m in pre_split_members):
+            if not all(m is not None for m in pre_split_members):
+                raise ValueError(
+                    "train_features_dataset, train_labels_array, test_features_dataset, and "
+                    "test_labels_array must be provided together."
+                )
+            self.pre_split = True
+            features = self.train_features_dataset
+            labels = self.train_labels_array
+
+        if combined is not None:
+            self.source_type = combined.source_type
+            self.metadata = combined.metadata
             self.dataset_name = self.metadata["dataset_name"]
 
             if self.source_type == dataset_formats.CSV:
@@ -78,28 +112,61 @@ class PoisoningAttack(BaseAttack, ABC, attack_type=available_attacks.POISONING, 
             elif isinstance(self.label_column, str):
                 raise TypeError("string column names are only supported for CSV and NPZ formats")
 
-        elif self.features_dataset is not None:
-            features_metadata = self.features_dataset.metadata
-            labels_metadata = self.labels_array.metadata
+        elif features is not None:
+            features_metadata = features.metadata
+            labels_metadata = labels.metadata
             self.features_dataset_name = features_metadata["dataset_name"]
             self.labels_dataset_name = labels_metadata["dataset_name"]
 
             self.split = True
-            self.X_source_type = self.features_dataset.source_type
-            self.X_metadata = self.features_dataset.metadata
-            self.y_source_type = self.labels_array.source_type
-            self.y_metadata = self.labels_array.metadata
+            self.X_source_type = features.source_type
+            self.X_metadata = features.metadata
+            self.y_source_type = labels.source_type
+            self.y_metadata = labels.metadata
+
+    def _extract(self, combined, features_ds, labels_ds):
+        if combined is not None:
+            if not isinstance(self.label_column, (int, np.integer)):
+                raise ValueError(
+                    "A combined dataset requires --label-column. If your labels are in a "
+                    "separate file, pass features and labels separately via "
+                    "--features-dataset/--labels-array (or --train-features-dataset + "
+                    "--train-labels-array + --test-features-dataset + --test-labels-array)."
+                )
+            X = np.delete(combined.data, self.label_column, axis=1)
+            y_raw = combined.data[:, self.label_column]
+        else:
+            X = features_ds.data
+            y_raw = labels_ds.data
+        return X, np.asarray(y_raw).ravel()
+
+    def load_train_arrays(self):
+        return self._extract(
+            self.train_dataset if self.train_dataset is not None else self.dataset,
+            self.train_features_dataset if self.train_features_dataset is not None else self.features_dataset,
+            self.train_labels_array if self.train_labels_array is not None else self.labels_array,
+        )
+
+    def load_test_arrays(self):
+        if not self.pre_split:
+            return None, None
+        return self._extract(self.test_dataset, self.test_features_dataset, self.test_labels_array)
 
 
     def execute(self):
         self.validate_attack_inputs()
 
     def validate_attack_inputs(self):
-        if self.dataset is not None and type(self.dataset) is not LoadedDataset:
-            raise TypeError(f"training_data must be of type LoadedDataset. Got {type(self.dataset)} instead")
+        for name, ds in [
+            ("dataset", self.dataset),
+            ("train_dataset", self.train_dataset),
+            ("test_dataset", self.test_dataset),
+        ]:
+            if ds is not None and type(ds) is not LoadedDataset:
+                raise TypeError(f"{name} must be of type LoadedDataset. Got {type(ds)} instead")
 
-        if not (0 < self.test_portion < 1):
-            raise ValueError("test_portion must be between 0 and 1")
+        if not self.pre_split and not (0 < self.test_portion < 1):
+            raise ValueError("test_portion must be between 0 and 1 when train/test datasets are not supplied separately")
 
         if not (0 <= self.min_portion_to_poison <= 1):
             raise ValueError("min_portion_to_poison must be between 0 and 1")

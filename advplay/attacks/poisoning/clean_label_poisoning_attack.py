@@ -33,10 +33,8 @@ class CleanLabelPoisoningAttack(PoisoningAttack,
         loss_fn = LOSS_FUNCTION_REGISTRY[self.training_framework](loss)
         wrapper = loader.load_art_classifier(loss_fn, input_shape, nb_classes, clip_values)
 
-        X = np.delete(self.dataset.data, self.label_column, axis=1) if self.dataset else self.features_dataset.data
+        X, y_raw = self.load_train_arrays()
         X = X.astype(np.float32)
-
-        y_raw = self.dataset.data[:, self.label_column] if self.dataset else self.labels_array.data
 
         if isinstance(self.target, LoadedDataset):
             target = self.target.data
