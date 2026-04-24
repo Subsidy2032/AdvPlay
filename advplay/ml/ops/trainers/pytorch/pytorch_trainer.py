@@ -1,9 +1,9 @@
 import torch
-import torch.nn as nn
-import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
 
 from advplay.ml.ops.trainers.base_trainer import BaseTrainer
+from advplay.ml.models.loss_functions.registry import LOSS_FUNCTION_REGISTRY
+from advplay.ml.models.optimizers.registry import OPTIMIZER_REGISTRY
 from advplay.variables import available_frameworks
 
 class PyTorchTrainer(BaseTrainer, framework=available_frameworks.PYTORCH, model=None):
@@ -26,6 +26,9 @@ class PyTorchTrainer(BaseTrainer, framework=available_frameworks.PYTORCH, model=
         batch_size = self.config.get("batch_size", 32)
         epochs = self.config.get("epochs", 5)
         lr = self.config.get("lr", 0.001)
+        loss_name = self.config.get("loss") or "CrossEntropyLoss"
+        opt_name = self.config.get("opt") or "Adam"
+        weight_decay = self.config.get("weight_decay", 0.0)
 
         X_tensor = torch.tensor(self.X_train, dtype=torch.float32)
         y_tensor = torch.tensor(self.y_train.squeeze(), dtype=torch.long)
@@ -33,9 +36,11 @@ class PyTorchTrainer(BaseTrainer, framework=available_frameworks.PYTORCH, model=
         loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
         if self.criterion is None:
-            self.criterion = nn.CrossEntropyLoss()
+            self.criterion = LOSS_FUNCTION_REGISTRY[available_frameworks.PYTORCH](loss_name)
         if self.optimizer is None:
-            self.optimizer = optim.Adam(self.model.parameters(), lr=lr)
+            self.optimizer = OPTIMIZER_REGISTRY[available_frameworks.PYTORCH](
+                opt_name, self.model, lr, weight_decay
+            )
 
         self.model.to(self.device)
         self.model.train()
