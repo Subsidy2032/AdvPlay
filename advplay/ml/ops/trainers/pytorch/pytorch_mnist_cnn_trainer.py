@@ -2,6 +2,7 @@ import numpy as np
 
 from advplay.ml.ops.trainers.pytorch.pytorch_trainer import PyTorchTrainer
 from advplay.ml.models.architecture.mnist_cnn import MnistCNN
+from advplay.ml.data.preprocessors.image.mnist_normalizer import MnistNormalizer
 from advplay.variables import available_models, available_frameworks
 
 class PyTorchMnistCNNTrainer(PyTorchTrainer, framework=available_frameworks.PYTORCH,
@@ -18,4 +19,8 @@ class PyTorchMnistCNNTrainer(PyTorchTrainer, framework=available_frameworks.PYTO
         self.conv_channels = training_config.get("conv_ch", training_config.get("conv_channels", 8))
         input_shape = training_config.get("input_shape")
 
+        self.preprocessor = MnistNormalizer()
+        self.X_train = self.preprocessor.normalize(self.X_train)
+
         self.model = MnistCNN(self.in_channels, self.num_classes, self.conv_channels, input_shape)
+        self.model.preprocessor = self.preprocessor

@@ -1,4 +1,3 @@
-import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -26,13 +25,7 @@ class MnistCNN(nn.Module):
         self.dropout = nn.Dropout(0.5)
         self.fc2 = nn.Linear(128, num_classes)
 
-        self.register_buffer("pixel_scale", torch.tensor(255.0), persistent=False)
-        self.register_buffer("mean", torch.tensor(0.1307).view(1, 1, 1, 1), persistent=False)
-        self.register_buffer("std", torch.tensor(0.3081).view(1, 1, 1, 1), persistent=False)
-
     def forward(self, x):
-        x = x / self.pixel_scale
-        x = (x - self.mean) / self.std
         x = self.pool1(F.relu(self.conv1(x)))
         x = self.pool2(F.relu(self.conv2(x)))
         x = x.view(-1, self._feature_size)  # Flatten

@@ -8,6 +8,7 @@ from advplay import paths
 from advplay.attacks.attack_param import AttackParam, TemplateParam
 from advplay.ml.ops.trainers.base_trainer import BaseTrainer
 from advplay.ml.data.dataset_loaders.loaded_dataset import LoadedDataset
+from advplay.ml.data.preprocessors.base_preprocessor import BasePreprocessor
 from advplay.ml.models.architecture.registry import MODEL_REGISTRY
 
 class BaseAttack(ABC):
@@ -27,7 +28,13 @@ class BaseAttack(ABC):
                                choices=lambda: list(
                                    {k[1] for k in BaseTrainer.registry.keys() if k[1] is not None}) + list({k for k in MODEL_REGISTRY.keys() if k is not None})),
         "training_configuration": TemplateParam(type=dict, required=False, default=None,
-                                                help='Path to a training configuration file')
+                                                help='Path to a training configuration file'),
+        "preprocessing": TemplateParam(type=dict, required=False, default=None,
+                                       help='Path to a JSON file describing preprocessing steps applied to input '
+                                            'datasets before the attack runs. The JSON top-level may be a list '
+                                            '(ordered chain; each entry is a preprocessor name or '
+                                            '{"name": <name>, "params": {...}}) or a dict mapping '
+                                            'preprocessor name to its params (order preserved).')
     }
 
     COMMON_ATTACK_PARAMETERS = {
