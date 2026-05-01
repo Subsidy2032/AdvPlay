@@ -9,6 +9,8 @@ from advplay.ml.data.dataset_loaders.loaded_dataset import LoadedDataset
 
 
 _WHITESPACE_RE = re.compile(r"\s+")
+_NEWLINE_RE = re.compile(r"\n+")
+_CARRIAGE_RE = re.compile(r"\r+")
 _KEEP_CATEGORIES = {
     "Lu", "Ll", "Lt", "Lm", "Lo",
     "Nd", "Nl", "No",
@@ -24,6 +26,8 @@ def _clean_string(value: str) -> str:
     value = value.replace("+", " ")
     value = "".join(ch for ch in value if unicodedata.category(ch) in _KEEP_CATEGORIES)
     value = value.lower()
+    value = _NEWLINE_RE.sub(" ", value)
+    value = _CARRIAGE_RE.sub(" ", value)
     value = _WHITESPACE_RE.sub(" ", value).strip()
     return value
 

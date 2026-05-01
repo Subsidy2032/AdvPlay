@@ -4,7 +4,7 @@ import numpy as np
 
 from sklearn.linear_model import LogisticRegression
 from advplay.ml.ops.evaluators.base_evaluator import BaseEvaluator
-from advplay.ml.ops.evaluators.sklearn_evaluator import SklearnEvaluator
+from advplay.ml.ops.evaluators.sklearn.sklearn_evaluator import SklearnEvaluator
 from advplay.variables import available_frameworks
 
 # ------------------- Fixtures -------------------
@@ -53,13 +53,13 @@ def test_accuracy_returns_float(evaluator, train_test):
 # ------------------- Registry / Integration Tests -------------------
 
 def test_registry_contains_sklearn(framework):
-    evaluator_cls = BaseEvaluator.registry.get(framework)
+    evaluator_cls = BaseEvaluator.get(framework, None)
     assert evaluator_cls is not None, "SklearnEvaluator should be registered"
 
 def test_evaluate_model_accuracy_function(train_test, trained_model, framework):
     X, y = train_test
 
-    evaluator_cls = BaseEvaluator.registry.get(framework)
+    evaluator_cls = BaseEvaluator.get(framework, None)
     evaluator = evaluator_cls(trained_model)
     acc = evaluator.accuracy(X, y)
     assert isinstance(acc, float)

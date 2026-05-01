@@ -1,13 +1,13 @@
 from abc import ABC
 import inspect
-from typing import Annotated
+from typing import Annotated, Union
 import numpy as np
 import os
 from pathlib import Path
 
 from advplay.attacks.attack_param import AttackParam, TemplateParam
 from advplay.attacks.base_attack import BaseAttack
-from advplay.variables import default_template_file_names
+from advplay.variables import default_template_file_names, dataset_formats
 from advplay.variables import available_attacks
 from advplay.ml.data.dataset_loaders.loaded_dataset import LoadedDataset
 from advplay import paths
@@ -36,12 +36,15 @@ class EvasionAttack(BaseAttack, ABC, attack_type=available_attacks.EVASION, atta
                                                     help="Template file name")]
 
     template: Annotated[str, BaseAttack.COMMON_ATTACK_PARAMETERS['template']]
-    samples: Annotated[LoadedDataset, AttackParam(type=LoadedDataset, required=True, default=None,
-                                                  help="Samples to run evasions on")]
+    samples: Annotated[LoadedDataset, AttackParam(type=LoadedDataset, required=False, default=None,
+                                                  help="Samples to run evasions on. Pairs with --true-labels.")]
     confidence: Annotated[float, AttackParam(type=float, required=False, default=0.1,
                                              help="Higher value for more noticeable and robust perturbation")]
-    true_labels: Annotated[LoadedDataset, AttackParam(type=LoadedDataset, required=True, default=None,
-                                                      help="The true labels of the provided samples")]
+    true_labels: Annotated[LoadedDataset, AttackParam(type=LoadedDataset, required=False, default=None,
+                                                      help="The true labels of the provided samples. Pairs with --samples.")]
+    dataset: Annotated[LoadedDataset, AttackParam(type=LoadedDataset, required=False, default=None,
+                                                   help="Combined dataset with samples and labels in one file. Requires --label-column.")]
+    label_column: Annotated[Union[int, str], BaseAttack.COMMON_ATTACK_PARAMETERS['label_column']]
     target_label: Annotated[int, AttackParam(type=int, required=False, default=None,
                                              help="Target labels for misclassification")]
     log_filename: Annotated[str, BaseAttack.COMMON_ATTACK_PARAMETERS['log_filename']]
@@ -49,14 +52,42 @@ class EvasionAttack(BaseAttack, ABC, attack_type=available_attacks.EVASION, atta
     def __init__(self, template, **kwargs):
         super().__init__(template, **kwargs)
 
-        if self.true_labels:
-            self.true_labels = self.true_labels.data.ravel()
-
-        if self.samples:
-            self.samples_data = self.samples.data
+        if self.dataset is not None:
+            self._unpack_dataset()
+        else:
+            if self.samples is not None:
+                self.samples_data = self.samples.data
+            if self.true_labels is not None:
+                self.true_labels = self.true_labels.data.ravel()
 
         if self.target_label is not None:
             self.target_label = np.full(self.true_labels.shape, self.target_label, dtype=self.true_labels.dtype)
+
+    def _unpack_dataset(self):
+        if isinstance(self.label_column, str):
+            if self.dataset.source_type == dataset_formats.CSV:
+                self.label_column = self.dataset.metadata["columns"].get_loc(self.label_column)
+            elif self.dataset.source_type == dataset_formats.NPZ:
+                key_columns = self.dataset.metadata.get("key_columns", {})
+                if self.label_column in key_columns:
+                    cols = key_columns[self.label_column]
+                    if len(cols) != 1:
+                        raise ValueError(
+                            f"label_column '{self.label_column}' maps to multiple columns: {cols}"
+                        )
+                    self.label_column = cols[0]
+                else:
+                    self.label_column = self.dataset.metadata["keys"].index(self.label_column)
+            else:
+                raise TypeError("string label_column requires CSV or NPZ format")
+        if self.label_column is None:
+            raise ValueError("--label-column is required when passing --dataset")
+
+        samples = np.delete(self.dataset.data, self.label_column, axis=1)
+        labels = self.dataset.data[:, self.label_column]
+        self.samples_data = samples
+        self.true_labels = np.asarray(labels).ravel()
+        self.samples = LoadedDataset(samples, self.dataset.source_type, self.dataset.metadata)
 
     def execute(self):
         self.validate_attack_inputs()

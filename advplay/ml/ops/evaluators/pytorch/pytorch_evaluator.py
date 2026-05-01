@@ -5,7 +5,7 @@ from sklearn.metrics import accuracy_score
 from advplay.ml.ops.evaluators.base_evaluator import BaseEvaluator
 from advplay.variables import available_frameworks
 
-class PyTorchEvaluator(BaseEvaluator, framework=available_frameworks.PYTORCH):
+class PyTorchEvaluator(BaseEvaluator, framework=available_frameworks.PYTORCH, model=None):
     def __init__(self, model):
         super().__init__(model)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

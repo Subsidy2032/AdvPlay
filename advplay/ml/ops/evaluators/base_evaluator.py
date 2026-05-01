@@ -3,12 +3,20 @@ import pandas as pd
 class BaseEvaluator:
     registry = {}
 
-    def __init_subclass__(cls, framework: str):
-        if framework in BaseEvaluator.registry:
-            raise ValueError(f"Subclass already registered for {framework}")
+    def __init_subclass__(cls, framework: str, model: str = None):
+        key = (framework, model)
+        if key in BaseEvaluator.registry:
+            raise ValueError(f"Subclass already registered for {framework} + {model}")
 
         super().__init_subclass__()
-        BaseEvaluator.registry[framework] = cls
+        BaseEvaluator.registry[key] = cls
+
+    @classmethod
+    def get(cls, framework: str, model: str = None):
+        evaluator_cls = cls.registry.get((framework, model))
+        if evaluator_cls is None:
+            evaluator_cls = cls.registry.get((framework, None))
+        return evaluator_cls
 
     def __init__(self, model):
         self.model = model

@@ -25,7 +25,7 @@ class CleanLabelPoisoningEvaluator(BaseAttackEvaluator,
         target_sample = context.target_sample
         target_label = context.target_label
 
-        evaluator_cls = BaseEvaluator.registry.get(training_framework)
+        evaluator_cls = BaseEvaluator.get(training_framework, context.model)
         trainer_cls = BaseTrainer.registry.get((training_framework, context.model))
 
         base_model = trainer_cls(X_clean, y, training_configuration).train()

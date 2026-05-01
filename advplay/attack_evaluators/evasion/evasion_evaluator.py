@@ -17,7 +17,7 @@ class EvasionEvaluator(BaseAttackEvaluator, attack_type=available_attacks.EVASIO
         perturbed_samples = context.perturbed_samples
         target_label = context.target_label
 
-        evaluator_cls = BaseEvaluator.registry.get(context.training_framework)
+        evaluator_cls = BaseEvaluator.get(context.training_framework, context.model)
         evaluation_results = {}
 
         default_path = paths.MODELS

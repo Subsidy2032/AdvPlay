@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import get_args, get_type_hints
 import json
 import os
+import numpy as np
 
 from advplay import paths
 from advplay.attacks.attack_param import AttackParam, TemplateParam
@@ -134,3 +135,31 @@ class BaseAttack(ABC):
     @abstractmethod
     def execute(self):
         raise NotImplementedError("Subclasses must implement the execute method.")
+
+    def _extract(self, combined, features_ds, labels_ds):
+        if combined is not None:
+            if not isinstance(self.label_column, (int, np.integer)):
+                raise ValueError(
+                    "A combined dataset requires --label-column. If your labels are in a "
+                    "separate file, pass features and labels separately via "
+                    "--features-dataset/--labels-array (or --train-features-dataset + "
+                    "--train-labels-array + --test-features-dataset + --test-labels-array)."
+                )
+            X = np.delete(combined.data, self.label_column, axis=1)
+            y_raw = combined.data[:, self.label_column]
+        else:
+            X = features_ds.data
+            y_raw = labels_ds.data
+        return X, np.asarray(y_raw).ravel()
+
+    def load_train_arrays(self):
+        return self._extract(
+            self.train_dataset if self.train_dataset is not None else self.dataset,
+            self.train_features_dataset if self.train_features_dataset is not None else self.features_dataset,
+            self.train_labels_array if self.train_labels_array is not None else self.labels_array,
+        )
+
+    def load_test_arrays(self):
+        if not self.pre_split:
+            return None, None
+        return self._extract(self.test_dataset, self.test_features_dataset, self.test_labels_array)

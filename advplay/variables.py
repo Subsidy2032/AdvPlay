@@ -31,6 +31,7 @@ class evasion_techniques():
     JSMA: str = 'jsma'
     C_W: str = 'c_w'
     PGD: str = 'pgd'
+    GOODWORDS: str = 'goodwords'
 
 class prompt_injection_techniques():
     DIRECT: str = 'direct'
@@ -38,6 +39,8 @@ class prompt_injection_techniques():
 class available_models():
     LOGISTIC_REGRESSION: str = 'logistic_regression'
     ONE_VS_REST: str = 'one_vs_rest'
+    NAIVE_BAYES: str = 'naive_bayes'
+
     CNN: str = 'cnn'
     MNIST_CNN: str = 'mnist_cnn'
 

@@ -5,7 +5,7 @@ from advplay.ml.models.model_loaders.base_model_loader import BaseModelLoader
 from advplay.variables import available_frameworks
 
 class SklearnModelLoader(BaseModelLoader, framework=available_frameworks.SKLEARN):
-    def __init__(self, model_path: str):
+    def __init__(self, model_path: str, model=None, config=None):
         super().__init__(model_path)
 
     def load(self):

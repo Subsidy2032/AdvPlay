@@ -21,7 +21,7 @@ class BackdoorPoisoningEvaluator(BaseAttackEvaluator,
             default_path = paths.CONFIGS / training_framework
             training_configuration = load_files.load_json(default_path, training_configuration)
 
-        evaluator_cls = BaseEvaluator.registry.get(training_framework)
+        evaluator_cls = BaseEvaluator.get(training_framework, context.model)
         trainer_cls = BaseTrainer.registry.get((training_framework, context.model))
 
         X_test = context.X_test

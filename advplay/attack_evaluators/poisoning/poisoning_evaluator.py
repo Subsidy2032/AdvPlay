@@ -11,7 +11,7 @@ from advplay.utils import load_files
 
 class PoisoningEvaluator(BaseAttackEvaluator, attack_type=available_attacks.POISONING, attack_subtype=None):
     def evaluate(self, context: PoisoningEvaluationContext):
-        evaluator_cls = BaseEvaluator.registry.get(context.training_framework)
+        evaluator_cls = BaseEvaluator.get(context.training_framework, context.model)
         X_test = context.X_test
         y_test = context.y_test
 
