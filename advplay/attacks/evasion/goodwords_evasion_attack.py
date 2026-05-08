@@ -45,12 +45,22 @@ class GoodwordsEvasionAttack(EvasionAttack, attack_type=available_attacks.EVASIO
 
         labels_unique = np.unique(self.true_labels)
         label_map = {lbl: i for i, lbl in enumerate(labels_unique)}
-        for name, value in (("source", self.source), ("target", self.target)):
-            if value not in label_map:
-                raise ValueError(f"{name} '{value}' not found in dataset labels {list(label_map.keys())}")
+        if self.source not in label_map:
+            raise ValueError(f"source '{self.source}' not found in dataset labels {list(label_map.keys())}")
+        if self.target not in label_map:
+            label_map[self.target] = len(label_map)
 
-        source_idx = int(np.where(model.classes_ == label_map[self.source])[0][0])
-        target_idx = int(np.where(model.classes_ == label_map[self.target])[0][0])
+        def _resolve_class_idx(value):
+            matches = np.where(model.classes_ == value)[0]
+            if len(matches):
+                return int(matches[0])
+            matches = np.where(model.classes_ == label_map[value])[0]
+            if len(matches):
+                return int(matches[0])
+            raise ValueError(f"Could not map label '{value}' to model.classes_={list(model.classes_)}")
+
+        source_idx = _resolve_class_idx(self.source)
+        target_idx = _resolve_class_idx(self.target)
 
         feature_names = vectorizer.get_feature_names_out()
         source_log_probs = model.feature_log_prob_[source_idx]
@@ -90,7 +100,7 @@ class GoodwordsEvasionAttack(EvasionAttack, attack_type=available_attacks.EVASIO
             augmented = np.array([s + suffix for s in samples])
 
             source_preds = model.predict(vectorizer.transform(augmented[source_mask]))
-            evaded = int(np.sum(source_preds == target_idx))
+            evaded = int(np.sum(source_preds == model.classes_[target_idx]))
             evasion_rate = (evaded / n_source) * 100
 
             rates_per_count.append({
