@@ -46,7 +46,8 @@ def expected_json(label_flipping_template_data):
         "override": label_flipping_template_data["override"],
         'model_configuration': {},
         'model_path': None,
-        'preprocessing': None
+        'preprocessing': None,
+        'denormalization': None
 }
 
 @pytest.fixture

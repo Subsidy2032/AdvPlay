@@ -10,6 +10,7 @@ from advplay.utils import load_files
 from advplay.ml.data.dataset_loaders.loaded_dataset import LoadedDataset
 from advplay.ml.data.dataset_savers.base_dataset_saver import BaseDatasetSaver
 from advplay.ml.data.preprocessors.base_preprocessor import BasePreprocessor
+from advplay.ml.data.denormalizers.base_denormalizer import BaseDenormalizer
 from advplay.ml.models.model_savers.base_model_saver import BaseModelSaver
 
 class FullPipelineOrchestrator(BaseOrchestrator):
@@ -26,7 +27,8 @@ class FullPipelineOrchestrator(BaseOrchestrator):
         else:
             template = template_name
 
-        preprocessors = self._build_preprocessors(template.get("preprocessing"))
+        preprocessing_spec = template.get("preprocessing")
+        preprocessors = self._build_pipeline(preprocessing_spec, BasePreprocessor, "preprocessor")
         kwargs = self._apply_preprocessors(preprocessors, kwargs)
 
         key = (attack_type, attack_subtype)
@@ -47,6 +49,17 @@ class FullPipelineOrchestrator(BaseOrchestrator):
         }
         self.logger.log(log_entry)
 
+        denormalization_spec = template.get("denormalization")
+        if denormalization_spec is not None:
+            denormalizers = self._build_pipeline(denormalization_spec, BaseDenormalizer, "denormalizer")
+        else:
+            denormalizers = self._build_default_denormalizers(preprocessing_spec)
+
+        if denormalizers:
+            datasets = [(self._apply_denormalizers(denormalizers, ds), path) for ds, path in datasets]
+            if visualization_context is not None:
+                visualization_context.denormalize(denormalizers)
+
         for loaded_dataset, dataset_path in datasets:
             saver_cls = BaseDatasetSaver.registry.get(loaded_dataset.source_type)
             saver = saver_cls(loaded_dataset.data, loaded_dataset.metadata, Path(dataset_path))
@@ -60,13 +73,10 @@ class FullPipelineOrchestrator(BaseOrchestrator):
             self.visualizer.visualize(visualization_context)
 
     @staticmethod
-    def _build_preprocessors(spec):
-        if not spec:
-            return []
-
+    def _extract_entries(spec, label):
         if isinstance(spec, dict):
-            entries = list(spec.items())
-        elif isinstance(spec, list):
+            return list(spec.items())
+        if isinstance(spec, list):
             entries = []
             for entry in spec:
                 if isinstance(entry, str):
@@ -79,26 +89,42 @@ class FullPipelineOrchestrator(BaseOrchestrator):
                         entries.append((name, params or {}))
                     else:
                         raise ValueError(
-                            "Preprocessing list entries must be a name, a single-key "
+                            f"{label} list entries must be a name, a single-key "
                             "{name: params} mapping, or a {'name': ..., 'params': ...} object"
                         )
                 else:
                     raise TypeError(
-                        f"Preprocessing list entries must be a string or dict, got {type(entry).__name__}"
+                        f"{label} list entries must be a string or dict, got {type(entry).__name__}"
                     )
-        else:
-            raise TypeError(
-                f"Preprocessing spec must be a list or dict, got {type(spec).__name__}"
-            )
+            return entries
+        raise TypeError(f"{label} spec must be a list or dict, got {type(spec).__name__}")
 
-        preprocessors = []
+    @staticmethod
+    def _build_pipeline(spec, base_cls, label):
+        if not spec:
+            return []
+        entries = FullPipelineOrchestrator._extract_entries(spec, label.capitalize())
+        instances = []
         for name, params in entries:
-            cls = BasePreprocessor.registry.get(name)
+            cls = base_cls.registry.get(name)
             if cls is None:
-                raise ValueError(f"Unknown preprocessor '{name}'. "
-                                 f"Available: {sorted(BasePreprocessor.registry.keys())}")
-            preprocessors.append(cls(**(params or {})))
-        return preprocessors
+                raise ValueError(f"Unknown {label} '{name}'. "
+                                 f"Available: {sorted(base_cls.registry.keys())}")
+            instances.append(cls(**(params or {})))
+        return instances
+
+    @staticmethod
+    def _build_default_denormalizers(preprocessing_spec):
+        if not preprocessing_spec:
+            return []
+        entries = FullPipelineOrchestrator._extract_entries(preprocessing_spec, "Preprocessing")
+        denormalizers = []
+        for name, params in reversed(entries):
+            cls = BaseDenormalizer.registry.get(name)
+            if cls is None:
+                continue
+            denormalizers.append(cls(**(params or {})))
+        return denormalizers
 
     @staticmethod
     def _apply_preprocessors(preprocessors, kwargs):
@@ -112,3 +138,9 @@ class FullPipelineOrchestrator(BaseOrchestrator):
                 value = preprocessor.apply(value)
             out[key] = value
         return out
+
+    @staticmethod
+    def _apply_denormalizers(denormalizers, dataset):
+        for denormalizer in denormalizers:
+            dataset = denormalizer.apply(dataset)
+        return dataset

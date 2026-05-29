@@ -15,6 +15,7 @@ class PoisoningAttack(BaseAttack, ABC, attack_type=available_attacks.POISONING, 
     model: Annotated[str, BaseAttack.COMMON_TEMPLATE_PARAMETERS['model']]
     training_configuration: Annotated[dict, BaseAttack.COMMON_TEMPLATE_PARAMETERS['training_configuration']]
     preprocessing: Annotated[dict, BaseAttack.COMMON_TEMPLATE_PARAMETERS['preprocessing']]
+    denormalization: Annotated[dict, BaseAttack.COMMON_TEMPLATE_PARAMETERS['denormalization']]
     test_portion: Annotated[float, TemplateParam(type=float, required=True, default=0.2,
                                                  help='Portion of the dataset to be used for testing')]
     min_portion_to_poison: Annotated[float, TemplateParam(type=float, required=True, default=0.1,

@@ -35,7 +35,14 @@ class BaseAttack(ABC):
                                             'datasets before the attack runs. The JSON top-level may be a list '
                                             '(ordered chain; each entry is a preprocessor name or '
                                             '{"name": <name>, "params": {...}}) or a dict mapping '
-                                            'preprocessor name to its params (order preserved).')
+                                            'preprocessor name to its params (order preserved).'),
+        "denormalization": TemplateParam(type=dict, required=False, default=None,
+                                         help='Path to a JSON file describing denormalization steps applied to '
+                                              'output datasets before saving and to the visualization context '
+                                              'before visualization. Same JSON shape as preprocessing. If omitted, '
+                                              'the orchestrator auto-builds the inverse from preprocessing: '
+                                              'preprocessors are walked in reverse, and each name is looked up in '
+                                              'the denormalizer registry; missing entries are skipped.')
     }
 
     COMMON_ATTACK_PARAMETERS = {

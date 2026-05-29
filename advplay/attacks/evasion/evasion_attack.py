@@ -25,6 +25,7 @@ class EvasionAttack(BaseAttack, ABC, attack_type=available_attacks.EVASION, atta
                                         choices=lambda: list({k for k in MODEL_REGISTRY.keys() if k is not None}))]
     training_configuration: Annotated[dict, BaseAttack.COMMON_TEMPLATE_PARAMETERS['training_configuration']]
     preprocessing: Annotated[dict, BaseAttack.COMMON_TEMPLATE_PARAMETERS['preprocessing']]
+    denormalization: Annotated[dict, BaseAttack.COMMON_TEMPLATE_PARAMETERS['denormalization']]
     model_configuration: Annotated[dict, TemplateParam(type=dict, required=True, default={},
                                                        help="The configurations of the model")]
     data_type: Annotated[str, TemplateParam(type=str, required=False, default="image", help="The data type",
