@@ -37,13 +37,16 @@ class EvasionAttack(BaseAttack, ABC, attack_type=available_attacks.EVASION, atta
 
     template: Annotated[str, BaseAttack.COMMON_ATTACK_PARAMETERS['template']]
     samples: Annotated[LoadedDataset, AttackParam(type=LoadedDataset, required=False, default=None,
-                                                  help="Samples to run evasions on. Pairs with --true-labels.")]
+                                                  help="Samples to run evasions on. Pairs with --true-labels. "
+                                                       "Format: '[loader:]path' (prefix overrides extension-based loader lookup).")]
     confidence: Annotated[float, AttackParam(type=float, required=False, default=0.1,
                                              help="Higher value for more noticeable and robust perturbation")]
     true_labels: Annotated[LoadedDataset, AttackParam(type=LoadedDataset, required=False, default=None,
-                                                      help="The true labels of the provided samples. Pairs with --samples.")]
+                                                      help="The true labels of the provided samples. Pairs with --samples. "
+                                                           "Format: '[loader:]path' (prefix overrides extension-based loader lookup).")]
     dataset: Annotated[LoadedDataset, AttackParam(type=LoadedDataset, required=False, default=None,
-                                                   help="Combined dataset with samples and labels in one file. Requires --label-column.")]
+                                                   help="Combined dataset with samples and labels in one file. Requires --label-column. "
+                                                        "Format: '[loader:]path' (prefix overrides extension-based loader lookup).")]
     label_column: Annotated[Union[int, str], BaseAttack.COMMON_ATTACK_PARAMETERS['label_column']]
     target_label: Annotated[int, AttackParam(type=int, required=False, default=None,
                                              help="Target labels for misclassification")]

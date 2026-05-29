@@ -41,9 +41,15 @@ class BaseAttack(ABC):
     COMMON_ATTACK_PARAMETERS = {
         "template": AttackParam(type=str, required=True, default=None,
                                 help="The name of the template for the attack"),
-        "dataset": AttackParam(type=LoadedDataset, required=False, default=None, help='Dataset to poison'),
-        "features_dataset": AttackParam(type=LoadedDataset, required=False, default=None, help='Examples dataset'),
-        "labels_array": AttackParam(type=LoadedDataset, required=False, default=None, help='Dataset to poison'),
+        "dataset": AttackParam(type=LoadedDataset, required=False, default=None,
+                                help="Dataset to poison. Format: '[loader:]path' "
+                                     "(prefix overrides extension-based loader lookup)."),
+        "features_dataset": AttackParam(type=LoadedDataset, required=False, default=None,
+                                        help="Examples dataset. Format: '[loader:]path' "
+                                             "(prefix overrides extension-based loader lookup)."),
+        "labels_array": AttackParam(type=LoadedDataset, required=False, default=None,
+                                    help="Dataset to poison. Format: '[loader:]path' "
+                                         "(prefix overrides extension-based loader lookup)."),
         "label_column": AttackParam(type=(int, str), required=False, default=None,
                                     help='The name of the label column'),
         "seed": AttackParam(type=int, required=False, default=None, help='Seed for reproduction'),

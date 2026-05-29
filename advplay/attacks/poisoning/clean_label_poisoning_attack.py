@@ -16,7 +16,9 @@ from advplay.attack_evaluators.contexts.clean_label_poisoning_evaluation_context
 class CleanLabelPoisoningAttack(PoisoningAttack,
                                     attack_type=available_attacks.POISONING,
                                     attack_subtype=poisoning_techniques.CLEAN_LABEL):
-    indices_to_poison: Annotated[LoadedDataset, AttackParam(type=LoadedDataset, required=True, default=None, help="The indices of the examples to poison")]
+    indices_to_poison: Annotated[LoadedDataset, AttackParam(type=LoadedDataset, required=True, default=None,
+                                                             help="The indices of the examples to poison. "
+                                                                  "Format: '[loader:]path' (prefix overrides extension-based loader lookup).")]
     attack_configuration: Annotated[dict, AttackParam(type=dict, required=True, default={}, help="Path to a JSON config of kwargs for ART's FeatureCollisionAttack (must include feature_layer)")]
 
     def execute(self):

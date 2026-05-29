@@ -38,17 +38,23 @@ class PoisoningAttack(BaseAttack, ABC, attack_type=available_attacks.POISONING, 
     features_dataset: Annotated[LoadedDataset, BaseAttack.COMMON_ATTACK_PARAMETERS['features_dataset']]
     labels_array: Annotated[LoadedDataset, BaseAttack.COMMON_ATTACK_PARAMETERS['labels_array']]
     train_dataset: Annotated[LoadedDataset, AttackParam(type=LoadedDataset, required=False, default=None,
-                                                        help='Pre-split training dataset (combined with labels). Pairs with --test-dataset.')]
+                                                        help="Pre-split training dataset (combined with labels). Pairs with --test-dataset. "
+                                                             "Format: '[loader:]path' (prefix overrides extension-based loader lookup).")]
     test_dataset: Annotated[LoadedDataset, AttackParam(type=LoadedDataset, required=False, default=None,
-                                                       help='Pre-split test dataset (combined with labels). Pairs with --train-dataset.')]
+                                                       help="Pre-split test dataset (combined with labels). Pairs with --train-dataset. "
+                                                            "Format: '[loader:]path' (prefix overrides extension-based loader lookup).")]
     train_features_dataset: Annotated[LoadedDataset, AttackParam(type=LoadedDataset, required=False, default=None,
-                                                                  help='Pre-split training features. Pairs with --train-labels-array and matching test datasets.')]
+                                                                  help="Pre-split training features. Pairs with --train-labels-array and matching test datasets. "
+                                                                       "Format: '[loader:]path' (prefix overrides extension-based loader lookup).")]
     train_labels_array: Annotated[LoadedDataset, AttackParam(type=LoadedDataset, required=False, default=None,
-                                                              help='Pre-split training labels. Pairs with --train-features-dataset.')]
+                                                              help="Pre-split training labels. Pairs with --train-features-dataset. "
+                                                                   "Format: '[loader:]path' (prefix overrides extension-based loader lookup).")]
     test_features_dataset: Annotated[LoadedDataset, AttackParam(type=LoadedDataset, required=False, default=None,
-                                                                 help='Pre-split test features. Pairs with --test-labels-array.')]
+                                                                 help="Pre-split test features. Pairs with --test-labels-array. "
+                                                                      "Format: '[loader:]path' (prefix overrides extension-based loader lookup).")]
     test_labels_array: Annotated[LoadedDataset, AttackParam(type=LoadedDataset, required=False, default=None,
-                                                             help='Pre-split test labels. Pairs with --test-features-dataset.')]
+                                                             help="Pre-split test labels. Pairs with --test-features-dataset. "
+                                                                  "Format: '[loader:]path' (prefix overrides extension-based loader lookup).")]
     label_column: Annotated[Union[int, str], BaseAttack.COMMON_ATTACK_PARAMETERS['label_column']]
     source: Annotated[Union[int, str], AttackParam(type=(int, str), required=False, default=None,
                                                    help='Source class to poison')]

@@ -67,9 +67,17 @@ def cast_parameter(parameter, type):
         return parameter
 
     if type == LoadedDataset:
+        loader_cls = None
+        if isinstance(parameter, str) and ":" in parameter:
+            prefix, _, rest = parameter.partition(":")
+            if prefix in BaseDatasetLoader.registry:
+                loader_cls = BaseDatasetLoader.registry[prefix]
+                parameter = rest
+
         if not Path(parameter).is_file():
             parameter = paths.DATASETS / f"{parameter}"
-        loader_cls = BaseDatasetLoader.registry.get(os.path.splitext(parameter)[1][1:])
+        if loader_cls is None:
+            loader_cls = BaseDatasetLoader.registry.get(os.path.splitext(parameter)[1][1:])
         loader = loader_cls(parameter)
         dataset = loader.load()
         return dataset
