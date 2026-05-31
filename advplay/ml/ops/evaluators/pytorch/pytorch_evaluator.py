@@ -24,6 +24,15 @@ class PyTorchEvaluator(BaseEvaluator, framework=available_frameworks.PYTORCH, mo
 
         return y_pred
 
+    def predict_proba(self, X: np.ndarray) -> np.ndarray:
+        X_tensor = torch.tensor(X, dtype=torch.float32).to(self.device)
+
+        with torch.no_grad():
+            outputs = self.model(X_tensor)
+            probabilities = torch.softmax(outputs, dim=1).cpu().numpy()
+
+        return probabilities
+
     def accuracy(self, X: np.ndarray, y_test: np.ndarray):
         y_pred = self.predict(X)
         y_test_flat = np.ravel(y_test)

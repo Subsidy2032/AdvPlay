@@ -123,7 +123,7 @@ class EvasionAttack(BaseAttack, ABC, attack_type=available_attacks.EVASION, atta
             attack_instance = attack_class(wrapper, **kwargs)
             perturbed_samples = attack_instance.generate(x=self.samples_data)
 
-        context = EvasionEvaluationContext(self.model, None, None, self.training_framework, self.training_configuration, self.model_path, self.samples_data, perturbed_samples, self.target_label)
+        context = EvasionEvaluationContext(self.model, None, None, self.training_framework, self.training_configuration, self.model_path, self.samples_data, perturbed_samples, self.target_label, true_labels=self.true_labels)
 
         dataset_name = self.samples.metadata["dataset_name"]
         dataset_path = paths.DATASETS / 'perturbed_datasets' / dataset_name

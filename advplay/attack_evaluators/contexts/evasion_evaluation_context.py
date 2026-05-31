@@ -9,3 +9,4 @@ class EvasionEvaluationContext(BaseEvaluationContext):
     samples_data: np.array
     perturbed_samples: np.array
     target_label: int
+    true_labels: np.array = None
