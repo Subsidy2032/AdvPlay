@@ -44,8 +44,8 @@ class available_models():
 
     CNN: str = 'cnn'
     MNIST_CNN: str = 'mnist_cnn'
+    CIFAR10_CNN: str = 'cifar10_cnn'
     SIMPLE_CLASSIFIER: str = 'simple_classifier'
-    DEEPFOOL_MASKED_CLASSIFIER: str = 'deepfool_masked_classifier'
 
 class default_template_file_names():
     CUSTOM_INSTRUCTIONS: str = 'custom_instructions'
