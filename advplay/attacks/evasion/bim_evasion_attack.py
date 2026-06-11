@@ -6,7 +6,7 @@ from advplay.attacks.attack_param import AttackParam
 from advplay.attacks.evasion.evasion_attack import EvasionAttack
 from advplay.variables import available_attacks, evasion_techniques
 
-class BMIEvasionAttack(EvasionAttack, attack_type=available_attacks.EVASION, attack_subtype=evasion_techniques.BMI):
+class BIMEvasionAttack(EvasionAttack, attack_type=available_attacks.EVASION, attack_subtype=evasion_techniques.BIM):
     eps: Annotated[float, AttackParam(type=float, required=False, default=0.01,
                                       help="Maximum perturbation allowed")]
     eps_step: Annotated[float, AttackParam(type=float, required=False, default=0.001, help="Step size")]

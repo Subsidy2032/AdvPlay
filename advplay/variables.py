@@ -27,7 +27,7 @@ class poisoning_techniques():
 
 class evasion_techniques():
     FGSM: str = 'fgsm'
-    BMI: str = 'bmi'
+    BIM: str = 'bim'
     JSMA: str = 'jsma'
     C_W: str = 'c_w'
     PGD: str = 'pgd'

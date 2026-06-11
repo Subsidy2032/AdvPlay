@@ -5,14 +5,14 @@ from advplay.attack_evaluators.base_attack_evaluator import BaseAttackEvaluator
 from advplay.attack_evaluators.contexts.evasion_evaluation_context import EvasionEvaluationContext
 from advplay.ml.ops.evaluators.base_evaluator import BaseEvaluator
 from advplay.ml.models.model_loaders.base_model_loader import BaseModelLoader
-from advplay.visualization.contexts.fgsm_evasion_visualization_context import FGSMEvasionVisualizationContext
+from advplay.visualization.contexts.bim_evasion_visualization_context import BIMEvasionVisualizationContext
 from advplay.variables import available_attacks, evasion_techniques
 from advplay import paths
 
 
-class FGSMEvasionEvaluator(BaseAttackEvaluator,
-                           attack_type=available_attacks.EVASION,
-                           attack_subtype=evasion_techniques.FGSM):
+class BIMEvasionEvaluator(BaseAttackEvaluator,
+                          attack_type=available_attacks.EVASION,
+                          attack_subtype=evasion_techniques.BIM):
     def evaluate(self, context: EvasionEvaluationContext):
         model_path = context.model_path
         clean_samples = np.asarray(context.samples_data)
@@ -112,7 +112,7 @@ class FGSMEvasionEvaluator(BaseAttackEvaluator,
         candidates = np.flatnonzero(success_mask)
         example_index = int(candidates[0]) if candidates.size else 0
 
-        return FGSMEvasionVisualizationContext(
+        return BIMEvasionVisualizationContext(
             base_accuracy=None,
             targeted=targeted,
             example_clean=clean_samples[example_index],
@@ -127,7 +127,7 @@ class FGSMEvasionEvaluator(BaseAttackEvaluator,
 
     @staticmethod
     def _print_summary(results):
-        print("FGSM evasion evaluation summary:")
+        print("BIM evasion evaluation summary:")
         mode = "targeted" if results["targeted"] else "untargeted"
         print(f"  Mode: {mode}" + (f" (target = {results['target_label']})" if results["targeted"] else ""))
         print(f"  Samples evaluated:            {results['num_samples']}")
