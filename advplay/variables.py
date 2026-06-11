@@ -32,6 +32,7 @@ class evasion_techniques():
     C_W: str = 'c_w'
     PGD: str = 'pgd'
     GOODWORDS: str = 'goodwords'
+    DEEPFOOL: str = 'deepfool'
 
 class prompt_injection_techniques():
     DIRECT: str = 'direct'
@@ -44,6 +45,7 @@ class available_models():
     CNN: str = 'cnn'
     MNIST_CNN: str = 'mnist_cnn'
     SIMPLE_CLASSIFIER: str = 'simple_classifier'
+    DEEPFOOL_MASKED_CLASSIFIER: str = 'deepfool_masked_classifier'
 
 class default_template_file_names():
     CUSTOM_INSTRUCTIONS: str = 'custom_instructions'
