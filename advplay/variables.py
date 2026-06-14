@@ -33,6 +33,7 @@ class evasion_techniques():
     PGD: str = 'pgd'
     GOODWORDS: str = 'goodwords'
     DEEPFOOL: str = 'deepfool'
+    ELASTICNET: str = 'elasticnet'
 
 class prompt_injection_techniques():
     DIRECT: str = 'direct'
