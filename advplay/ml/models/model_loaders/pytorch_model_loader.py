@@ -22,7 +22,11 @@ class TorchModelLoader(BaseModelLoader, framework=available_frameworks.PYTORCH):
             training_kwargs = (self.config or {}).get("training") or {}
             kwargs = self._filter_init_kwargs(self.model_class, training_kwargs)
             model = self.model_class(**kwargs)
-            model.load_state_dict(torch.load(self.model_path, map_location=self.map_location))
+            checkpoint = torch.load(self.model_path, map_location=self.map_location)
+            # Accept either a bare state_dict or a checkpoint wrapping it under "state_dict".
+            if isinstance(checkpoint, dict) and "state_dict" in checkpoint:
+                checkpoint = checkpoint["state_dict"]
+            model.load_state_dict(checkpoint)
         except Exception as e:
             raise AttributeError(f"Failed loading model: {self.model_path}. Error: {e}")
 

@@ -5,15 +5,15 @@ from advplay.ml.data.dataset_loaders.loaded_dataset import LoadedDataset
 
 
 class MnistNormalizer(BasePreprocessor, name="mnist_normalizer"):
-    PIXEL_SCALE = 255.0
     MEAN = 0.1307
     STD = 0.3081
     IMAGE_SIZE = 28 * 28
 
     def normalize(self, x):
+        # Input is expected in the [0, 1] range (already scaled out of pixel units).
         if isinstance(x, np.ndarray):
             x = x.astype(np.float32, copy=False)
-        return (x / self.PIXEL_SCALE - self.MEAN) / self.STD
+        return (x - self.MEAN) / self.STD
 
     def apply(self, dataset: LoadedDataset) -> LoadedDataset:
         data = np.asarray(dataset.data)

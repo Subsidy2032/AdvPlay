@@ -45,8 +45,10 @@ class available_models():
 
     CNN: str = 'cnn'
     MNIST_CNN: str = 'mnist_cnn'
+    MNIST_CLASSIFIER: str = 'mnist_classifier'
     CIFAR10_CNN: str = 'cifar10_cnn'
     SIMPLE_CLASSIFIER: str = 'simple_classifier'
+    RESNET_CIFAR: str = 'resnet_cifar'
 
 class default_template_file_names():
     CUSTOM_INSTRUCTIONS: str = 'custom_instructions'
