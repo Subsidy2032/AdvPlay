@@ -1,0 +1,10 @@
+# Documentation site tooling (see mkdocs.yml).
+# Install with:  pip install -r requirements-docs.txt
+# The project's runtime deps (requirements.txt) must already be installed, because
+# the CLI-reference generator imports the attack registry to read its metadata.
+mkdocs
+mkdocs-material
+mkdocstrings[python]
+mkdocs-gen-files
+mkdocs-literate-nav
+mkdocs-section-index

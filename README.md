@@ -1,6 +1,10 @@
 ## AdvPlay
 
+[![Documentation](https://img.shields.io/badge/docs-online-blue)](https://subsidy2032.github.io/AdvPlay/)
+
 AdvPlay is a framework for running adversarial AI attacks with tunable parameters and reproducible results. Designed for red team assessments and research purposes, it helps security professionals evaluate model robustness against attacks.
+
+📖 **Documentation:** <https://subsidy2032.github.io/AdvPlay/> — includes a full CLI reference (every attack and its parameters) and a Python API reference.
 
 ## Disclaimer
 

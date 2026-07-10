@@ -1,3 +1,4 @@
+"""Orchestrator that wires an attack through evaluation, logging, and saving."""
 from pathlib import Path
 
 from advplay.orchestrators.base_orchestrator import BaseOrchestrator
@@ -14,12 +15,34 @@ from advplay.ml.data.denormalizers.base_denormalizer import BaseDenormalizer
 from advplay.ml.models.model_savers.base_model_saver import BaseModelSaver
 
 class FullPipelineOrchestrator(BaseOrchestrator):
+    """Run the full attack pipeline: preprocess, attack, evaluate, log, denormalize, save.
+
+    Args:
+        evaluator: Computes metrics from the attack's output (may be ``None``).
+        logger: Records the command, attack result, and evaluation.
+        visualizer: Renders the results (may be ``None``).
+    """
+
     def __init__(self, evaluator: BaseAttackEvaluator, logger: BaseLogger, visualizer: BaseVisualizer):
         self.evaluator = evaluator
         self.logger = logger
         self.visualizer = visualizer
 
     def run(self, attack_type, attack_subtype, template_name, command, **kwargs):
+        """Execute one attack end to end.
+
+        Loads the template (applying any preprocessing pipeline to dataset inputs), runs the
+        registered attack, evaluates and logs the result, denormalizes output datasets
+        (explicitly or by inverting the preprocessing), then saves datasets and models and
+        visualizes the outcome.
+
+        Args:
+            attack_type: Attack category (e.g. ``"evasion"``).
+            attack_subtype: Specific technique, or ``None``.
+            template_name: Template name to load, or an already-parsed template dict.
+            command: The full CLI command string, recorded in the log.
+            **kwargs: Run-time attack parameters passed through to the attack.
+        """
         default_path = paths.TEMPLATES / attack_type
         if isinstance(template_name, str):
             template = load_files.load_json(default_path, template_name)

@@ -1,0 +1,77 @@
+site_name: AdvPlay
+site_description: Practice machine learning attacks from the command line.
+site_url: https://subsidy2032.github.io/AdvPlay/
+repo_url: https://github.com/Subsidy2032/AdvPlay
+repo_name: Subsidy2032/AdvPlay
+edit_uri: edit/master/docs/
+docs_dir: docs
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.sections
+    - navigation.top
+    - navigation.instant
+    - content.code.copy
+    - search.suggest
+
+plugins:
+  - search
+  - gen-files:
+      scripts:
+        - scripts/gen_cli_reference.py
+        - scripts/gen_api_pages.py
+  - literate-nav:
+      nav_file: SUMMARY.md
+  - section-index
+  - mkdocstrings:
+      handlers:
+        python:
+          # `advplay` is a PEP-420 namespace package (no top-level __init__.py);
+          # searching from the repo root lets Griffe resolve advplay.* identifiers.
+          paths: ["."]
+          options:
+            docstring_style: google
+            # The codebase is largely untyped; don't fail the strict build just because a
+            # documented parameter/return has no type hint yet (broken links still fail).
+            docstring_options:
+              warn_missing_types: false
+            members_order: source
+            # Render the module name as the page's H1 (the stub adds no heading of its own).
+            heading_level: 1
+            show_root_heading: true
+            show_source: true
+            # Most of the codebase has no docstrings yet; still render the signatures
+            # so the API reference is useful and fills in as docstrings are added.
+            show_if_no_docstring: true
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+
+nav:
+  - Home: index.md
+  - Get started: "Get Started/Get Started.md"
+  - Guides:
+      - Extending AdvPlay: "Extending AdvPlay/Extending AdvPlay.md"
+      - Prompt injection: "knowledge/techniques/Prompt Injection.md"
+      - Disclaimer: "knowledge/techniques/DISCLAIMER.md"
+  - CLI reference: cli/
+  - API reference: reference/

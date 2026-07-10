@@ -1,3 +1,9 @@
+"""Base attack class and the shared parameter/registry machinery.
+
+Every attack subclasses ``BaseAttack`` and is discovered automatically through the
+registry. Parameters declared with ``Annotated[..., TemplateParam(...)]`` or
+``Annotated[..., AttackParam(...)]`` become CLI flags with no changes to ``run.py``.
+"""
 from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import get_args, get_type_hints
@@ -13,6 +19,20 @@ from advplay.ml.data.preprocessors.base_preprocessor import BasePreprocessor
 from advplay.ml.models.architecture.registry import MODEL_REGISTRY
 
 class BaseAttack(ABC):
+    """Base class for every attack, wiring parameters, templates, and the registry.
+
+    Subclasses register themselves by passing ``attack_type`` and ``attack_subtype`` when
+    they are defined (see ``__init_subclass__``). Parameters are declared as
+    ``Annotated`` class attributes and sorted into two groups: ``TEMPLATE_PARAMETERS``
+    (saved into a reusable template file) and ``ATTACK_PARAMETERS`` (supplied per run).
+
+    Attributes:
+        registry: Maps ``(attack_type, attack_subtype)`` to the attack class.
+        techniques_per_attack: Maps an ``attack_type`` to its list of registered subtypes.
+        COMMON_TEMPLATE_PARAMETERS: Reusable template params shared across attacks.
+        COMMON_ATTACK_PARAMETERS: Reusable run-time params shared across attacks.
+    """
+
     registry = {}
     techniques_per_attack = {}
 
@@ -69,6 +89,12 @@ class BaseAttack(ABC):
     }
 
     def __init_subclass__(cls, attack_type: str, attack_subtype, **kwargs):
+        """Register the subclass and collect its declared parameters.
+
+        Args:
+            attack_type: Category the attack belongs to (e.g. ``"evasion"``).
+            attack_subtype: Specific technique, or ``None`` for a category base class.
+        """
         super().__init_subclass__(**kwargs)
         cls.attack_type = attack_type
         cls.attack_subtype = attack_subtype
@@ -94,6 +120,15 @@ class BaseAttack(ABC):
         cls.ATTACK_PARAMETERS = attack_params
 
     def __init__(self, template: dict, **kwargs):
+        """Populate parameters from a template plus run-time keyword arguments.
+
+        Template fields fall back to each ``TemplateParam`` default and run-time values to
+        each ``AttackParam`` default. Logging is set up and template inputs are validated.
+
+        Args:
+            template: Parsed template dict (the saved configuration).
+            **kwargs: Run-time attack parameters (the ``ATTACK_PARAMETERS`` values).
+        """
         for key, meta in self.TEMPLATE_PARAMETERS.items():
             value = template.get(key)
             if value is None:
@@ -111,17 +146,27 @@ class BaseAttack(ABC):
         self.validate_template_inputs()
 
     def setup_logging(self):
+        """Compute the per-attack log file path and create its parent directory."""
         filename = getattr(self, "log_filename", datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
         self.log_file_path = paths.LOGS / f"{self.attack_type}" / f"{filename}.log"
         self.log_file_path.parent.mkdir(parents=True, exist_ok=True)
 
     def build(self):
+        """Save the current template parameter values to a template file."""
         template_values = {key: getattr(self, key)
                            for key in getattr(self.__class__, "TEMPLATE_PARAMETERS", {})
                            if key != "template_filename"}
         self.save_template(self.template_filename, template_values)
 
     def save_template(self, filename: str, template: dict):
+        """Write a template to ``<templates>/<attack_type>/<filename>.json``.
+
+        Prompts for confirmation before overwriting an existing file.
+
+        Args:
+            filename: Template name, without extension.
+            template: Template fields to serialize as JSON.
+        """
         template_json = json.dumps(template, indent=4)
         filename = paths.TEMPLATES / self.attack_type / f"{filename}.json"
 
@@ -147,6 +192,12 @@ class BaseAttack(ABC):
 
     @abstractmethod
     def execute(self):
+        """Run the attack.
+
+        Returns:
+            The attack's output, typically an ``(attack_results, context, datasets)`` tuple
+            that the orchestrator forwards to evaluation, logging, and dataset/model saving.
+        """
         raise NotImplementedError("Subclasses must implement the execute method.")
 
     def _extract(self, combined, features_ds, labels_ds):
@@ -166,6 +217,7 @@ class BaseAttack(ABC):
         return X, np.asarray(y_raw).ravel()
 
     def load_train_arrays(self):
+        """Return the training ``(features, labels)`` arrays, from combined or split inputs."""
         return self._extract(
             self.train_dataset if self.train_dataset is not None else self.dataset,
             self.train_features_dataset if self.train_features_dataset is not None else self.features_dataset,
@@ -173,6 +225,7 @@ class BaseAttack(ABC):
         )
 
     def load_test_arrays(self):
+        """Return the test ``(features, labels)`` arrays, or ``(None, None)`` if not pre-split."""
         if not self.pre_split:
             return None, None
         return self._extract(self.test_dataset, self.test_features_dataset, self.test_labels_array)
