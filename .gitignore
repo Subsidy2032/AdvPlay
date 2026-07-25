@@ -10,6 +10,7 @@ templates/
 logs/
 .env
 outputs/
+local/
 
 # MkDocs build output
 site/
