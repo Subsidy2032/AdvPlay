@@ -11,6 +11,7 @@ from advplay.attacks.base_attack import BaseAttack
 from advplay.utils.list_templates import list_template_names, list_template_contents
 from advplay.ml.data.dataset_loaders.loaded_dataset import LoadedDataset
 from advplay.orchestrators.full_pipeline_orchestrator import FullPipelineOrchestrator
+from advplay.orchestrators.base_orchestrator import BaseOrchestrator
 from advplay.attack_evaluators.base_attack_evaluator import BaseAttackEvaluator
 from advplay.loggers.json_logger import JsonLogger
 from advplay.visualization.base_visualizer import BaseVisualizer
@@ -40,7 +41,7 @@ def perform_action(args, command):
         builder.build()
 
     elif args.command == commands.ATTACK:
-        parameters = {k: v for k, v in kwargs.items() if k not in (commands.COMMAND, commands.ATTACK_TYPE, commands.TECHNIQUE, 'template')}
+        parameters = {k: v for k, v in kwargs.items() if k not in (commands.COMMAND, commands.ATTACK_TYPE, commands.TECHNIQUE, 'template', 'orchestrator')}
         attack_subtype = kwargs.get(commands.TECHNIQUE)
 
         for key, value in parameters.items():
@@ -59,7 +60,8 @@ def perform_action(args, command):
         visualizer_cls = BaseVisualizer.get(attack_type, attack_subtype)
         visualizer = visualizer_cls() if visualizer_cls else None
 
-        orchestrator = FullPipelineOrchestrator(evaluator, logger, visualizer)
+        orchestrator_cls = BaseOrchestrator.registry.get(kwargs.get('orchestrator'), FullPipelineOrchestrator)
+        orchestrator = orchestrator_cls(evaluator, logger, visualizer)
         orchestrator.run(attack_type, attack_subtype, template_name, command, **parameters)
 
 def cast_parameter(parameter, type):
@@ -74,7 +76,8 @@ def cast_parameter(parameter, type):
                 loader_cls = BaseDatasetLoader.registry[prefix]
                 parameter = rest
 
-        if not Path(parameter).is_file():
+        # Directory datasets (a folder of PNGs) count as much as a single file here.
+        if not Path(parameter).exists():
             parameter = paths.DATASETS / f"{parameter}"
         if loader_cls is None:
             loader_cls = BaseDatasetLoader.registry.get(os.path.splitext(parameter)[1][1:])

@@ -14,7 +14,7 @@ from advplay.ml.data.preprocessors.base_preprocessor import BasePreprocessor
 from advplay.ml.data.denormalizers.base_denormalizer import BaseDenormalizer
 from advplay.ml.models.model_savers.base_model_saver import BaseModelSaver
 
-class FullPipelineOrchestrator(BaseOrchestrator):
+class FullPipelineOrchestrator(BaseOrchestrator, name="full_pipeline"):
     """Run the full attack pipeline: preprocess, attack, evaluate, log, denormalize, save.
 
     Args:

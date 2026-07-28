@@ -11,6 +11,7 @@ from advplay.utils.load_classes import load_required_classes
 from advplay.ml.ops.trainers.base_trainer import BaseTrainer
 from advplay.attacks.base_attack import BaseAttack
 from advplay.visualization.base_visualizer import BaseVisualizer
+from advplay.orchestrators.base_orchestrator import BaseOrchestrator
 
 def main():
     load_required_classes()
@@ -60,6 +61,10 @@ def main():
                 technique_parser.add_argument(f"--{parameter.replace('_', '-')}",
                                               required=arguments.required, help=arguments.help,
                                               choices=choices)
+
+            technique_parser.add_argument("--orchestrator", required=False, default=None,
+                                          choices=sorted(BaseOrchestrator.registry.keys()),
+                                          help="Orchestrator that drives the run (default: full_pipeline).")
 
     perform_action(parser.parse_args(), command)
 

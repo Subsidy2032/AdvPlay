@@ -6,6 +6,7 @@ langchain-openai
 scikit-learn
 numpy
 pandas
+pillow
 joblib
 matplotlib
 seaborn
