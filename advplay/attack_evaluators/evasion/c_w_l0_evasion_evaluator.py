@@ -5,20 +5,20 @@ from advplay.attack_evaluators.base_attack_evaluator import BaseAttackEvaluator
 from advplay.attack_evaluators.contexts.evasion_evaluation_context import EvasionEvaluationContext
 from advplay.ml.ops.evaluators.base_evaluator import BaseEvaluator
 from advplay.ml.models.model_loaders.base_model_loader import BaseModelLoader
-from advplay.visualization.contexts.jsma_evasion_visualization_context import JSMAEvasionVisualizationContext
+from advplay.visualization.contexts.c_w_l0_evasion_visualization_context import CWL0EvasionVisualizationContext
 from advplay.variables import available_attacks, evasion_techniques
 from advplay import paths
 
 
 # Pixels whose perturbation magnitude is at or below this value are treated as unchanged.
-# JSMA perturbs a small set of pixels by theta (0.1 by default), so changed pixels sit
-# well above this threshold and the L0 count is not sensitive to its exact value.
+# The C&W L0 attack drives a small set of pixels well away from their original value, so
+# changed pixels sit far above this threshold and the L0 count is not sensitive to it.
 MODIFIED_TOLERANCE = 1e-8
 
 
-class JSMAEvasionEvaluator(BaseAttackEvaluator,
-                           attack_type=available_attacks.EVASION,
-                           attack_subtype=evasion_techniques.JSMA):
+class CWL0EvasionEvaluator(BaseAttackEvaluator,
+                          attack_type=available_attacks.EVASION,
+                          attack_subtype=evasion_techniques.CW_L0):
     def evaluate(self, context: EvasionEvaluationContext):
         model_path = context.model_path
         clean_samples = np.asarray(context.samples_data)
@@ -66,7 +66,7 @@ class JSMAEvasionEvaluator(BaseAttackEvaluator,
         l2_per_sample = np.linalg.norm(perturbation, ord=2, axis=1)
         linf_per_sample = np.max(np.abs(perturbation), axis=1)
         # L0 = number of modified pixels (channels collapsed: a pixel counts once even
-        # if several of its colour channels move). This is JSMA's characteristic metric.
+        # if several of its colour channels move). This is the attack's characteristic metric.
         modified_mask = _modified_pixel_mask(adversarial_samples - clean_samples)
         l0_per_sample = modified_mask.reshape(num_samples, -1).sum(axis=1)
         total_pixels = modified_mask.reshape(num_samples, -1).shape[1]
@@ -110,7 +110,7 @@ class JSMAEvasionEvaluator(BaseAttackEvaluator,
         modified_pixels = int(l0_per_sample[example_index])
         modified_fraction = modified_pixels / total_pixels if total_pixels else 0.0
 
-        return JSMAEvasionVisualizationContext(
+        return CWL0EvasionVisualizationContext(
             base_accuracy=None,
             targeted=targeted,
             example_clean=clean_samples[example_index],
@@ -131,7 +131,7 @@ class JSMAEvasionEvaluator(BaseAttackEvaluator,
 
     @staticmethod
     def _print_summary(results):
-        print("JSMA evasion evaluation summary:")
+        print("C&W L0 evasion evaluation summary:")
         mode = "targeted" if results["targeted"] else "untargeted"
         print(f"  Mode: {mode}" + (f" (target = {results['target_label']})" if results["targeted"] else ""))
         print(f"  Samples evaluated:            {results['num_samples']}")

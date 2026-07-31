@@ -49,8 +49,12 @@ class EvasionAttack(BaseAttack, ABC, attack_type=available_attacks.EVASION, atta
                                                    help="Combined dataset with samples and labels in one file. Requires --label-column. "
                                                         "Format: '[loader:]path' (prefix overrides extension-based loader lookup).")]
     label_column: Annotated[Union[int, str], BaseAttack.COMMON_ATTACK_PARAMETERS['label_column']]
-    target_label: Annotated[int, AttackParam(type=int, required=False, default=None,
-                                             help="Target labels for misclassification")]
+    target_label: Annotated[Union[int, LoadedDataset],
+                            AttackParam(type=(int, LoadedDataset), required=False, default=None,
+                                        help="Target labels for misclassification. Either one class applied to "
+                                             "every sample (e.g. 7), or one target per sample as '[loader:]path' "
+                                             "to an array of the same length as --samples, where element i "
+                                             "targets sample i in the order the loader returned them.")]
     log_filename: Annotated[str, BaseAttack.COMMON_ATTACK_PARAMETERS['log_filename']]
 
     def __init__(self, template, **kwargs):
@@ -65,7 +69,29 @@ class EvasionAttack(BaseAttack, ABC, attack_type=available_attacks.EVASION, atta
                 self.true_labels = self.true_labels.data.ravel()
 
         if self.target_label is not None:
-            self.target_label = np.full(self.true_labels.shape, self.target_label, dtype=self.true_labels.dtype)
+            self.target_label = self._build_target_labels(self.target_label)
+
+    def _build_target_labels(self, target_label):
+        """Return one target class per sample, as an array aligned with the samples.
+
+        A single class is broadcast across every sample. An array is taken one-to-one
+        instead, so element i targets sample i in the order the loader returned them -
+        note PNGDatasetLoader sorts a directory alphabetically, not numerically.
+        """
+        if not isinstance(target_label, LoadedDataset):
+            return np.full(self.true_labels.shape, target_label, dtype=self.true_labels.dtype)
+
+        targets = np.asarray(target_label.data).ravel()
+        if self.true_labels is None:
+            return targets
+
+        if targets.shape != self.true_labels.shape:
+            raise ValueError(
+                f"--target-label holds {targets.size} labels but there are {self.true_labels.size} "
+                f"samples; a per-sample target array must line up one to one with --samples."
+            )
+
+        return targets.astype(self.true_labels.dtype)
 
     def _unpack_dataset(self):
         if isinstance(self.label_column, str):

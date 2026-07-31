@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import os
 from abc import ABC, abstractmethod
+from pathlib import Path
 
 from advplay.ml.data.dataset_loaders.loaded_dataset import LoadedDataset
 
@@ -19,7 +20,10 @@ class BaseDatasetLoader(ABC):
 
     def __init__(self, path):
         self.path = path
-        self.dataset_name = os.path.splitext(os.path.basename(self.path))[0]
+        # Path().stem rather than basename(): a directory passed with a trailing slash
+        # ("png:my_images/") basenames to "", which collapses every such dataset into a
+        # single shared output directory named "_perturbed".
+        self.dataset_name = Path(self.path).stem
 
     @abstractmethod
     def load(self) -> LoadedDataset:

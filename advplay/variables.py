@@ -30,6 +30,7 @@ class evasion_techniques():
     BIM: str = 'bim'
     JSMA: str = 'jsma'
     C_W: str = 'c_w'
+    CW_L0: str = 'cw_l0'
     PGD: str = 'pgd'
     GOODWORDS: str = 'goodwords'
     DEEPFOOL: str = 'deepfool'

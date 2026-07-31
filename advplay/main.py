@@ -86,12 +86,17 @@ def cast_parameter(parameter, type):
         return dataset
 
     elif isinstance(type, tuple):
+        # Recurse rather than calling t(parameter): LoadedDataset resolves and loads a
+        # path, dict reads a JSON file - neither is a constructor over the raw string.
+        last_error = None
         for t in type:
             try:
-                return t(parameter)
-            except Exception:
-                pass
-        raise ValueError(f"Cannot cast {parameter!r} to any of {type}")
+                return cast_parameter(parameter, t)
+            except Exception as error:
+                last_error = error
+        # Surface the last failure; a mistyped path is the common case here and the
+        # loader's own message ("NPY file not found: ...") says far more than the tuple.
+        raise ValueError(f"Cannot cast {parameter!r} to any of {type}: {last_error}") from last_error
 
     elif type == dict:
         path = Path(parameter)
